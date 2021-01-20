@@ -18,14 +18,29 @@ version is the easiest, but is only available for macOS.
 * Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a cluster for free.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 
-## Install operator-sdk for macOS
+### Install operator-sdk for macOS
 
 * Use the homebrew command `brew install operator-sdk`
 to install operator-sdk for macOS. If you don't have homebrew 
 installed, install it from [here](https://docs.brew.sh/Installation).
 
-## Install operator-sdk for Linux or Windows
+### Install operator-sdk for Linux or Windows
 
 * For Linux or Windows, install from GitHub release [here](https://sdk.operatorframework.io/docs/installation/#install-from-github-release).
+
+## Test your environment for operator-sdk
+
+Run the following command in the terminal of your choice:
+
+```
+operator-sdk version
+```
+
+You should see output like this:
+
+```
+operator-sdk version: "v1.3.0", commit: "1abf57985b43bf6a59dcd18147b3c574fa57d3f6", kubernetes version: "v1.19.4", go version: "go1.15.5", GOOS: "darwin", GOARCH: "amd64"
+```
+
 
 That's it. Now you should be ready to start developing your first operator! 
