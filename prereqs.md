@@ -9,7 +9,7 @@ version is the easiest, but is only available for macOS.
 * User logged with admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/homebrew/)
-
+* Either OpenShift CLI [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html) or [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 ### Prerequisites for installing for Linux and Windows
 * [dep](https://golang.github.io/dep/docs/installation.html) v0.5.0+
@@ -67,5 +67,47 @@ You should see output like this:
 {Version:kustomize/v3.9.1 GitCommit:7439f1809e5ccd4677ed52be7f98f2ad75122a93 BuildDate:2020-12-30T01:08:17+00:00 GoOs:darwin GoArch:amd64}
 ```
 
+### Install either oc or kubectl cli
+If you plan to use an OpenShift cluster, then you can install the OpenShift CLI via
+your web console. Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
+First, go to your OpenShift console and click on the question mark in the 
+top-right corner. From there, click on `Command Line Tools` and then choose
+the `oc` CLI binary for your operating system. Once you've downloaded it,
+ensure that the command is in your `PATH`.
+
+Test your cli by issuing the following command to see the version of your cli:
+
+```
+(base) Horea.Porutiu@ibm.com@Horeas-MBP operator % oc version
+Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
+Kubernetes Version: v1.19.2
+```
+
+### Login to your cluster and create a new project
+
+From the same console, you can see a section that says `Copy Login Command`. Use 
+that command and paste that into your terminal to login to your cluster.
+
+```
+(base) Horea.Porutiu@ibm.com@Horeas-MBP operator % oc login --token=JhI**********P1lg --server=https://c****-e.us-south.containers.cloud.ibm.com:31047
+
+Logged into "https://c****-e.us-south.containers.cloud.ibm.com:31047" as "IAM#horea.porutiu@ibm.com" using the token provided.
+
+You have access to 72 projects, the list has been suppressed. You can list all projects with 'oc projects'
+```
+
+Next, create a new project by issuing the command
+
+```
+oc project <new-project-name>
+```
+
+You should see something like this:
+
+```
+(base) Horea.Porutiu@ibm.com@Horeas-MBP operator % oc project horea-demo-project
+Now using project "horea-demo-project" on server "https://c***-e.us-south.containers.cloud.ibm.com:31047".
+```
 
 That's it. Now you should be ready to start developing your first operator! 
