@@ -1,4 +1,4 @@
-# Build a simple Goland-based operator
+# Build a simple Golang-based operator
 
 To setup your environment for developing Golang-based operators, you'll need the 
 following prerequisites installed on your machine. Note that the homebrew 
