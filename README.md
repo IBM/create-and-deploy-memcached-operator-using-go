@@ -228,7 +228,7 @@ type Memcached struct {
 }
 ```
 
-After modifying the *_types.go run the following command to update the generated code for that resource type:
+After modifying the memcached_types.go file run the following command to update the generated code for that resource type:
 
 ```
 $ make generate
