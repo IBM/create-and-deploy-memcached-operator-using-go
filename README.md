@@ -195,7 +195,7 @@ controllers/memcached_controller.go
 
 This will scaffold the Memcached resource API at `api/v1alpha1/memcached_types.go` and the controller at `controllers/memcached_controller.go`.
 
-### Define the API in the _types.go file
+### Define the API in the memcached_types.go file
 
 Define the API for the Memcached Custom Resource(CR) by modifying the Go type definitions at `api/v1alpha1/memcached_types.go` to look like the following:
 
