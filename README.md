@@ -23,17 +23,20 @@ version is the easiest, but is only available for macOS.
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 
 
-### Install operator-sdk and Kustomize for macOS
+### Install operator-sdk (version 1.0+) and Kustomize for macOS
 
 * Use the homebrew command `brew install operator-sdk`
-to install operator-sdk for macOS. If you don't have homebrew 
+to install operator-sdk for macOS. Note that this guide 
+is tested for operator-sdk version 1.0+, since the commands have changed with the 1.0 release. 
+ If you don't have homebrew 
 installed, install it from [here](https://docs.brew.sh/Installation).
 
 * Use the homebrew command `brew install kustomize` to install Kustomize.
 
-### Install operator-sdk and Kustomize for Linux or Windows
+### Install operator-sdk (version 1.0+) and Kustomize for Linux or Windows
 
-* For Linux or Windows, install the operator-sdk from the GitHub release [here](https://sdk.operatorframework.io/docs/installation/#install-from-github-release).
+* For Linux or Windows, install the operator-sdk (version 1.0+) from the GitHub release [here](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that
+commands have changed with the 1.0 release.
 
 * You can use the following script to install Kustomize for Windows or Linux but note that it doesn't work for ARM architecture. For ARM architecture download 
 Kustomize from the [releases page](https://github.com/kubernetes-sigs/kustomize/releases).
@@ -81,7 +84,7 @@ ensure that the command is in your `PATH`.
 Test your cli by issuing the following command to see the version of your cli:
 
 ```
-(base) Horea.Porutiu@ibm.com@Horeas-MBP operator % oc version
+$ oc version
 Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
 Kubernetes Version: v1.19.2
 ```
@@ -92,7 +95,7 @@ From the same console, you can see a section that says `Copy Login Command`. Use
 that command and paste that into your terminal to login to your cluster.
 
 ```
-(base) Horea.Porutiu@ibm.com@Horeas-MBP operator % oc login --token=JhI**********P1lg --server=https://c****-e.us-south.containers.cloud.ibm.com:31047
+$ oc login --token=JhI**********P1lg --server=https://c****-e.us-south.containers.cloud.ibm.com:31047
 
 Logged into "https://c****-e.us-south.containers.cloud.ibm.com:31047" as "IAM#horea.porutiu@ibm.com" using the token provided.
 
@@ -102,13 +105,13 @@ You have access to 72 projects, the list has been suppressed. You can list all p
 Next, create a new project by issuing the command
 
 ```
-oc project <new-project-name>
+$ oc project <new-project-name>
 ```
 
 You should see something like this:
 
 ```
-(base) Horea.Porutiu@ibm.com@Horeas-MBP operator % oc project horea-demo-project
+$ oc project horea-demo-project
 Now using project "horea-demo-project" on server "https://c***-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
