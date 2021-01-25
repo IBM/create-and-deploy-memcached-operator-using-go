@@ -217,7 +217,12 @@ type MemcachedStatus struct {
 }
 ```
 
-Next, add the +kubebuilder:subresource:status marker to add a status subresource to the CRD manifest so that the controller can update the CR status without changing the rest of the CR object:
+Next, add the +kubebuilder:subresource:status marker to add a status subresource to our CRD.
+
+The status subresource is important since the Kubernetes API makes a distinction between the 
+specification of a desired state of an object i.e. "spec" and the status of an object
+at a current point in time i.e. "status". When the "status" doesn't match the desired state, 
+or "spec", Kubernetes will work to make sure the "status" of a particular object matches the desired state.
 
 ```go
 // Memcached is the Schema for the memcacheds API
