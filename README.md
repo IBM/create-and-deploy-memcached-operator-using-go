@@ -286,10 +286,6 @@ as an array of strings and the size of the MemchachedSpec as an int.
         type: object
 ```
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5b99d43dc40555b22c0b025af56330dfdb79d2f5
 ### Compile, Build and Push
 
 At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
@@ -422,11 +418,6 @@ The `Makefile` part of generated project has a target called `undeploy` which de
 make undeploy
 ```
 
-<<<<<<< HEAD
-=======
->>>>>>> main
-=======
->>>>>>> 5b99d43dc40555b22c0b025af56330dfdb79d2f5
 ### Troubleshooting
 
 If you see errors when you run your `operator-sdk olm status` command, that may mean that you need to 
