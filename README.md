@@ -344,7 +344,7 @@ cd ../../
 cd config/default
 kustomize edit set namespace "${NAMESPACE}"
 cd ../../
-``
+```
 
 
 To Deploy the operator run the following command from your terminal:
