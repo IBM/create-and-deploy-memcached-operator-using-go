@@ -286,6 +286,138 @@ as an array of strings and the size of the MemchachedSpec as an int.
         type: object
 ```
 
+### Compile, Build and Push
+
+At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
+
+The generated code when you initialize creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
+
+To compile the code run the following command in the terminal from your project root:
+```bash
+make install
+```
+
+To buid the docker image run the following command. Note that you can also use the regular `docker build -t` command to build as well. Replace `<username>` and `<version>` as needed.
+
+```bash
+make docker-build IMG=docker.io/<username>/memcached-operator:<version>
+```
+ and finally push the docker image to your registry using following from your terminal:
+
+ ```bash
+make docker-push IMG=docker.io/<username>/memcached-operator:<version>
+
+ ```
+
+### Deploy the operator
+
+#### Deploy the operator to Openshift cluster
+
+First provision an openshift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on Ibm Cloud` and get into 
+
+![OpenShift](images/openshift-1.png)
+
+Once you provisioned the cluster, select the cluster and go to `openshift web console` by clicking the button from top right corner of the page.
+
+![OpenShift](images/openshift-2.png)
+
+From the OpenShift web console, copy the login command from the account drop down menu.
+
+![OpenShift](images/openshift-3.png)
+
+and from your terminal run the command to login to your cluster.
+
+Then create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
+
+```bash
+oc project <project name>
+
+```
+
+Make sure that the controller manager manifest has the right namespace and docker image. Apply the same to the default manifest as well by running following command:
+
+```bash
+cd config/manager
+kustomize edit set image controller=${IMG}
+cd ../../
+
+cd config/default
+kustomize edit set namespace "${NAMESPACE}"
+cd ../../
+``
+
+
+To Deploy the operator run the following command from your terminal:
+
+```bash
+make deploy IMG=docker.io/<username>/memcached-operator:<version>
+```
+
+The output of the deployment should look like the following:
+```bash
+...go-workspace/src/memcached-operator/bin/controller-gen "crd:trivialVersions=true,preserveUnknownFields=false" rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+cd config/manager && ...go-workspace/src/memcached-operator/bin/kustomize edit set image controller=sanjeevghimire/memcached-operator:v0.0.5
+.../go-workspace/src/memcached-operator/bin/kustomize build config/default | kubectl apply -f -
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+namespace/sanjeev-operator-prj configured
+customresourcedefinition.apiextensions.k8s.io/memcacheds.cache.example.com configured
+role.rbac.authorization.k8s.io/memcached-operator-leader-election-role created
+clusterrole.rbac.authorization.k8s.io/memcached-operator-manager-role configured
+clusterrole.rbac.authorization.k8s.io/memcached-operator-metrics-reader unchanged
+clusterrole.rbac.authorization.k8s.io/memcached-operator-proxy-role unchanged
+rolebinding.rbac.authorization.k8s.io/memcached-operator-leader-election-rolebinding created
+clusterrolebinding.rbac.authorization.k8s.io/memcached-operator-manager-rolebinding configured
+clusterrolebinding.rbac.authorization.k8s.io/memcached-operator-proxy-rolebinding configured
+configmap/memcached-operator-manager-config created
+service/memcached-operator-controller-manager-metrics-service created
+deployment.apps/memcached-operator-controller-manager created
+```
+
+And finally create the custom resources using the following command:
+
+```bash
+$ kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
+```
+
+#### Test and Verify
+
+From the terminal run `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
+
+```bash
+oc get all 
+
+or
+
+kubectl get all
+```
+
+Output:
+![kubectl get all](images/kubectl-get-all.png)
+
+Also from your cluster you can see the logs by going to your project in `OpenShift web console`
+
+![kubectl get all](images/os-logs.png)
+
+### Test
+
+Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
+
+```bash
+oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
+```
+
+You can also update the spec.size from `OpenShift web console` by going to `Deployments` and selecting `memcached-sample` and increase/decrease using the up or down arrow:
+
+![kubectl get all](images/inc-dec-size.png)
+
+### Cleanup
+
+The `Makefile` part of generated project has a target called `undeploy` which deletes all the resource. You can run following to cleanup all the resources:
+
+```bash
+make undeploy
+```
+
 ### Troubleshooting
 
 If you see errors when you run your `operator-sdk olm status` command, that may mean that you need to 
