@@ -431,7 +431,7 @@ as an array of strings and the size of the MemchachedSpec as an int.
 
 ### Compile, Build and Push
 
-At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry.
+At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
 
 The generated code when you initialize creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
 
@@ -456,7 +456,7 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
 #### Deploy the operator to Openshift cluster
 
-First provision an openshift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on Ibm Cloud` and get into
+First provision an openshift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on Ibm Cloud` and get into 
 
 ![OpenShift](images/openshift-1.png)
 
@@ -527,7 +527,7 @@ $ kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
 From the terminal run `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
 
 ```bash
-oc get all
+oc get all 
 
 or
 
@@ -583,3 +583,10 @@ And then creating the olm itself:
 ```
 oc apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.16.1/olm.yaml
 ```
+
+# License
+
+This code pattern is licensed under the Apache Software License, Version 2.  Separate third party code objects invoked within this code pattern are licensed by their respective providers pursuant to their own separate licenses. Contributions are subject to the [Developer Certificate of Origin, Version 1.1 (DCO)](https://developercertificate.org/) and the [Apache Software License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
+
+[Apache Software License (ASL) FAQ](https://www.apache.org/foundation/license-faq.html#WhatDoesItMEAN)
+
