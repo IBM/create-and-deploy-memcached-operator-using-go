@@ -1,10 +1,29 @@
 # Build a simple Golang-based operator
 
+In this tutorial we will be creating a simple Go-based operator that walks you through an example of building a simple memcached-operator using operator-sdk.
+
+Operators make it easy to manage complex stateful applications on top of Kubernetes or Openshift.
+
+## Flow
+
+![Flow](images/architecture.png)
+
+1. Create a new operator project using the SDK Command Line Interface(CLI)
+2. Define new resource APIs by adding Custom Resource Definitions(CRD)
+3. Define Controllers to watch and reconcile resources
+4. Write the reconciling logic for your Controller using the SDK and controller-runtime APIs
+5. Use the SDK CLI to build and generate the operator deployment manifests
+6. Use the SDK CLI to build operator docker image, push and deploy to OpenShift
+7. Operator docker image is deployed to OpenShift cluster creating manager and application replicas.
+8. Reconcile loop watches and heals the resources as needed.
+
+## Pre-requisites
+### Prerequisites for installing operator-sdk for macOS
+
 To setup your environment for developing Golang-based operators, you'll need the 
 following prerequisites installed on your machine. Note that the homebrew 
 version is the easiest, but is only available for macOS.
 
-### Prerequisites for installing operator-sdk for macOS
 * [Go](https://golang.org/dl/) 1.10+
 * Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a cluster for free.
 * User logged with admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin.
@@ -22,7 +41,20 @@ version is the easiest, but is only available for macOS.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 
+## Steps
 
+1. [Install Operator SDK](#1-install-operator-sdk)
+1. [Install oc or kubectl cli](#2-install-oc-or-kubectl-cli)
+1. [Login to your cluster and create a new project](#3-login-to-your-cluster-and-create-a-new-project)
+1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#4-make-sure-openshift-lifecycle-manager-(olm)-is-up-to-date)
+1. [Create a new project using Operator SDK](#5-create-a-new-project-using-operator-sdk)
+1. [Create a new API and controller using Operator SDK](#6-create-a-new-api-and-controller-using-operator-sdk)
+1. [Define the API for the custom resource in the type definition file](#7-define-the-api-for-the-custom-resource-in-the-type-definition-file)
+1. [Compile, build and push](#8-compile,-build-and-push)
+1. [Deploy the operator](#9-deploy-the-operator)
+1. [Test and verify](#10-test-and-verify)
+1. [Cleanup](#11-cleanup)
+## 1. Install Operator SDK
 ### Install operator-sdk (version 1.0+) and Kustomize for macOS
 
 * Use the homebrew command `brew install operator-sdk`
@@ -46,7 +78,7 @@ curl -s "https://raw.githubusercontent.com/\
 kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
 ```
 
-## Test your environment for operator-sdk
+### Test your environment for operator-sdk
 
 Run the following command in the terminal of your choice:
 
@@ -72,7 +104,7 @@ You should see output like this:
 {Version:kustomize/v3.9.1 GitCommit:7439f1809e5ccd4677ed52be7f98f2ad75122a93 BuildDate:2020-12-30T01:08:17+00:00 GoOs:darwin GoArch:amd64}
 ```
 
-### Install either oc or kubectl cli
+## 2. Install oc or kubectl cli
 If you plan to use an OpenShift cluster, then you can install the OpenShift CLI via
 your web console. Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
@@ -89,7 +121,7 @@ Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
 Kubernetes Version: v1.19.2
 ```
 
-### Login to your cluster and create a new project
+## 3. Login to your cluster and create a new project
 
 From the same console, you can see a section that says `Copy Login Command`. Use 
 that command and paste that into your terminal to login to your cluster.
@@ -115,7 +147,7 @@ $ oc project horea-demo-project
 Now using project "horea-demo-project" on server "https://c***-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
-### Make sure OpenShift Lifecycle Manager (OLM) is up to date
+## 4. Make sure OpenShift Lifecycle Manager (OLM) is up to date
 
 First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
 up to date and running properly before we develop our operator. To do this, run the `operator-sdk olm status` command:
@@ -152,12 +184,9 @@ system:controller:operator-lifecycle-manager                 ClusterRole        
 If you see something like the above, then your olm is up to date. Otherwise, you may need to upgrade 
 your olm to the latest version. To do this, check out the troubleshooting section below.
 
+Now you should be ready to start developing your first operator.
 
-That's it. Now you should be ready to start developing your first operator!
-
-
-
-### Use the Operator-SDK to create a new project
+## 5. Create a new project using Operator SDK
 
 First create a directory for where you will hold 
 your project files. 
@@ -178,7 +207,7 @@ This will create the basic scaffold for your operator, such as the `bin`, `confi
 learn more about the details of the architecture of the operator
 refer to our article here.
 
-### Use the Operator-SDK to create a new API and controller
+## 6. Create a new API and controller using Operator SDK
 
 Next, we will use the `operator-sdk create api` command to create a new API and 
 controller. We will use the --group and --version flags to pass in the resource 
@@ -198,7 +227,7 @@ controllers/memcached_controller.go
 
 This will scaffold the Memcached resource API at `api/v1alpha1/memcached_types.go` and the controller at `controllers/memcached_controller.go`.
 
-### Define the API in the memcached_types.go file
+## 7. Define the API for the custom resource in the type definition file
 
 Define the API for the Memcached Custom Resource(CR) by modifying the Go type definitions at `api/v1alpha1/memcached_types.go` to look like the following:
 
@@ -286,7 +315,7 @@ as an array of strings and the size of the MemchachedSpec as an int.
         type: object
 ```
 
-### Compile, Build and Push
+## 8. Compile, build and push
 
 At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
 
@@ -309,7 +338,7 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
  ```
 
-### Deploy the operator
+## 9. Deploy the operator
 
 #### Deploy the operator to Openshift cluster
 
@@ -327,7 +356,7 @@ From the OpenShift web console, copy the login command from the account drop dow
 
 and from your terminal run the command to login to your cluster.
 
-Then create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
+If you haven't created a project, create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
 
 ```bash
 oc project <project name>
@@ -379,7 +408,7 @@ And finally create the custom resources using the following command:
 $ kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
 ```
 
-#### Test and Verify
+#### Verify that resources are Running
 
 From the terminal run `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
 
@@ -398,7 +427,7 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 ![kubectl get all](images/os-logs.png)
 
-### Test
+## 10. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
 
@@ -410,7 +439,7 @@ You can also update the spec.size from `OpenShift web console` by going to `Depl
 
 ![kubectl get all](images/inc-dec-size.png)
 
-### Cleanup
+## 11./ Cleanup
 
 The `Makefile` part of generated project has a target called `undeploy` which deletes all the resource. You can run following to cleanup all the resources:
 
@@ -418,7 +447,7 @@ The `Makefile` part of generated project has a target called `undeploy` which de
 make undeploy
 ```
 
-### Troubleshooting
+## Troubleshooting
 
 If you see errors when you run your `operator-sdk olm status` command, that may mean that you need to 
 upgrade your olm. To do this, you should switch to the 
