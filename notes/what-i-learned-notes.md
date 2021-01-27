@@ -1,7 +1,9 @@
 # Learnings and notes from various sources
 
 Credit: Kubernetes Operators by Jason Doies and Joshua Wood (O'Reilly)
+
 Credit: kublr.com/blog/understanding-kubernetes-operators
+
 Credit: kubernetes.io/docs/concepts/extend-kubernetes/operator
 
 ## Vocabulary and concepts necessary in order to understand how Operators work with K8s 
