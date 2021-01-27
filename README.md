@@ -444,7 +444,7 @@ You can also update the spec.size from `OpenShift web console` by going to `Depl
 
 ![kubectl get all](images/inc-dec-size.png)
 
-## 11./ Cleanup
+## 11. Cleanup
 
 The `Makefile` part of generated project has a target called `undeploy` which deletes all the resource. You can run following to cleanup all the resources:
 
