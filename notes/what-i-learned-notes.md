@@ -106,7 +106,7 @@ prescribed by the custom resource.
   * Most operators should service their access rights from a service account
   * Creating a service account is a standard step in deploying an operator
     * The service account identifies the operator, and the accounts role denotes the powers granted to the operator
-* As a best practice, <b>you should give the service account a role<b>.
+* As a best practice, <b>you should give the service account a role</b>.
 
 ----------------------------------------------
 ### Authorization and Roles
@@ -261,7 +261,7 @@ In its simplest form, an operator adds an endpoint to the k8s api Called a custo
 * Since the etc operator understands etcd’s state, it can recover from an etc cluster members failure in the same way k8s replaced the deleted stateless web server from earlier 
   * Assume there is a 3-member cluster managed by the etc operator
   * The operator itself and the etc cluster members run as pods
-  * Deleting an etc pod triggers a <b>reconciliation<b>, and the etcd operator knows how to recover to the desired state of three replicas - something kubernetes can’t do alone.
+  * Deleting an etc pod triggers a <b>reconciliation</b>, and the etcd operator knows how to recover to the desired state of three replicas - something kubernetes can’t do alone.
   * But unlike with the blank-state restart of a stateless web server, the operator has to arrange the new etc pod’s cluster membership, configuring it for the existing end-points and establishing it with the remaining etc members
 * Now the operator will repair the etcd cluster. And the etcd API remains available due to the operator 
 
