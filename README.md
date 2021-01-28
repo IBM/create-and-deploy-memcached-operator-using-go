@@ -241,7 +241,7 @@ will do that in the `api/v1alpha1/memcached_types.go` file.
 
 To update our CRD, we will create three different structs in our 
 CRD. One will be the overarching `Memcached struct`, which will have 
-the `MemcacheStatus` and `MemcachedSpec` fields. Each of those structs,
+the `MemcachedStatus` and `MemcachedSpec` fields. Each of those structs,
 i.e. the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
 have their own fields to describe the observed or current state and the 
 desired state respectively.
@@ -249,7 +249,7 @@ desired state respectively.
 In our `MemcachedSpec` struct, we are using an int to define the size of the deployment.
  When we create a custom resource later, we will  need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
 
-The `MamcacheStatus` struct will use a string array to list the name of the memcached pods in the current state.
+The `MemcachedStatus` struct will use a string array to list the name of the memcached pods in the current state.
 
 Lastly, the `Memcached` struct will have the fields `Spec` and `Status` to denote the desired state (spec) and the observed state (status). At a high-level, when the system recognizes there is a difference in the spec and the status, the operator will use custom controller logic defined in our 
 `controllers/memcached_controller.go` file to update the 
@@ -281,15 +281,6 @@ type Memcached struct {
 	Status MemcachedStatus `json:"status,omitempty"`
 }
 ```
-<!-- 
-Next, add the +kubebuilder:subresource:status marker to add a status subresource to our CRD.
-
-The status subresource is important since the Kubernetes API makes a distinction between the 
-specification of a desired state of an object i.e. "spec" and the status of an object
-at a current point in time i.e. "status". When the "status" doesn't match the desired state, 
-or "spec", Kubernetes will work to make sure the "status" of a particular object matches the desired state. -->
-
-
 
 After modifying the memcached_types.go file run the following command to update the generated code for that resource type:
 
