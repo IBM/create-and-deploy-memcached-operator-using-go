@@ -48,8 +48,8 @@ version is the easiest, but is only available for macOS.
 1. [Login to your cluster and create a new project](#3-login-to-your-cluster-and-create-a-new-project)
 1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#4-make-sure-openshift-lifecycle-manager-(olm)-is-up-to-date)
 1. [Create a new project using Operator SDK](#5-create-a-new-project-using-operator-sdk)
-1. [Create a new API and controller using Operator SDK](#6-create-a-new-api-and-controller-using-operator-sdk)
-1. [Define the API for the custom resource in the type definition file](#7-define-the-api-for-the-custom-resource-in-the-type-definition-file)
+1. [Create CRD and Custom Controller](#6-Create-CRD-and-Custom-Controller)
+1. [Update CRD and generate CRD manifest](#7-Update-CRD-and-generate-CRD-manifest)
 1. [Compile, build and push](#8-compile,-build-and-push)
 1. [Deploy the operator](#9-deploy-the-operator)
 1. [Test and verify](#10-test-and-verify)
@@ -207,11 +207,16 @@ This will create the basic scaffold for your operator, such as the `bin`, `confi
 learn more about the details of the architecture of the operator
 refer to our article here.
 
-## 6. Create a new API and controller using Operator SDK
+## 6. Create CRD and Custom Controller
 
-Next, we will use the `operator-sdk create api` command to create a new API and 
-controller. We will use the --group and --version flags to pass in the resource 
-group and version. Make sure to type in `y` for both resource and controllers 
+Next, we will use the `operator-sdk create api` command to create a blank <b>custom resource definition,
+or CRD</b> which will be in your `api` directory and a blank custom controller file, which will be in your 
+`controllers` directory.
+
+We will use the --group, --version, and --kind flags to pass in the resource 
+group and version. The <b>--group, --version, and --kind</b> flags together form the fully qualified name of a k8s resource type. This name must be unique across a cluster.
+
+Make sure to type in `y` for both resource and controllers 
 when prompted.
 
 ```
@@ -225,11 +230,32 @@ api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
 ```
 
-This will scaffold the Memcached resource API at `api/v1alpha1/memcached_types.go` and the controller at `controllers/memcached_controller.go`.
+Now, once you deploy this operator, you can use the `kubectl api-resources` to see the name
+`cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
+later after we've deployed the operator.
 
-## 7. Define the API for the custom resource in the type definition file
+## 7. Update CRD and generate CRD manifest
 
-Define the API for the Memcached Custom Resource(CR) by modifying the Go type definitions at `api/v1alpha1/memcached_types.go` to look like the following:
+One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
+will do that in the `api/v1alpha1/memcached_types.go` file.
+
+To update our CRD, we will create three different structs in our 
+CRD. One will be the overarching `Memcached struct`, which will have 
+the `MemcachedStatus` and `MemcachedSpec` fields. Each of those structs,
+i.e. the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
+have their own fields to describe the observed or current state and the 
+desired state respectively.
+
+In our `MemcachedSpec` struct, we are using an int to define the size of the deployment.
+ When we create a custom resource later, we will  need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
+
+The `MemcachedStatus` struct will use a string array to list the name of the Memcached pods in the current state.
+
+Lastly, the `Memcached` struct will have the fields `Spec` and `Status` to denote the desired state (spec) and the observed state (status). At a high-level, when the system recognizes there is a difference in the spec and the status, the operator will use custom controller logic defined in our 
+`controllers/memcached_controller.go` file to update the 
+system to be in the desired state.
+
+Modify the `api/v1alpha1/memcached_types.go` to look like the following:
 
 ```go
 // MemcachedSpec defines the desired state of Memcached
@@ -244,16 +270,7 @@ type MemcachedStatus struct {
 	// Nodes are the names of the memcached pods
 	Nodes []string `json:"nodes"`
 }
-```
 
-Next, add the +kubebuilder:subresource:status marker to add a status subresource to our CRD.
-
-The status subresource is important since the Kubernetes API makes a distinction between the 
-specification of a desired state of an object i.e. "spec" and the status of an object
-at a current point in time i.e. "status". When the "status" doesn't match the desired state, 
-or "spec", Kubernetes will work to make sure the "status" of a particular object matches the desired state.
-
-```go
 // Memcached is the Schema for the memcacheds API
 // +kubebuilder:subresource:status
 type Memcached struct {
@@ -271,7 +288,7 @@ After modifying the memcached_types.go file run the following command to update 
 $ make generate
 ```
 
-The above command will use the controller-gen utility in `bin/controller-gen` to update the api/v1alpha1/zz_generated.deepcopy.go file to ensure our API’s Go type definitions implement the runtime.Object interface that all Kind types must implement.
+The above command will use the controller-gen utility in `bin/controller-gen` to update the api/v1alpha1/zz_generated.deepcopy.go file to ensure our API’s Go type definitions implement the `runtime.Object` interface that all Kind types must implement.
 
 Once the API is defined with spec/status fields and CRD validation markers, the CRD manifests can be generated and updated with the following command:
 
@@ -279,7 +296,7 @@ Once the API is defined with spec/status fields and CRD validation markers, the 
 $ make manifests
 ```
 
-This makefile target will invoke controller-gen to generate the CRD manifests at config/crd/bases/cache.example.com_memcacheds.yaml.
+This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml`.
 
 In the `cache.example.com_memcacheds.yaml` you can see the yaml representation 
 of the object we specified in our `_types.go` file, specifically the MemcachedStatus
@@ -319,6 +336,9 @@ as an array of strings and the size of the MemchachedSpec as an int.
             type: object
         type: object
 ```
+
+Next, we will implement the custom controller logic which will tell the operator what to do in the case
+that the desired state of the Memcached resource is not the same as the observed.
 
 ## 8. Compile, build and push
 
