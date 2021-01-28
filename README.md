@@ -249,7 +249,7 @@ desired state respectively.
 In our `MemcachedSpec` struct, we are using an int to define the size of the deployment.
  When we create a custom resource later, we will  need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
 
-The `MemcachedStatus` struct will use a string array to list the name of the memcached pods in the current state.
+The `MemcachedStatus` struct will use a string array to list the name of the Memcached pods in the current state.
 
 Lastly, the `Memcached` struct will have the fields `Spec` and `Status` to denote the desired state (spec) and the observed state (status). At a high-level, when the system recognizes there is a difference in the spec and the status, the operator will use custom controller logic defined in our 
 `controllers/memcached_controller.go` file to update the 
