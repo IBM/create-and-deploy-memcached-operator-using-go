@@ -48,8 +48,8 @@ version is the easiest, but is only available for macOS.
 1. [Login to your cluster and create a new project](#3-login-to-your-cluster-and-create-a-new-project)
 1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#4-make-sure-openshift-lifecycle-manager-(olm)-is-up-to-date)
 1. [Create a new project using Operator SDK](#5-create-a-new-project-using-operator-sdk)
-1. [Scaffold your Custom Resource Definition(CRD) and Custom Controller code](#6-Scaffold-your-Custom-Resource-Definition(CRD)-and-Custom-Controller-code)
-1. [Update your Custom Resource Definition(CRD)](#7-Update-your-Custom-Resource-Definition(CRD))
+1. [Create CRD and Custom Controller](#6-Create-CRD-and-Custom-Controller)
+1. [Update CRD and generate CRD manifest](#7-Update-CRD-and-generate-CRD-manifest)
 1. [Compile, build and push](#8-compile,-build-and-push)
 1. [Deploy the operator](#9-deploy-the-operator)
 1. [Test and verify](#10-test-and-verify)
@@ -207,10 +207,10 @@ This will create the basic scaffold for your operator, such as the `bin`, `confi
 learn more about the details of the architecture of the operator
 refer to our article here.
 
-## 6. Scaffold your Custom Resource Definition(CRD) and Custom Controller code
+## 6. Create CRD and Custom Controller
 
-Next, we will use the `operator-sdk create api` command to create a blank custom resource definition,
-or CRD which will be in your `api` directory and a blank custom controller file, which will be in your 
+Next, we will use the `operator-sdk create api` command to create a blank <b>custom resource definition,
+or CRD</b> which will be in your `api` directory and a blank custom controller file, which will be in your 
 `controllers` directory.
 
 We will use the --group, --version, and --kind flags to pass in the resource 
@@ -234,7 +234,7 @@ Now, once you deploy this operator, you can use the `kubectl api-resources` to s
 `cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
 later after we've deployed the operator.
 
-## 7. Update your Custom Resource Definition(CRD)
+## 7. Update CRD and generate CRD manifest
 
 One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
 will do that in the `api/v1alpha1/memcached_types.go` file.
