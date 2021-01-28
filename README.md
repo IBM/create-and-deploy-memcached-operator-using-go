@@ -45,15 +45,14 @@ version is the easiest, but is only available for macOS.
 
 1. [Install Operator SDK](#1-install-operator-sdk)
 1. [Install oc or kubectl cli](#2-install-oc-or-kubectl-cli)
-1. [Login to your cluster and create a new project](#3-login-to-your-cluster-and-create-a-new-project)
-1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#4-make-sure-openshift-lifecycle-manager-(olm)-is-up-to-date)
-1. [Create a new project using Operator SDK](#5-create-a-new-project-using-operator-sdk)
-1. [Create CRD and Custom Controller](#6-Create-CRD-and-Custom-Controller)
-1. [Update CRD and generate CRD manifest](#7-Update-CRD-and-generate-CRD-manifest)
-1. [Compile, build and push](#8-compile,-build-and-push)
-1. [Deploy the operator](#9-deploy-the-operator)
-1. [Test and verify](#10-test-and-verify)
-1. [Cleanup](#11-cleanup)
+1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#3-make-sure-openshift-lifecycle-manager-(olm)-is-up-to-date)
+1. [Create a new project using Operator SDK](#4-create-a-new-project-using-operator-sdk)
+1. [Create CRD and Custom Controller](#5-Create-CRD-and-Custom-Controller)
+1. [Update CRD and generate CRD manifest](#6-Update-CRD-and-generate-CRD-manifest)
+1. [Compile, build and push](#7-compile,-build-and-push)
+1. [Deploy the operator](#8-deploy-the-operator)
+1. [Test and verify](#9-test-and-verify)
+1. [Cleanup](#10-cleanup)
 ## 1. Install Operator SDK
 ### Install operator-sdk (version 1.0+) and Kustomize for macOS
 
@@ -121,33 +120,7 @@ Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
 Kubernetes Version: v1.19.2
 ```
 
-## 3. Login to your cluster and create a new project
-
-From the same console, you can see a section that says `Copy Login Command`. Use 
-that command and paste that into your terminal to login to your cluster.
-
-```
-$ oc login --token=JhI**********P1lg --server=https://c****-e.us-south.containers.cloud.ibm.com:31047
-
-Logged into "https://c****-e.us-south.containers.cloud.ibm.com:31047" as "IAM#horea.porutiu@ibm.com" using the token provided.
-
-You have access to 72 projects, the list has been suppressed. You can list all projects with 'oc projects'
-```
-
-Next, create a new project by issuing the command
-
-```
-$ oc project <new-project-name>
-```
-
-You should see something like this:
-
-```
-$ oc project horea-demo-project
-Now using project "horea-demo-project" on server "https://c***-e.us-south.containers.cloud.ibm.com:31047".
-```
-
-## 4. Make sure OpenShift Lifecycle Manager (OLM) is up to date
+## 3. Make sure OpenShift Lifecycle Manager (OLM) is up to date
 
 First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
 up to date and running properly before we develop our operator. To do this, run the `operator-sdk olm status` command:
@@ -186,7 +159,7 @@ your olm to the latest version. To do this, check out the troubleshooting sectio
 
 Now you should be ready to start developing your first operator.
 
-## 5. Create a new project using Operator SDK
+## 4. Create a new project using Operator SDK
 
 First create a directory for where you will hold 
 your project files. 
@@ -207,7 +180,7 @@ This will create the basic scaffold for your operator, such as the `bin`, `confi
 learn more about the details of the architecture of the operator
 refer to our article here.
 
-## 6. Create CRD and Custom Controller
+## 5. Create CRD and Custom Controller
 
 Next, we will use the `operator-sdk create api` command to create a blank <b>custom resource definition,
 or CRD</b> which will be in your `api` directory and a blank custom controller file, which will be in your 
@@ -234,7 +207,7 @@ Now, once you deploy this operator, you can use the `kubectl api-resources` to s
 `cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
 later after we've deployed the operator.
 
-## 7. Update CRD and generate CRD manifest
+## 6. Update CRD and generate CRD manifest
 
 One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
 will do that in the `api/v1alpha1/memcached_types.go` file.
@@ -340,7 +313,7 @@ as an array of strings and the size of the MemchachedSpec as an int.
 Next, we will implement the custom controller logic which will tell the operator what to do in the case
 that the desired state of the Memcached resource is not the same as the observed.
 
-## 8. Compile, build and push
+## 7. Compile, build and push
 
 At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
 
@@ -363,7 +336,7 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
  ```
 
-## 9. Deploy the operator
+## 8. Deploy the operator
 
 #### Deploy the operator to Openshift cluster
 
@@ -382,6 +355,9 @@ From the OpenShift web console, copy the login command from the account drop dow
 and from your terminal run the command to login to your cluster.
 
 If you haven't created a project, create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
+
+Note: you can also use the `oc new-project <new-project-name>` command to create a new project.
+The below command simply switches you to an existing project.
 
 ```bash
 oc project <project name>
@@ -452,7 +428,7 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 ![kubectl get all](images/os-logs.png)
 
-## 10. Test and verify
+## 9. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
 
@@ -464,7 +440,7 @@ You can also update the spec.size from `OpenShift web console` by going to `Depl
 
 ![kubectl get all](images/inc-dec-size.png)
 
-## 11. Cleanup
+## 10. Cleanup
 
 The `Makefile` part of generated project has a target called `undeploy` which deletes all the resource. You can run following to cleanup all the resources:
 
