@@ -45,11 +45,11 @@ version is the easiest, but is only available for macOS.
 
 1. [Install Operator SDK](#1-install-operator-sdk)
 1. [Install oc or kubectl cli](#2-install-oc-or-kubectl-cli)
-1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#3-make-sure-openshift-lifecycle-manager-(olm)-is-up-to-date)
+1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#3-make-sure-openshift-lifecycle-manager-olm-is-up-to-date)
 1. [Create a new project using Operator SDK](#4-create-a-new-project-using-operator-sdk)
 1. [Create CRD and Custom Controller](#5-Create-CRD-and-Custom-Controller)
 1. [Update CRD and generate CRD manifest](#6-Update-CRD-and-generate-CRD-manifest)
-1. [Compile, build and push](#7-compile,-build-and-push)
+1. [Compile, build and push](#7-compile-build-and-push)
 1. [Deploy the operator](#8-deploy-the-operator)
 1. [Test and verify](#9-test-and-verify)
 1. [Cleanup](#10-cleanup)
