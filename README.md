@@ -228,32 +228,7 @@ Lastly, the `Memcached` struct will have the fields `Spec` and `Status` to denot
 `controllers/memcached_controller.go` file to update the 
 system to be in the desired state.
 
-Modify the `api/v1alpha1/memcached_types.go` to look like the following:
-
-```go
-// MemcachedSpec defines the desired state of Memcached
-type MemcachedSpec struct {
-	// +kubebuilder:validation:Minimum=0
-	// Size is the size of the memcached deployment
-	Size int32 `json:"size"`
-}
-
-// MemcachedStatus defines the observed state of Memcached
-type MemcachedStatus struct {
-	// Nodes are the names of the memcached pods
-	Nodes []string `json:"nodes"`
-}
-
-// Memcached is the Schema for the memcacheds API
-// +kubebuilder:subresource:status
-type Memcached struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   MemcachedSpec   `json:"spec,omitempty"`
-	Status MemcachedStatus `json:"status,omitempty"`
-}
-```
+Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go).
 
 ### Implement controller logic
 
@@ -410,46 +385,8 @@ Once the API is defined with spec/status fields and CRD validation markers, the 
 $ make manifests
 ```
 
-This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml`.
-
-In the `cache.example.com_memcacheds.yaml` you can see the yaml representation 
-of the object we specified in our `_types.go` file, specifically the MemcachedStatus
-as an array of strings and the size of the MemchachedSpec as an int.
-
-```yaml
-- name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: Memcached is the Schema for the memcacheds API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this obj'
-            type: string
-          kind:
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: MemcachedSpec defines the desired state of Memcached
-            properties:
-              size:
-                format: int32
-                type: integer
-            required:
-            - size
-            type: object
-          status:
-            description: MemcachedStatus defines the observed state of Memcached
-            properties:
-              nodes:
-                items:
-                  type: string
-                type: array
-            required:
-            - nodes
-            type: object
-        type: object
-```
+This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation 
+of the object we specified in our `_types.go` file. 
 
 Next, we will implement the custom controller logic which will tell the operator what to do in the case
 that the desired state of the Memcached resource is not the same as the observed.
@@ -507,12 +444,18 @@ oc project <project name>
 
 Make sure that the controller manager manifest has the right namespace and docker image. Apply the same to the default manifest as well by running following command:
 
+Note: IMG=docker.io/<username>/memcached-operator:<version> and
+your namespace is just your `<new-project-name>` from above
+
+
 ```bash
+export IMG=docker.io/<username>/memcached-operator:<version>
 cd config/manager
 kustomize edit set image controller=${IMG}
 cd ../../
 
 cd config/default
+export NAMESPACE=<oc-project-name>
 kustomize edit set namespace "${NAMESPACE}"
 cd ../../
 ```
@@ -543,6 +486,31 @@ configmap/memcached-operator-manager-config created
 service/memcached-operator-controller-manager-metrics-service created
 deployment.apps/memcached-operator-controller-manager created
 ```
+
+To make sure everything is working correctly, use the `oc get pods` command.
+
+```bash
+oc get pods
+
+NAME                                                     READY   STATUS    RESTARTS   AGE
+memcached-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
+```
+
+This means your operator is up and running. Next, let's create some custom resources via our operator.
+
+Next, update your custom resource, by modifying the `config/samples/cache_v1alpha1_memcached.yaml` file
+to look like the following:
+
+```yaml
+apiVersion: cache.example.com/v1alpha1
+kind: Memcached
+metadata:
+  name: memcached-sample
+spec:
+  # Add fields here
+  size: 3
+``` 
+Note that all we did is set the size of the Memcached replicas to be 3.
 
 And finally create the custom resources using the following command:
 
