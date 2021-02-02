@@ -259,9 +259,7 @@ type Memcached struct {
 
 Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`.
 
-The of controller logic responsible for applying desired state is contained within the "Reconcile" method.
-
-The "Reconcile" method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
+The controller "Reconcile" method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
 
 After scaffolding our controller via the operator-sdk, we'll have an empty Reconciler function.
 
