@@ -49,10 +49,10 @@ version is the easiest, but is only available for macOS.
 1. [Create a new project using Operator SDK](#4-create-a-new-project-using-operator-sdk)
 1. [Create CRD and Custom Controller](#5-Create-CRD-and-Custom-Controller)
 1. [Update CRD and generate CRD manifest](#6-Update-CRD-and-generate-CRD-manifest)
-1. [Compile, build and push](#7-compile-build-and-push)
-1. [Deploy the operator](#8-deploy-the-operator)
-1. [Test and verify](#9-test-and-verify)
-1. [Cleanup](#10-cleanup)
+1. [Implement Controller Logic](#7-implement-controller-logic)
+1. [Compile, build and push](#8-compile-build-and-push)
+1. [Deploy the operator](#9-deploy-the-operator)
+1. [Test and verify](#10-test-and-verify)
 ## 1. Install Operator SDK
 ### Install operator-sdk (version 1.0+) and Kustomize for macOS
 
@@ -230,7 +230,7 @@ system to be in the desired state.
 
 Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go).
 
-### Implement controller logic
+## 7. Implement controller logic
 
 Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`.
 
@@ -391,7 +391,7 @@ of the object we specified in our `_types.go` file.
 Next, we will implement the custom controller logic which will tell the operator what to do in the case
 that the desired state of the Memcached resource is not the same as the observed.
 
-## 7. Compile, build and push
+## 8. Compile, build and push
 
 At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
 
@@ -402,7 +402,14 @@ To compile the code run the following command in the terminal from your project 
 make install
 ```
 
-To buid the docker image run the following command. Note that you can also use the regular `docker build -t` command to build as well. Replace `<username>` and `<version>` as needed.
+To build the docker image run the following command. Note that you can also 
+use the regular `docker build -t` command to build as well. 
+
+`<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
+version of the operator image you will deploy. Note that each time you 
+make a change to your operator code, it is good practice to increment the 
+version.
+
 
 ```bash
 make docker-build IMG=docker.io/<username>/memcached-operator:<version>
@@ -414,7 +421,7 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
  ```
 
-## 8. Deploy the operator
+## 9. Deploy the operator
 
 #### Deploy the operator to Openshift cluster
 
@@ -443,10 +450,6 @@ oc project <project name>
 ```
 
 Make sure that the controller manager manifest has the right namespace and docker image. Apply the same to the default manifest as well by running following command:
-
-Note: IMG=docker.io/<username>/memcached-operator:<version> and
-your namespace is just your `<new-project-name>` from above
-
 
 ```bash
 export IMG=docker.io/<username>/memcached-operator:<version>
@@ -537,7 +540,7 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 ![kubectl get all](images/os-logs.png)
 
-## 9. Test and verify
+## 10. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
 
@@ -549,7 +552,7 @@ You can also update the spec.size from `OpenShift web console` by going to `Depl
 
 ![kubectl get all](images/inc-dec-size.png)
 
-## 10. Cleanup
+## Cleanup
 
 The `Makefile` part of generated project has a target called `undeploy` which deletes all the resource. You can run following to cleanup all the resources:
 
