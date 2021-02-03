@@ -22,8 +22,9 @@ Operators make it easy to manage complex stateful applications on top of Kuberne
 
 To setup your environment for developing Golang-based operators, you'll need the 
 following prerequisites installed on your machine. Note that the homebrew 
-version is the easiest, but is only available for macOS.
+version is the easiest, but is only available for macOS. 
 
+* [Homebrew](https://brew.sh/)
 * [Go](https://golang.org/dl/) 1.10+
 * Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a cluster for free.
 * User logged with admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin.
@@ -121,6 +122,11 @@ Kubernetes Version: v1.19.2
 ```
 
 ## 3. Make sure OpenShift Lifecycle Manager (OLM) is up to date
+
+As a note, if you still need to provision an OpenShift cluster, it takes some time
+so it is recommended to do that **now** if you don't have one already. Skip down to
+[step 9](https://github.ibm.com/TT-ISV-org/operator#9-deploy-the-operator) to see 
+how to create an OpenShift cluster on IBM Cloud.
 
 First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
 up to date and running properly before we develop our operator. To do this, run the `operator-sdk olm status` command:
@@ -232,7 +238,10 @@ Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the a
 
 ## 7. Implement controller logic
 
-Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`.
+Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`. First, go ahead and copy the code from the 
+[artifacts/memcached_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go) file, and replace your current controller code. The next
+few paragraphs will explain the controller code in detail. This is the heart of the operator.
+If you're already experienced with operators, you can skip down to [build manifests and go files](https://github.ibm.com/TT-ISV-org/operator#build-manifests-and-go-files).
 
 The controller "Reconcile" method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
 
@@ -371,6 +380,15 @@ Once this is complete, your controller should look like the file in [artifacts/m
 
 
 ### Build manifests and go files
+
+Before we compile our code, we need to change a couple of things. 
+
+1. Make sure to change 
+your Dockerfile so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/Dockerfile).
+
+2. Make sure to change 
+your `manager.yaml` file in your `config/manager` directory so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/manager.yaml).
+
 Now that we have our controller code and memcached types implemented, run the following command to update the generated code for that resource type:
 
 ```
@@ -401,6 +419,9 @@ To compile the code run the following command in the terminal from your project 
 ```bash
 make install
 ```
+
+Note: In the following steps we push our controller image to a image repository. Use
+`Docker login` to login. You will need to be logged in first to push your image to a repo.
 
 To build the docker image run the following command. Note that you can also 
 use the regular `docker build -t` command to build as well. 
@@ -453,12 +474,14 @@ Make sure that the controller manager manifest has the right namespace and docke
 
 ```bash
 export IMG=docker.io/<username>/memcached-operator:<version>
+export NAMESPACE=<oc-project-name>
+
 cd config/manager
 kustomize edit set image controller=${IMG}
+kustomize edit set namespace "${NAMESPACE}"
 cd ../../
 
 cd config/default
-export NAMESPACE=<oc-project-name>
 kustomize edit set namespace "${NAMESPACE}"
 cd ../../
 ```
