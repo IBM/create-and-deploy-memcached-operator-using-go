@@ -17,111 +17,22 @@ Operators make it easy to manage complex stateful applications on top of Kuberne
 7. Operator docker image is deployed to OpenShift cluster creating manager and application replicas.
 8. Reconcile loop watches and heals the resources as needed.
 
-## Pre-requisites
-### Prerequisites for installing operator-sdk for macOS
+## Enviornment Setup
 
-To setup your environment for developing Golang-based operators, you'll need the 
-following prerequisites installed on your machine. Note that the homebrew 
-version is the easiest, but is only available for macOS. 
-
-* [Homebrew](https://brew.sh/)
-* [Go](https://golang.org/dl/) 1.10+
-* Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a cluster for free.
-* User logged with admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin.
-* Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
-* [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/homebrew/)
-* Either OpenShift CLI [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html) or [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-
-### Prerequisites for installing for Linux and Windows
-* [dep](https://golang.github.io/dep/docs/installation.html) v0.5.0+
-* [Git](https://git-scm.com/downloads)
-* [Go](https://golang.org/dl/) v1.10+
-* [Docker](https://docs.docker.com/get-docker/) v17.03+
-* OpenShift CLI (oc) v4.1+ installed
-* Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a cluster for free.
-* Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
-* [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
+If you already haven't setup your environment, setup you environment from these [instructions](installation.md)
 
 ## Steps
+1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#1-make-sure-openshift-lifecycle-manager-olm-is-up-to-date)
+1. [Create a new project using Operator SDK](#2-create-a-new-project-using-operator-sdk)
+1. [Create CRD and Custom Controller](#3-Create-CRD-and-Custom-Controller)
+1. [Update CRD and generate CRD manifest](#4-Update-CRD-and-generate-CRD-manifest)
+1. [Implement Controller Logic](#5-implement-controller-logic)
+1. [Compile, build and push](#6-compile-build-and-push)
+1. [Deploy the operator](#7-deploy-the-operator)
+1. [Test and verify](#8-test-and-verify)
 
-1. [Install Operator SDK](#1-install-operator-sdk)
-1. [Install oc or kubectl cli](#2-install-oc-or-kubectl-cli)
-1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#3-make-sure-openshift-lifecycle-manager-olm-is-up-to-date)
-1. [Create a new project using Operator SDK](#4-create-a-new-project-using-operator-sdk)
-1. [Create CRD and Custom Controller](#5-Create-CRD-and-Custom-Controller)
-1. [Update CRD and generate CRD manifest](#6-Update-CRD-and-generate-CRD-manifest)
-1. [Implement Controller Logic](#7-implement-controller-logic)
-1. [Compile, build and push](#8-compile-build-and-push)
-1. [Deploy the operator](#9-deploy-the-operator)
-1. [Test and verify](#10-test-and-verify)
-## 1. Install Operator SDK
-### Install operator-sdk (version 1.0+) and Kustomize for macOS
 
-* Use the homebrew command `brew install operator-sdk`
-to install operator-sdk for macOS. Note that this guide 
-is tested for operator-sdk version 1.0+, since the commands have changed with the 1.0 release. 
- If you don't have homebrew 
-installed, install it from [here](https://docs.brew.sh/Installation).
-
-* Use the homebrew command `brew install kustomize` to install Kustomize.
-
-### Install operator-sdk (version 1.0+) and Kustomize for Linux or Windows
-
-* For Linux or Windows, install the operator-sdk (version 1.0+) from the GitHub release [here](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that
-commands have changed with the 1.0 release.
-
-* You can use the following script to install Kustomize for Windows or Linux but note that it doesn't work for ARM architecture. For ARM architecture download 
-Kustomize from the [releases page](https://github.com/kubernetes-sigs/kustomize/releases).
-
-```
-curl -s "https://raw.githubusercontent.com/\
-kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-```
-
-### Test your environment for operator-sdk
-
-Run the following command in the terminal of your choice:
-
-```
-operator-sdk version
-```
-
-You should see output like this:
-
-```
-operator-sdk version: "v1.3.0", commit: "1abf57985b43bf6a59dcd18147b3c574fa57d3f6", kubernetes version: "v1.19.4", go version: "go1.15.5", GOOS: "darwin", GOARCH: "amd64"
-```
-
-Now, let's ensure kustomize is installed.
-
-```
-kustomize version
-```
-
-You should see output like this:
-
-```
-{Version:kustomize/v3.9.1 GitCommit:7439f1809e5ccd4677ed52be7f98f2ad75122a93 BuildDate:2020-12-30T01:08:17+00:00 GoOs:darwin GoArch:amd64}
-```
-
-## 2. Install oc or kubectl cli
-If you plan to use an OpenShift cluster, then you can install the OpenShift CLI via
-your web console. Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-
-First, go to your OpenShift console and click on the question mark in the 
-top-right corner. From there, click on `Command Line Tools` and then choose
-the `oc` CLI binary for your operating system. Once you've downloaded it,
-ensure that the command is in your `PATH`.
-
-Test your cli by issuing the following command to see the version of your cli:
-
-```
-$ oc version
-Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
-Kubernetes Version: v1.19.2
-```
-
-## 3. Make sure OpenShift Lifecycle Manager (OLM) is up to date
+## 1. Make sure OpenShift Lifecycle Manager (OLM) is up to date
 
 As a note, if you still need to provision an OpenShift cluster, it takes some time
 so it is recommended to do that **now** if you don't have one already. Skip down to
@@ -165,7 +76,7 @@ your olm to the latest version. To do this, check out the troubleshooting sectio
 
 Now you should be ready to start developing your first operator.
 
-## 4. Create a new project using Operator SDK
+## 2. Create a new project using Operator SDK
 
 First create a directory for where you will hold 
 your project files. 
@@ -186,7 +97,7 @@ This will create the basic scaffold for your operator, such as the `bin`, `confi
 learn more about the details of the architecture of the operator
 refer to our article here.
 
-## 5. Create CRD and Custom Controller
+## 3. Create CRD and Custom Controller
 
 Next, we will use the `operator-sdk create api` command to create a blank <b>custom resource definition,
 or CRD</b> which will be in your `api` directory and a blank custom controller file, which will be in your 
@@ -213,7 +124,7 @@ Now, once you deploy this operator, you can use the `kubectl api-resources` to s
 `cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
 later after we've deployed the operator.
 
-## 6. Update CRD and generate CRD manifest
+## 4. Update CRD and generate CRD manifest
 
 One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
 will do that in the `api/v1alpha1/memcached_types.go` file.
@@ -236,7 +147,7 @@ system to be in the desired state.
 
 Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go).
 
-## 7. Implement controller logic
+## 5. Implement controller logic
 
 Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`. First, go ahead and copy the code from the 
 [artifacts/memcached_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go) file, and replace your current controller code. The next
@@ -409,7 +320,7 @@ of the object we specified in our `_types.go` file.
 Next, we will implement the custom controller logic which will tell the operator what to do in the case
 that the desired state of the Memcached resource is not the same as the observed.
 
-## 8. Compile, build and push
+## 6. Compile, build and push
 
 At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
 
@@ -442,7 +353,7 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
  ```
 
-## 9. Deploy the operator
+## 7. Deploy the operator
 
 #### Deploy the operator to Openshift cluster
 
@@ -563,7 +474,7 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 ![kubectl get all](images/os-logs.png)
 
-## 10. Test and verify
+## 8. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
 
@@ -581,29 +492,6 @@ The `Makefile` part of generated project has a target called `undeploy` which de
 
 ```bash
 make undeploy
-```
-
-## Troubleshooting
-
-If you see errors when you run your `operator-sdk olm status` command, that may mean that you need to 
-upgrade your olm. To do this, you should switch to the 
-project in your OpenShift cluster where the olm is running.
-
-```
-oc project openshift-operator-lifecycle-manager
-```
-
-Then, you will need to update to the latest release of the olm, 
-by first creating the crds
-
-```
-oc apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.16.1/crds.yaml
-```
-
-And then creating the olm itself:
-
-```
-oc apply -f https://github.com/operator-framework/operator-lifecycle-manager/releases/download/0.16.1/olm.yaml
 ```
 
 # License
