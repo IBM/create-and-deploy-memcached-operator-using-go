@@ -296,6 +296,11 @@ if *found.Spec.Replicas != size {
 
 Once this is complete, your controller should look like the file in [artifacts/memcached_controller.go](artifacts/memcached_controller.go)
 
+One other thing to note is that generally, there are 3 different types of errors in the reconcile function:
+
+1. `return ctrl.Result{}, client.IgnoreNotFound(err)` when the resource cannot be found.
+2. `return ctrl.Result{}, err` when failing to apply the resources.
+3. `return ctrl.Result{}, nil` when everything goes fine. 
 
 ### Build manifests and go files
 
