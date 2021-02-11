@@ -2,7 +2,7 @@
 
 In this tutorial we will be creating a simple Go-based operator that walks you through an example of building a simple memcached-operator using operator-sdk.
 
-Operators make it easy to manage complex stateful applications on top of Kubernetes or Openshift.
+Operators make it easy to manage complex stateful applications on top of Kubernetes or OpenShift.
 
 ## Flow
 
@@ -93,9 +93,7 @@ Next, run the `operator-sdk init` command to create a new memcached-operator pro
 $ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator
 ```
 
-This will create the basic scaffold for your operator, such as the `bin`, `config` and `hack` directories, and will create the `main.go` file which initializes the manager. To 
-learn more about the details of the architecture of the operator
-refer to our article here.
+This will create the basic scaffold for your operator, such as the `bin`, `config` and `hack` directories, and will create the `main.go` file which initializes the manager.
 
 ## 3. Create CRD and Custom Controller
 
@@ -317,24 +315,22 @@ $ make manifests
 This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation 
 of the object we specified in our `_types.go` file. 
 
-Next, we will implement the custom controller logic which will tell the operator what to do in the case
-that the desired state of the Memcached resource is not the same as the observed.
-
 ## 6. Compile, build and push
 
-At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
+At this point, we are ready to compile, build the image of our operator, and push the image to an 
+image repository. You can use the image registry of your choice, but here we will use Docker Hub. 
 
-The generated code when you initialize creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
+The generated code from the `operator-sdk` creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
 
 To compile the code run the following command in the terminal from your project root:
 ```bash
 make install
 ```
 
-Note: In the following steps we push our controller image to a image repository. Use
-`Docker login` to login. You will need to be logged in first to push your image to a repo.
+Note: You will need to have an account to a image repository like Docker Hub to be able to push your 
+operator image. Use `Docker login` to login.
 
-To build the docker image run the following command. Note that you can also 
+To build the Docker image run the following command. Note that you can also 
 use the regular `docker build -t` command to build as well. 
 
 `<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
@@ -355,13 +351,13 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
 ## 7. Deploy the operator
 
-#### Deploy the operator to Openshift cluster
+#### Deploy the operator to OpenShift cluster
 
-First provision an openshift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on Ibm Cloud` and get into 
+First provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` and get into 
 
 ![OpenShift](images/openshift-1.png)
 
-Once you provisioned the cluster, select the cluster and go to `openshift web console` by clicking the button from top right corner of the page.
+Once you provisioned the cluster, select the cluster and go to `OpenShift web console` by clicking the button from top right corner of the page.
 
 ![OpenShift](images/openshift-2.png)
 
@@ -474,6 +470,13 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 ![kubectl get all](images/os-logs.png)
 
+You can also now run `oc api-resources` to view the memcache resource we have created:
+```bash
+oc api-resources
+NAME                APIGROUP                  NAMESPACED   KIND
+memcacheds         cache.example.com          true         Memcached
+```
+
 ## 8. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
@@ -485,6 +488,9 @@ oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
 You can also update the spec.size from `OpenShift web console` by going to `Deployments` and selecting `memcached-sample` and increase/decrease using the up or down arrow:
 
 ![kubectl get all](images/inc-dec-size.png)
+
+**Congratulations!** You've successfully deployed an operator using the `operator-sdk`!
+
 
 ## Cleanup
 
@@ -499,4 +505,3 @@ make undeploy
 This code pattern is licensed under the Apache Software License, Version 2.  Separate third party code objects invoked within this code pattern are licensed by their respective providers pursuant to their own separate licenses. Contributions are subject to the [Developer Certificate of Origin, Version 1.1 (DCO)](https://developercertificate.org/) and the [Apache Software License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
 
 [Apache Software License (ASL) FAQ](https://www.apache.org/foundation/license-faq.html#WhatDoesItMEAN)
-
