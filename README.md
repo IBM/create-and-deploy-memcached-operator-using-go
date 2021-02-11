@@ -2,7 +2,7 @@
 
 In this tutorial we will be creating a simple Go-based operator that walks you through an example of building a simple memcached-operator using operator-sdk.
 
-Operators make it easy to manage complex stateful applications on top of Kubernetes or Openshift.
+Operators make it easy to manage complex stateful applications on top of Kubernetes or OpenShift.
 
 ## Flow
 
@@ -17,87 +17,46 @@ Operators make it easy to manage complex stateful applications on top of Kuberne
 7. Operator docker image is deployed to OpenShift cluster creating manager and application replicas.
 8. Reconcile loop watches and heals the resources as needed.
 
-## Enviornment Setup
+## Environment Setup
 
 If you already haven't setup your environment, setup you environment from these [instructions](installation.md)
 
 ## Steps
-1. [Make sure OpenShift Lifecycle Manager (OLM) is up to date](#1-make-sure-openshift-lifecycle-manager-olm-is-up-to-date)
-1. [Create a new project using Operator SDK](#2-create-a-new-project-using-operator-sdk)
-1. [Create CRD and Custom Controller](#3-Create-CRD-and-Custom-Controller)
-1. [Update CRD and generate CRD manifest](#4-Update-CRD-and-generate-CRD-manifest)
-1. [Implement Controller Logic](#5-implement-controller-logic)
-1. [Compile, build and push](#6-compile-build-and-push)
-1. [Deploy the operator](#7-deploy-the-operator)
-1. [Test and verify](#8-test-and-verify)
+1. [Create a new project using Operator SDK](#1-create-a-new-project-using-operator-sdk)
+1. [Create CRD and Custom Controller](#2-Create-CRD-and-Custom-Controller)
+1. [Update CRD and generate CRD manifest](#3-Update-CRD-and-generate-CRD-manifest)
+1. [Implement Controller Logic](#4-implement-controller-logic)
+1. [Compile, build and push](#5-compile-build-and-push)
+1. [Deploy the operator](#6-deploy-the-operator)
+1. [Test and verify](#7-test-and-verify)
 
+## 1. Create a new project using Operator SDK
 
-## 1. Make sure OpenShift Lifecycle Manager (OLM) is up to date
+First check your Go version. This tutorial is tested with the following Go version:
 
-As a note, if you still need to provision an OpenShift cluster, it takes some time
-so it is recommended to do that **now** if you don't have one already. Skip down to
-[step 9](https://github.ibm.com/TT-ISV-org/operator#9-deploy-the-operator) to see 
-how to create an OpenShift cluster on IBM Cloud.
-
-First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
-up to date and running properly before we develop our operator. To do this, run the `operator-sdk olm status` command:
-
+```bash
+go version
+go version go1.15.6 darwin/amd64
 ```
-operator-sdk olm status
+Next, create a directory for where you will hold your project files. 
 
-INFO[0003] Fetching CRDs for version "0.16.1"           
-INFO[0003] Using locally stored resource manifests      
-INFO[0005] Successfully got OLM status for version "0.16.1" 
-
-NAME                                            NAMESPACE    KIND                        STATUS
-operators.operators.coreos.com                               CustomResourceDefinition    Installed
-operatorgroups.operators.coreos.com                          CustomResourceDefinition    Installed
-installplans.operators.coreos.com                            CustomResourceDefinition    Installed
-clusterserviceversions.operators.coreos.com                  CustomResourceDefinition    Installed
-olm-operator                                    olm          Deployment                  Installed
-subscriptions.operators.coreos.com                           CustomResourceDefinition    Installed
-olm-operator-binding-olm                                     ClusterRoleBinding          Installed
-operatorhubio-catalog                           olm          CatalogSource               Installed
-olm-operators                                   olm          OperatorGroup               Installed
-aggregate-olm-view                                           ClusterRole                 Installed
-catalog-operator                                olm          Deployment                  Installed
-aggregate-olm-edit                                           ClusterRole                 Installed
-olm                                                          Namespace                   Installed
-global-operators                                operators    OperatorGroup               Installed
-operators                                                    Namespace                   Installed
-packageserver                                   olm          ClusterServiceVersion       Installed
-olm-operator-serviceaccount                     olm          ServiceAccount              Installed
-catalogsources.operators.coreos.com                          CustomResourceDefinition    Installed
-system:controller:operator-lifecycle-manager                 ClusterRole                 Installed
+```bash
+mkdir $HOME/projects/memcached-operator
+cd $HOME/projects/memcached-operator
 ```
-
-If you see something like the above, then your olm is up to date. Otherwise, you may need to upgrade 
-your olm to the latest version. To do this, check out the troubleshooting section below.
-
-Now you should be ready to start developing your first operator.
-
-## 2. Create a new project using Operator SDK
-
-First create a directory for where you will hold 
-your project files. 
-
-`mkdir $HOME/projects/memcached-operator`
-`cd $HOME/projects/memcached-operator`
-
+<!-- 
 Since we are not in our $GOPATH, we can activate module support by running the 
-`export GO111MODULE=on` command before using the operator-sdk.
+`export GO111MODULE=on` command before using the operator-sdk. -->
 
 Next, run the `operator-sdk init` command to create a new memcached-operator project:
 
-```
-$ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator
+```bash
+$ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator --owner="Memcache Operator authors"
 ```
 
-This will create the basic scaffold for your operator, such as the `bin`, `config` and `hack` directories, and will create the `main.go` file which initializes the manager. To 
-learn more about the details of the architecture of the operator
-refer to our article here.
+This will create the basic scaffold for your operator, such as the `bin`, `config` and `hack` directories, and will create the `main.go` file which initializes the manager.
 
-## 3. Create CRD and Custom Controller
+## 2. Create CRD and Custom Controller
 
 Next, we will use the `operator-sdk create api` command to create a blank <b>custom resource definition,
 or CRD</b> which will be in your `api` directory and a blank custom controller file, which will be in your 
@@ -110,11 +69,7 @@ Make sure to type in `y` for both resource and controllers
 when prompted.
 
 ```
-$ operator-sdk create api --group=cache --version=v1alpha1 --kind=Memcached
-Create Resource [y/n]
-y
-Create Controller [y/n]
-y
+$ operator-sdk create api --group=cache --version=v1alpha1 --kind=Memcached --controller --resource
 Writing scaffold for you to edit...
 api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
@@ -124,7 +79,7 @@ Now, once you deploy this operator, you can use the `kubectl api-resources` to s
 `cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
 later after we've deployed the operator.
 
-## 4. Update CRD and generate CRD manifest
+## 3. Update CRD and generate CRD manifest
 
 One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
 will do that in the `api/v1alpha1/memcached_types.go` file.
@@ -147,7 +102,59 @@ system to be in the desired state.
 
 Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go).
 
-## 5. Implement controller logic
+```go
+package v1alpha1
+
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// MemcachedSpec defines the desired state of Memcached
+type MemcachedSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	// Foo is an example field of Memcached. Edit Memcached_types.go to remove/update
+	Size int32 `json:"size"`
+}
+
+// MemcachedStatus defines the observed state of Memcached
+type MemcachedStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
+}
+
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
+// Memcached is the Schema for the memcacheds API
+type Memcached struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MemcachedSpec   `json:"spec,omitempty"`
+	Status MemcachedStatus `json:"status,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+
+// MemcachedList contains a list of Memcached
+type MemcachedList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Memcached `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&Memcached{}, &MemcachedList{})
+}
+```
+
+## 4. Implement controller logic
 
 Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`. First, go ahead and copy the code from the 
 [artifacts/memcached_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go) file, and replace your current controller code. The next
@@ -289,13 +296,18 @@ if *found.Spec.Replicas != size {
 
 Once this is complete, your controller should look like the file in [artifacts/memcached_controller.go](artifacts/memcached_controller.go)
 
+One other thing to note is that generally, there are 3 different types of errors in the reconcile function:
+
+1. `return ctrl.Result{}, client.IgnoreNotFound(err)` when the resource cannot be found.
+2. `return ctrl.Result{}, err` when failing to apply the resources.
+3. `return ctrl.Result{}, nil` when everything goes fine. 
 
 ### Build manifests and go files
 
 Before we compile our code, we need to change a couple of things. 
 
 1. Make sure to change 
-your Dockerfile so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/Dockerfile).
+your Dockerfile so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/Dockerfile). It should look like this:
 
 2. Make sure to change 
 your `manager.yaml` file in your `config/manager` directory so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/manager.yaml).
@@ -317,24 +329,22 @@ $ make manifests
 This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation 
 of the object we specified in our `_types.go` file. 
 
-Next, we will implement the custom controller logic which will tell the operator what to do in the case
-that the desired state of the Memcached resource is not the same as the observed.
+## 5. Compile, build and push
 
-## 6. Compile, build and push
+At this point, we are ready to compile, build the image of our operator, and push the image to an 
+image repository. You can use the image registry of your choice, but here we will use Docker Hub. 
 
-At this point, we are ready to compile and build the code and push the image to your image registry which in this case will be using Docker Hub. You can use your choice of mage registry. 
-
-The generated code when you initialize creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
+The generated code from the `operator-sdk` creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
 
 To compile the code run the following command in the terminal from your project root:
 ```bash
 make install
 ```
 
-Note: In the following steps we push our controller image to a image repository. Use
-`Docker login` to login. You will need to be logged in first to push your image to a repo.
+Note: You will need to have an account to a image repository like Docker Hub to be able to push your 
+operator image. Use `Docker login` to login.
 
-To build the docker image run the following command. Note that you can also 
+To build the Docker image run the following command. Note that you can also 
 use the regular `docker build -t` command to build as well. 
 
 `<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
@@ -353,15 +363,15 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 
  ```
 
-## 7. Deploy the operator
+## 6. Deploy the operator
 
-#### Deploy the operator to Openshift cluster
+#### Deploy the operator to OpenShift cluster
 
-First provision an openshift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on Ibm Cloud` and get into 
+First provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` and get into 
 
 ![OpenShift](images/openshift-1.png)
 
-Once you provisioned the cluster, select the cluster and go to `openshift web console` by clicking the button from top right corner of the page.
+Once you provisioned the cluster, select the cluster and go to `OpenShift web console` by clicking the button from top right corner of the page.
 
 ![OpenShift](images/openshift-2.png)
 
@@ -474,7 +484,14 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 ![kubectl get all](images/os-logs.png)
 
-## 8. Test and verify
+You can also now run `oc api-resources` to view the memcache resource we have created:
+```bash
+oc api-resources
+NAME                APIGROUP                  NAMESPACED   KIND
+memcacheds         cache.example.com          true         Memcached
+```
+
+## 7. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
 
@@ -485,6 +502,9 @@ oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
 You can also update the spec.size from `OpenShift web console` by going to `Deployments` and selecting `memcached-sample` and increase/decrease using the up or down arrow:
 
 ![kubectl get all](images/inc-dec-size.png)
+
+**Congratulations!** You've successfully deployed an operator using the `operator-sdk`!
+
 
 ## Cleanup
 
@@ -499,4 +519,3 @@ make undeploy
 This code pattern is licensed under the Apache Software License, Version 2.  Separate third party code objects invoked within this code pattern are licensed by their respective providers pursuant to their own separate licenses. Contributions are subject to the [Developer Certificate of Origin, Version 1.1 (DCO)](https://developercertificate.org/) and the [Apache Software License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
 
 [Apache Software License (ASL) FAQ](https://www.apache.org/foundation/license-faq.html#WhatDoesItMEAN)
-

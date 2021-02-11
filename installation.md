@@ -97,3 +97,42 @@ $ oc version
 Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
 Kubernetes Version: v1.19.2
 ```
+
+## Make sure OpenShift Lifecycle Manager (OLM) is up to date
+
+As a note, if you still need to provision an OpenShift cluster, it takes some time
+so it is recommended to do that **now** if you don't have one already. Skip down to
+[the deploy step](https://github.ibm.com/TT-ISV-org/operator#7-deploy-the-operator) to see 
+how to create an OpenShift cluster on IBM Cloud.
+
+First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
+up to date and running properly before we develop our operator. To do this, run the `operator-sdk olm status` command:
+
+```
+operator-sdk olm status
+INFO[0003] Fetching CRDs for version "0.16.1"           
+INFO[0003] Using locally stored resource manifests      
+INFO[0005] Successfully got OLM status for version "0.16.1" 
+NAME                                            NAMESPACE    KIND                        STATUS
+operators.operators.coreos.com                               CustomResourceDefinition    Installed
+operatorgroups.operators.coreos.com                          CustomResourceDefinition    Installed
+installplans.operators.coreos.com                            CustomResourceDefinition    Installed
+clusterserviceversions.operators.coreos.com                  CustomResourceDefinition    Installed
+olm-operator                                    olm          Deployment                  Installed
+subscriptions.operators.coreos.com                           CustomResourceDefinition    Installed
+olm-operator-binding-olm                                     ClusterRoleBinding          Installed
+operatorhubio-catalog                           olm          CatalogSource               Installed
+olm-operators                                   olm          OperatorGroup               Installed
+aggregate-olm-view                                           ClusterRole                 Installed
+catalog-operator                                olm          Deployment                  Installed
+aggregate-olm-edit                                           ClusterRole                 Installed
+olm                                                          Namespace                   Installed
+global-operators                                operators    OperatorGroup               Installed
+operators                                                    Namespace                   Installed
+packageserver                                   olm          ClusterServiceVersion       Installed
+olm-operator-serviceaccount                     olm          ServiceAccount              Installed
+catalogsources.operators.coreos.com                          CustomResourceDefinition    Installed
+system:controller:operator-lifecycle-manager                 ClusterRole                 Installed
+```
+
+Note: if you see an error, you should still be able to proceed. Now you are ready to start developing your first operator.
