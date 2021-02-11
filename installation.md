@@ -102,7 +102,7 @@ Kubernetes Version: v1.19.2
 
 As a note, if you still need to provision an OpenShift cluster, it takes some time
 so it is recommended to do that **now** if you don't have one already. Skip down to
-[step 9](https://github.ibm.com/TT-ISV-org/operator#9-deploy-the-operator) to see 
+[the deploy step](https://github.ibm.com/TT-ISV-org/operator#7-deploy-the-operator) to see 
 how to create an OpenShift cluster on IBM Cloud.
 
 First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
