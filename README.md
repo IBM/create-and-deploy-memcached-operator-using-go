@@ -19,7 +19,8 @@ Operators make it easy to manage complex stateful applications on top of Kuberne
 
 ## Environment Setup
 
-If you already haven't setup your environment, setup you environment from these [instructions](installation.md)
+**IMPORTANT**
+If you already haven't setup your environment, setup you environment from these [instructions](installation.md).
 
 ## Steps
 1. [Create a new project using Operator SDK](#1-create-a-new-project-using-operator-sdk)
@@ -35,14 +36,14 @@ If you already haven't setup your environment, setup you environment from these 
 First check your Go version. This tutorial is tested with the following Go version:
 
 ```bash
-go version
-go version go1.15.6 darwin/amd64
+$ go version
+$ go version go1.15.6 darwin/amd64
 ```
 Next, create a directory for where you will hold your project files. 
 
 ```bash
-mkdir $HOME/projects/memcached-operator
-cd $HOME/projects/memcached-operator
+$ mkdir $HOME/projects/memcached-operator
+$ cd $HOME/projects/memcached-operator
 ```
 <!-- 
 Since we are not in our $GOPATH, we can activate module support by running the 
@@ -68,7 +69,7 @@ group and version. The <b>--group, --version, and --kind</b> flags together form
 Make sure to type in `y` for both resource and controllers 
 when prompted.
 
-```
+```bash
 $ operator-sdk create api --group=cache --version=v1alpha1 --kind=Memcached --controller --resource
 Writing scaffold for you to edit...
 api/v1alpha1/memcached_types.go
@@ -172,7 +173,7 @@ In this example, we want our Reconciler to
 
 So, we'll start out by adding logic to our empty Reconciler function. First, we'll reference the instance we'd like to observe, which is the `Memcached` object defined in our `api/v1alpha1/memcached_types.go` file. We'll do this by retrieving the Memcached CRD from the `cachev1alpha1` object, which is listed in our import statements. Note that the trailing endpoint of the url maps to the files in our `/api/v1alpha1/` directory.
 
-```
+```go
 import (
   ...
   cachev1alpha1 "github.com/example/memcached-operator/api/v1alpha1"  
@@ -181,23 +182,23 @@ import (
 
 Here we'll simply use `cachev1alpha1.<Object>{}` to reference any of the defined objects within that `memcached_types.go` file.
 
-```
+```go
 memcached := &cachev1alpha1.Memcached{}
 ```
 
 Next, we'll need to confirm that the `Memcached` resource is defined within our namespace. This can be done using the `Get` command, which expects the Reconciler context, the namespace title, and the Resource as arguments. If the resource doesn't exist, we'll receive an error.
-```
+```go
 err := r.Get(ctx, req.NamespacedName, memcached)
 ```
 
 If the Memcached object does not exist in the namespace yet, the Reconciler will return an error and try again.
-```
+```go
 return ctrl.Result{}, err
 ```
 
 So at this point, our Reconciler function should look like so
 
-```
+```go
 func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
   // reference Memcached object
   memcached := &cachev1alpha1.Memcached{}
@@ -213,7 +214,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 Assuming the resource is defined, we can continue on by observing the state of our Memcached Deployment.
 
 First, we'll want to confirm that a Memcached deployment exists within the namespace. To do so, we'll need to use the [k8s.io/api/apps/v1](https://godoc.org/k8s.io/api/apps/v1#Deployment) package, which is defined in our import statement.
-```
+```go
 import (
 	appsv1 "k8s.io/api/apps/v1"
   ...
@@ -222,7 +223,7 @@ import (
 
 Use the `apps` package to reference a Deployment object, and then use the reconciler `Get` function to check whether the Memcached deployment exists with the provided name within our namespace.
 
-```
+```go
 found := &appsv1.Deployment{}
 err = r.Get(ctx, types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, found)
 ```
@@ -231,7 +232,7 @@ If a deployment is not found, then we can again use `Deployment` definition with
 
 For improved readability, this has been placed in a separate function named `deploymentForMemcached`.
 
-```
+```go
 func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached) *appsv1.Deployment {
 	ls := labelsForMemcached(m.Name)
 	replicas := m.Spec.Size
@@ -262,13 +263,13 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 
 
 So, continuing on, we'll check for an existing `Memcached` deployment
-```
+```go
 found := &appsv1.Deployment{}
 err = r.Get(ctx, types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, found)
 ```
 
 Create a new deployment if it does not exist using the reconciler `Create` method
-```
+```go
 if err != nil && errors.IsNotFound(err) {
   dep := r.deploymentForMemcached(memcached)
   log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
@@ -281,12 +282,12 @@ if err != nil && errors.IsNotFound(err) {
 Finally, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace.
 
 First, request the desired `Size`
-```
+```go
 size := memcached.Spec.Size
 ```
 
 And compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment.
-```
+```go
 if *found.Spec.Replicas != size {  
   found.Spec.Replicas = &size
   err = r.Update(ctx, found)
@@ -309,12 +310,100 @@ Before we compile our code, we need to change a couple of things.
 1. Make sure to change 
 your Dockerfile so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/Dockerfile). It should look like this:
 
+```Dockerfile
+# Build the manager binary
+FROM golang:1.15 as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY main.go main.go
+COPY api/ api/
+COPY controllers/ controllers/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
+
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/manager .
+
+ENTRYPOINT ["/manager"]
+```
+
 2. Make sure to change 
-your `manager.yaml` file in your `config/manager` directory so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/manager.yaml).
+your `manager.yaml` file in your `config/manager` directory so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/manager.yaml). It 
+should look like the following: 
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+  labels:
+    control-plane: controller-manager
+spec:
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      securityContext:
+      containers:
+      - command:
+        - /manager
+        args:
+        - --leader-elect
+        image: controller:latest
+        name: manager
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      terminationGracePeriodSeconds: 10
+```
+
 
 Now that we have our controller code and memcached types implemented, run the following command to update the generated code for that resource type:
 
-```
+```bash
 $ make generate
 ```
 
@@ -322,7 +411,7 @@ The above command will use the controller-gen utility in `bin/controller-gen` to
 
 Once the API is defined with spec/status fields and CRD validation markers, the CRD manifests can be generated and updated with the following command:
 
-```
+```bash
 $ make manifests
 ```
 
@@ -467,14 +556,10 @@ $ kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
 
 #### Verify that resources are Running
 
-From the terminal run `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
+From the terminal run `kubectl get all` or `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
 
 ```bash
-oc get all 
-
-or
-
-kubectl get all
+kubectl get all 
 ```
 
 Output:
@@ -493,7 +578,7 @@ memcacheds         cache.example.com          true         Memcached
 
 ## 7. Test and verify
 
-Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase te application pods from 3 to 5.
+Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase the application pods from 3 to 5.
 
 ```bash
 oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
