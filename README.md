@@ -20,7 +20,7 @@ Operators make it easy to manage complex stateful applications on top of Kuberne
 ## Environment Setup
 
 **IMPORTANT**
-If you already haven't setup your environment, setup your environment from these [instructions](installation.md).
+If you haven't setup your environment for building Kubernetes operators, setup your environment from these [instructions](installation.md).
 
 ## Steps
 1. [Create a new project using Operator SDK](#1-create-a-new-project-using-operator-sdk)
