@@ -64,7 +64,7 @@ or CRD</b> which will be in your `api` directory and a blank custom controller f
 `controllers` directory.
 
 We will use the --group, --version, and --kind flags to pass in the resource 
-group and version. The <b>--group, --version, and --kind</b> flags together form the fully qualified name of a k8s resource type. This name must be unique across a cluster.
+group and version. The <b>--group, --version, and --kind</b> flags together form the fully qualified name of a Kubernetes resource type. This name must be unique across a cluster.
 
 Make sure to type in `y` for both resource and controllers 
 when prompted.
