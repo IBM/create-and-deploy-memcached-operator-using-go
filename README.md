@@ -421,7 +421,36 @@ of the object we specified in our `_types.go` file.
 ## 5. Compile, build and push
 
 At this point, we are ready to compile, build the image of our operator, and push the image to an 
-image repository. You can use the image registry of your choice, but here we will use Docker Hub. 
+image repository. You can use the image registry of your choice, but here we will use Docker Hub. If we 
+plan on deploying to an OpenShift cluster, we need to login to our cluster now.
+
+### Prepare your OpenShift Cluster
+
+(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` and get into 
+
+![OpenShift](images/openshift-1.png)
+
+Once you provisioned the cluster, select the cluster and go to `OpenShift web console` by clicking the button from top right corner of the page.
+
+![OpenShift](images/openshift-2.png)
+
+From the OpenShift web console, copy the login command from the account drop down menu.
+
+![OpenShift](images/openshift-3.png)
+
+and from your terminal run the command to login to your cluster.
+
+If you haven't created a project, create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
+
+Note: you can also use the `oc new-project <new-project-name>` command to create a new project.
+The below command simply switches you to an existing project.
+
+```bash
+oc project <project name>
+
+```
+
+### Create Operator Image
 
 The generated code from the `operator-sdk` creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
 
@@ -430,7 +459,7 @@ To compile the code run the following command in the terminal from your project 
 make install
 ```
 
-Note: You will need to have an account to a image repository like Docker Hub to be able to push your 
+**Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
 operator image. Use `Docker login` to login.
 
 To build the Docker image run the following command. Note that you can also 
@@ -455,30 +484,6 @@ make docker-push IMG=docker.io/<username>/memcached-operator:<version>
 ## 6. Deploy the operator
 
 #### Deploy the operator to OpenShift cluster
-
-First provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` and get into 
-
-![OpenShift](images/openshift-1.png)
-
-Once you provisioned the cluster, select the cluster and go to `OpenShift web console` by clicking the button from top right corner of the page.
-
-![OpenShift](images/openshift-2.png)
-
-From the OpenShift web console, copy the login command from the account drop down menu.
-
-![OpenShift](images/openshift-3.png)
-
-and from your terminal run the command to login to your cluster.
-
-If you haven't created a project, create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
-
-Note: you can also use the `oc new-project <new-project-name>` command to create a new project.
-The below command simply switches you to an existing project.
-
-```bash
-oc project <project name>
-
-```
 
 Make sure that the controller manager manifest has the right namespace and docker image. Apply the same to the default manifest as well by running following command:
 

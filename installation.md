@@ -12,7 +12,9 @@ version is the easiest, but is only available for macOS.
 * User logged with admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/homebrew/)
-* Either OpenShift CLI [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html) or [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+* [Docker](https://docs.docker.com/get-docker/) v17.03+
+* OpenShift CLI (**If you plan to deploy to OpenShift Cluster**) [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html)
 
 ### Prerequisites for installing for Linux and Windows
 * [dep](https://golang.github.io/dep/docs/installation.html) v0.5.0+
@@ -23,6 +25,7 @@ version is the easiest, but is only available for macOS.
 * Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a cluster for free.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
+* OpenShift CLI (**If you plan to deploy to OpenShift Cluster**) [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html)
 
 
 ## Steps
