@@ -4,6 +4,18 @@ In this tutorial we will be creating a simple Go-based operator that walks you t
 
 Operators make it easy to manage complex stateful applications on top of Kubernetes or OpenShift.
 
+## Expectations (What you have)
+* You have some experience developing operators.
+* You've finished the `SIMPLE_OPERATOR.md` tutorial
+* You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types.
+* You've successfully deployed and developed a simple operator.
+
+## Expectations (What you want)
+* You want deep technical knowledge of the code which enables operators to run.
+* You want to understand how the reconcile loop works, and how you can use it to manage Kubernetes resources
+* You want to learn more about the basic Get, Update, and Create functions used to save resources to your Kubernetes cluster.
+* You want to learn more about Kubebuilder markers and how to use them to set role based access control.
+
 **IMPORTANT**
 This tutorial is inspired from the operator-sdk tutorial - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/. **All credit goes to the operator-sdk team** for 
 a great tutorial.
