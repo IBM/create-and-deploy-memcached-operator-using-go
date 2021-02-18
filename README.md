@@ -9,7 +9,11 @@ This tutorial is inspired from the operator-sdk tutorial - https://sdk.operatorf
 a great tutorial.
 
 Note that this tutorial goes into much more depth in terms of the controller code
-and the logic needed to understand a Kubernetes Operator.
+and the logic needed to understand a Kubernetes Operator. 
+
+🚧 If you want a simple, fast, and quick
+way to deploy your first operator, without all of the deep technical explanations of what is happening
+behind the scenes, see the  `SIMPLE_OPERATOR.md` file. 🚧
 
 ## Flow
 
@@ -96,8 +100,34 @@ i.e. the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
 have their own fields to describe the observed or current state and the 
 desired state respectively.
 
-In our `MemcachedSpec` struct, we are using an int to define the size of the deployment.
- When we create a custom resource later, we will  need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
+
+First, add a `Size int32` field to your `MemcachedSpec` struct, as shown below:
+
+```go
+// MemcachedSpec defines the desired state of Memcached
+type MemcachedSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	// Foo is an example field of Memcached. Edit Memcached_types.go to remove/update
+	Size int32 `json:"size"`
+}
+```
+
+When we create a custom resource later, we will need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
+
+
+Next, add a `Nodes []string` field to your `MemcachedStatus` struct, as shown below:
+
+```go
+// MemcachedStatus defines the observed state of Memcached
+type MemcachedStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
+}
+```
+
 
 The `MemcachedStatus` struct will use a string array to list the name of the Memcached pods in the current state.
 
