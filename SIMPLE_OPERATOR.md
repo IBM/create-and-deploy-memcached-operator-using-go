@@ -4,11 +4,13 @@ In this tutorial, we will provide all of the information needed to get quickly u
 your first operator to OpenShift. **Note** that this same general idea can be applied to MiniKube, or other Kubernetes 
 clusters, but the commands may be just a bit different.
 
-## Expectations
-* You are learning and want to develop a Golang based operator to manage Kubernetes resources
-* You do not have much experience developing operators
-* You have some very very basic, or no knowledge about Kubernetes Operators
-* You want to hands-on experience developing and deploying your first operator to OpenShift
+## Expectations (What you have)
+* You have little to no experience developing operators
+* You have little to no knowledge on Kubernetes Operators concepts
+
+## Expectations (What you want)
+* You want hands-on experience developing and deploying your first operator to OpenShift
+* You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
 
 This tutorial does NOT cover all the Kubernetes concepts needed to understand operators. Instead, it offers
 the commands and basic knowledge needed to deploy your first operator. To learn more about the concepts 
