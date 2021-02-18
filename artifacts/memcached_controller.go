@@ -38,10 +38,19 @@ type MemcachedReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
+
+// generate rbac to get, update and patch the memcached status the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/status,verbs=get;update;patch
+
+// generate rbac to update the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/finalizers,verbs=update
+
+// generate rbac to get, list, watch, create, update, patch, and delete deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+
+// generate rbac to get,list, and watch pods
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to

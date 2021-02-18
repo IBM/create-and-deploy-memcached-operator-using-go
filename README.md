@@ -345,16 +345,13 @@ return ctrl.Result{Requeue: true}, nil
 
 Next, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace.
 
-First, request the desired `Size`
-```go
-size := memcached.Spec.Size
-```
+
 
 ### Use Update(ctx context.Context, obj Object) to update the replicas in the Spec
-
-Next, compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment.
+First, request the desired `Size` and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment.
 
 ```go
+size := memcached.Spec.Size
 if *found.Spec.Replicas != size {  
   found.Spec.Replicas = &size
   err = r.Update(ctx, found)
@@ -425,17 +422,23 @@ markers which you can see at the top of the file:
 ```go
 // generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
+
 // generate rbac to get, update and patch the memcached status the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/status,verbs=get;update;patch
+
 // generate rbac to update the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/finalizers,verbs=update
-//generate rbac to get, list, watch, create, update, patch, and delete deployments
+
+// generate rbac to get, list, watch, create, update, patch, and delete deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+
 // generate rbac to get,list, and watch pods
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 ```
 
-This one, in specific, generates and updates the rbac yaml files in our `config/rbac` directory. Once we deploy these 
+**Kubebuilder markers are extrmely imporant and tricky since they are written in comments.**
+
+For example, the marker belows generates and updates the rbac yaml files in our `config/rbac` directory. Once we deploy these 
 updated files, our operator will have the permission to get, list, watch, create, update, path, and delete the `memcacheds` resources, as shown below: 
 
 ```go
@@ -490,10 +493,19 @@ type MemcachedReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
+
+// generate rbac to get, update and patch the memcached status the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/status,verbs=get;update;patch
+
+// generate rbac to update the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/finalizers,verbs=update
+
+// generate rbac to get, list, watch, create, update, patch, and delete deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+
+// generate rbac to get,list, and watch pods
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
