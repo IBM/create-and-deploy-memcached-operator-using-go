@@ -194,11 +194,11 @@ memcached := &cachev1alpha1.Memcached{}
 ```
 
 
-### Understanding the r.Get(ctx context.Context, key types.NamespacedName, obj client.Object) function
+### Understanding the Get(ctx context.Context, key types.NamespacedName, obj client.Object) function
 
 Next, we'll need to confirm that the `Memcached` resource is defined within our namespace.
 
-This can be done using the `Get` function, which retrieves an object from a Kubernetes cluster based on the arguments passed in. 
+This can be done using the [`Get` function](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.Get), which retrieves an object from a Kubernetes cluster based on the arguments passed in. 
 
 **Important:** The `Get` function expects the Reconciler context, the object key (which is just the namespace, and the name of the object), and the object itself as arguments. The "object itself" is what we will manage using the operator. The object itself has to implement 
 the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) which means that it is serializable (runtime.Object) and identifiable (metav1.Object). Essentially, this object should be able to be written via YAML and then be created 
@@ -219,27 +219,33 @@ If the Memcached object does not exist in the namespace yet, the Reconciler will
 return ctrl.Result{}, err
 ```
 
-### Understanding the Reconcile(ctx context.Context, o Request) (Result, error) return types
+### Understanding the Reconcile(ctx context.Context, req ctrl.Request) (Result, error) return types
 
-Now, let's talk a bit about what the reconcile function returns. This can be a bit 
+Now, let's talk a bit about what the [reconcile function](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) returns. This can be a bit 
 tricky since there are various return types. 
 
 The reconcile function returns a (Result, err). Now, more specifically, 
-the Result struct has two fields, the `Requeue` bool, which just tells the reconcile 
+the [Result struct](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Result) has two fields, the `Requeue` bool, which just tells the reconcile 
 function to requeue again. This bool defaults to false. The other field is 
-`RequeueAfter` which expects a `time.Duration`. This means that could return a 
-result and tell the reconciler to requeue after a specific amount of time. 
+`RequeueAfter` which expects a `time.Duration`. This tell the reconciler to requeue after a specific amount of time. 
+
+For example the following code would requeue after 30 seconds.
+```go
+return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
+```
 
 Furthermore, the controller will requeue the request to be processed again if an error
 is non-nil or `Result.Requeue` is true.
+
+Here are three of the most common return types:
 
 1. `return ctrl.Result{Requeue: true}, nil` when you want to return and requeue the request. This is done usually when we have updated the state of the cluster, i.e. created a deployment, or updated the spec. 
 2. `return ctrl.Result{}, err` when there is an error. This will requeue the request.
 3. `return ctrl.Result{}, nil` when everything goes fine and you do not want to requeue. This is
 the return at the bottom of the reconcile loop. This means the observed state of the 
-cluster is the same as the desired state (i.e. the spec is the same as the status).
+cluster is the same as the desired state (i.e. the `MemcachedSpec` is the same as the `MemcachedStatus`).
 
-So at this point, our Reconciler function should look like so
+So at this point, our Reconciler function should look like: 
 
 ```go
 func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -264,7 +270,7 @@ import (
 )
 ```
 
-Use the `apps` package to reference a Deployment object (note that a deployment object is a Kubernetes object which implements the object interface as noted above), and then use the reconciler `Get` function to check whether the Memcached deployment exists with the provided name within our namespace.
+Use the `apps` package to reference a [Deployment object](https://pkg.go.dev/k8s.io/api/apps/v1#Deployment) (note that a deployment object is a Kubernetes object which implements the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) as noted above), and then use the reconciler `Get` function to check whether the Memcached deployment exists with the provided name within our namespace.
 
 ```go
 found := &appsv1.Deployment{}
@@ -273,9 +279,13 @@ err = r.Get(ctx, req.NamespacedName, found)
 
 ### Create a new memcached deployment if one is not found
 
-If a deployment is not found, then we can again use `Deployment` definition within the the `apps` package to create a new one using the reconciler `Create` method:
+If a deployment is not found, then we can use `Deployment` definition within the the `apps` package to create a new one using the reconciler [`Create`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) method:
 
 ```go
+
+found := &appsv1.Deployment{}
+err = r.Get(ctx, req.NamespacedName, found)
+
 if err != nil && errors.IsNotFound(err) {
   dep := r.deploymentForMemcached(memcached)
   log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
@@ -285,7 +295,7 @@ if err != nil && errors.IsNotFound(err) {
   return ctrl.Result{Requeue: true}, nil
 ```
 
-For improved readability, the deployment definition has been placed in a different function called `deploymentForMemcached`. This function includes the pod runtime specs (ports, startup command, image name), and the `Memcached.Spec.Size` value to determine how many replicas should be deployed. This function returns the deployment resource i.e. a Kubernetes object (which by definition implements the Object interface).
+For improved readability, the deployment definition has been placed in a different function called [`deploymentForMemcached`](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go#L134). This function includes the pod runtime specs (ports, startup command, image name), and the `Memcached.Spec.Size` value to determine how many replicas should be deployed. This function returns the deployment resource i.e. a Kubernetes object.
 
 ```go
 func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached) *appsv1.Deployment {
@@ -323,9 +333,9 @@ object in the Kuberenetes cluster. The `r.Create(ctx context.Context, obj client
 function takes in the context (which is passed into our reconcile function) and the Kubernetes object we want to save (which in our case is the deployment we just created) in the `deploymentForMemcached` function:
 
 ```go
-	dep := r.deploymentForMemcached(memcached)
-  log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-  err = r.Create(ctx, dep)
+dep := r.deploymentForMemcached(memcached)
+log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+err = r.Create(ctx, dep)
 ```
 Since we've made an update to our cluster, we will requeue:
 
@@ -365,7 +375,7 @@ return ctrl.Result{Requeue: true}, nil
 ### Use Update(ctx context.Context, obj Object) to update the status
 
 Lastly, we will retrieve the list of pods in a specific namespace by using the 
-r.List function. The r.List function will create a `.Items` field in the 
+[r.List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function. The r.List function will create a `.Items` field in the 
 ObjectList we pass in which will be populated with the objects for a given namespace.
 
 ```go
@@ -388,7 +398,7 @@ podNames := getPodNames(podList.Items)
 ```
 
 Lastly, we will check if the podnames that we've just listed from `r.List` are the same 
-as the `memcached.Status.Nodes`. If they are not the same, we will use `Update(ctx context.Context, obj Object)` function to update the `MemcachedStatus` struct:
+as the `memcached.Status.Nodes`. If they are not the same, we will use [`Update(ctx context.Context, obj Object)` function](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) to update the `MemcachedStatus` struct:
 
 ```go
 // Update status.Nodes if needed
@@ -413,15 +423,27 @@ Now, one more thing to understand before we deploy our operator. The Kubebuilder
 markers which you can see at the top of the file:
 
 ```go
+// generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
+// generate rbac to get, update and patch the memcached status the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/status,verbs=get;update;patch
+// generate rbac to update the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/finalizers,verbs=update
+//generate rbac to get, list, watch, create, update, patch, and delete deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// generate rbac to get,list, and watch pods
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 ```
 
-These specify the permissions that our memcached resource has in terms of getting, listing watching and creating. For example, if our memcached resource didn't have the `List` verb listed in the kubebuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change 
-these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our kubebuilder commands into our `config/rbac` yaml files. To 
+This one, in specific, generates and updates the rbac yaml files in our `config/rbac` directory. Once we deploy these 
+updated files, our operator will have the permission to get, list, watch, create, update, path, and delete the `memcacheds` resources, as shown below: 
+
+```go
+// generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
+// +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
+```
+
+For example, if our memcached resource didn't have the `List` verb listed in the kubebuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our kubebuilder commands into our `config/rbac` yaml files. To 
 learn more about kubebuilder markets, see the docs [here](https://book.kubebuilder.io/reference/markers/rbac.html).
 
 
