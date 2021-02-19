@@ -84,6 +84,33 @@ and changing runtime configuration that is needed for many stateful applications
 Now, let's start exploring the heart of the operator - the controller code. But before we do that we must understand custom 
 resources, and custom resource definitions, since that is what we will use to create our operator.
 
+### Custom Resources(CRs) - Custom API endpoints
+A resource is an endpoint in the Kubernetes API that stores a collection of API objects of a certain kind; for example, the built-in pods resource contains a collection of Pod objects. A 
+custom resource definition is a schema that defines the fileds and types of fields within an
+instance of a Custom Resource. We will use a Custom Resource Definition as one of the initial 
+steps when developing our operator. Here are some more useful details about Custom Resources:
+
+* CRs hold structured data, and the Kubernetes API server provides a mechanism for reading and setting their files as you would those in a native resource, by using kubectl or another API client. 
+* CRs are most useful when they are watched by <b>custom controller code that creates, updates, deletes other cluster objects or even resources outside of the cluster</b>
+* CRs obey k8s conventions, like the resources .spec and .status 
+  * A CR is a named endpoint in the Kubernetes API. Users define a CR by providing a custom-resource definition or CRD.
+  * The CR’s group, version, and kind together form the fully qualified name of a Kuberentes resource type. That name must be unique across a cluster. 
+
+To learn more about Custom Resources, refer to the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
+
+### Custom Controllers (the code that watches your Custom Resource)
+When you combine the custom resource with a custom controller that watches that custom resource, 
+you get what is called a "declaritive API" by Kubernetes. A declaritive API is one in which the 
+user can "declare" or "specify" (keep in mind <b>Spec</b> for later, since that is important) the
+desired state of the cluster, and Kubernetes will try to change whatever resources are needed to 
+be changed in order to reach the "desired state" of the cluster. For example if we "specify" or 
+"declare" that we want 4 replicas of a certain resource, and currently we only have 3, Kuberentes 
+will automatically create that 4th replica for us.
+
+To learn more about custom controller, and if you should use one, read the official Kubernetes 
+documentation on custom controller, [here](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-controllers).
+
+
 
 
 
@@ -94,7 +121,7 @@ resources, and custom resource definitions, since that is what we will use to cr
 
 <!-- Why does Kubernetes need operators? Explain why we need operators -->
 TODO: 
-1. Describe the code in an operator – controller and API (what it does, not how to implement it)
+<!-- 1. Describe the code in an operator – controller and API (what it does, not how to implement it) -->
 2. Introduction to operator capability levels
 3. Kubernetes Operator SDK
 
