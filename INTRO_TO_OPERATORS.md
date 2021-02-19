@@ -21,7 +21,7 @@ documentation.
 Before we start diving into operators, you need to know basic knoweldge about Kubernetes itself, since operators are just 
 automating parts of app delivery and deployment on Kubernetes. 
 
-### What is Kubernetes (a.k.a. K8s)
+## What is Kubernetes (a.k.a. K8s)
 * A Kubernetes cluster is a collection of computers, called nodes 
   * All cluster work runs on one or more of the nodes
 * The basic unit of work, and replication, is called a pod
@@ -32,9 +32,9 @@ automating parts of app delivery and deployment on Kubernetes.
 * One or more nodes are usually dedicated to running applications, while one or more nodes are reserved only for the control plane 
 * Multiple replicas of control plane components can run on multiple pods to provide redundancy
 
-To read more about Kubernetes, go to the official [Kuberenetes documentation](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
+To read more about Kubernetes including the official definition, go to the official [Kuberenetes documentation](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
 
-### How Kubernetes works
+## How Kubernetes works
 * Kubernetes automates the lifecycle of an app, such as a static web server 
 * Without state, any of the app instances are interchangeable 
   * Because the server is not tracking the state, or storing input or data of any kind, when once instance fails, Kubernetes can replace it with another. 
@@ -46,11 +46,15 @@ To read more about Kubernetes, go to the official [Kuberenetes documentation](ht
 Operators are "software extensions to Kubernetes that make use of custom resources to amange applications and their 
 components". You can read more about the operator pattern [here](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
  
-
-
 ## What do operators do?
 The main idea is that when the desired state and the actual state of the cluster diverge, operators have custom logic that will 
-enable the app to be automatically installed, upgraded, recovered, analyzed, and scaled.* Operators wrap any necessary logic for deploying and operating a Kubernetes app using Kubernetes constructs. Here are a few more details you should understand about operators:
+enable the app to be automatically installed, upgraded, recovered, analyzed, and scaled. 
+
+<b> The advantage of operators lies in their 
+automation. Usually, a SRE (Site reliability engineer) would have to take care of recoving an application if it crashes, or upgrading to 
+a later version of an application. But with an operator, all of this can be automated. </b>
+
+Operators wrap any necessary logic for deploying and operating a Kubernetes app using Kubernetes constructs. Here are a few more details you should understand about operators:
 
 * They provision and manage the resources that you would normally need to use manually and since it is provided with enough authorization in the cluster, it can do cluster-management for you, such as rescheduling pods as they fail, or scaling the replica sets as needed. 
 * They can help you in the selection of cloud resources from your cloud environment
@@ -58,4 +62,25 @@ enable the app to be automatically installed, upgraded, recovered, analyzed, and
 * Operators are clients of the Kubernetes API that act as controllers for a custom resource
   * Operators are the app specific combo of a CR and a custom controller that does know all the details about starting, scaling, recovering, etc
   * The operators operand is what we call the app, service, or whatever resource an operator manage 
-* CRDs are one of two essential building blocks for the most basic description of the operator pattern: a custom controller managing CRs 
+* CRDs are one of two essential building blocks for the most basic description of the operator pattern: a custom controller managing CRs
+
+### Stateful vs. Stateless Apps
+* In stateless deployments, the order of deploying pods, their labels, network address or port, storage class, or volume are not important. You keep them if they are healthy and serving, you dispose of them when they become unhealthy, outdated, or just no longer needed and replace them as necessary. <b>You do not need an operator for stateless applications.</b>
+* In stateful apps, some order is necessary. You also need to add storage and persistent volume so that the state is saved, and the cluster admin has to manage that. 
+* <b>The majority of applications are stateful. This is where Kubernetes Operators are helpful.</b>
+
+## Why does Kubernetes need operators?
+
+Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
+and changing runtime configuration that is needed for many stateful applications. Read more about why Kubernetes needs operators in this [blog](https://kublr.com/blog/understanding-kubernetes-operators/).
+
+
+
+<!-- What are operators? -->
+<!-- What do operators do? Explain the advantages promised by using operators -->
+
+<!-- Why does Kubernetes need operators? Explain why we need operators -->
+TODO: 
+1. Describe the code in an operator – controller and API (what it does, not how to implement it)
+2. Introduction to operator capability levels
+3. Kubernetes Operator SDK
