@@ -25,9 +25,9 @@ automating parts of app delivery and deployment on Kubernetes.
 * A Kubernetes cluster is a collection of computers, called nodes 
   * All cluster work runs on one or more of the nodes
 * The basic unit of work, and replication, is called a pod
-  * A pod is one or more linux containers with common resources like networking, storage, and access to shared memory 
-* A k8s cluster can be divided into two planes but sometimes these planes have some overlap. 
-  * <b>The control plane</b>, which is k8s itself and implements the K8s API and cluster orchestration logic
+  * A pod is one or more Linux containers with common resources like networking, storage, and access to shared memory 
+* A Kubernetes cluster can be divided into two planes but sometimes these planes have some overlap. 
+  * <b>The control plane</b>, which is Kubernetes itself and implements the Kubernetes API and cluster orchestration logic
   * The <b>app plane, or data plane</b>, is everything else. This is the group of pods where the app pods run
 * One or more nodes are usually dedicated to running applications, while one or more nodes are reserved only for the control plane 
 * Multiple replicas of control plane components can run on multiple pods to provide redundancy
@@ -45,7 +45,7 @@ To read more about Kubernetes including the official definition, go to the offic
 To learn more about how Kuberentes works, read [this blog](https://sensu.io/blog/how-kubernetes-works#:~:text=Kubernetes%20keeps%20track%20of%20your,storage%2C%20and%20CPU%20when%20necessary.).
 
 ## What are operators?
-Operators are "software extensions to Kubernetes that make use of custom resources to amange applications and their 
+Operators are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
 components". You can read more about the operator pattern [here](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
  
 ## What do operators do?
@@ -53,18 +53,17 @@ The main idea is that when the desired state and the actual state of the cluster
 enable the app to be automatically installed, upgraded, recovered, analyzed, and scaled. 
 
 <b> The advantage of operators lies in their 
-automation. Usually, a SRE (Site reliability engineer) would have to take care of recoving an application if it crashes, or upgrading to 
+automation. Usually, a [SRE](https://en.wikipedia.org/wiki/Site_reliability_engineering) (site reliability engineer) would have to take care of recoving an application if it crashes, or upgrading to 
 a later version of an application. But with an operator, all of this can be automated. </b>
 
 Operators wrap any necessary logic for deploying and operating a Kubernetes app using Kubernetes constructs. Here are a few more details you should understand about operators:
 
-* They provision and manage the resources that you would normally need to use manually and since it is provided with enough authorization in the cluster, it can do cluster-management for you, such as rescheduling pods as they fail, or scaling the replica sets as needed. 
+* They provision and manage the resources that an engineer would normally need to set manually.
+  * Since the operator provided with enough authorization in the cluster, it can do cluster-management for you, such as rescheduling pods as they fail, or scaling the replica sets as needed. 
 * They can help you in the selection of cloud resources from your cloud environment
 * They can automatically provision storage, volume, and any other infrastructure you may need
 * Operators are clients of the Kubernetes API that act as controllers for a custom resource
-  * Operators are the app specific combo of a CR and a custom controller that does know all the details about starting, scaling, recovering, etc
-  * The operators operand is what we call the app, service, or whatever resource an operator manage 
-* CRDs are one of two essential building blocks for the most basic description of the operator pattern: a custom controller managing CRs
+  * Operators are application specific custom resources and a custom controller watches the custom resource and knows all the details about starting, scaling, recovering, and upgrading that specific custom resource it manages.
 
 To learn more, read this [article from Red Hat](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator#:~:text=A%20Kubernetes%20operator%20is%20a,and%20managing%20a%20Kubernetes%20application.&text=A%20Kubernetes%20operator%20is%20an,behalf%20of%20a%20Kubernetes%20user.) outlining what a kubernetes operator is, and what they do.
 
@@ -92,8 +91,7 @@ steps when developing our operator. Here are some more useful details about Cust
 
 * CRs hold structured data, and the Kubernetes API server provides a mechanism for reading and setting their files as you would those in a native resource, by using kubectl or another API client. 
 * CRs are most useful when they are watched by <b>custom controller code that creates, updates, deletes other cluster objects or even resources outside of the cluster</b>
-* CRs obey k8s conventions, like the resources .spec and .status 
-  * A CR is a named endpoint in the Kubernetes API. Users define a CR by providing a custom-resource definition or CRD.
+* CRs obey Kubernetes conventions, like the resources .spec and .status 
   * The CR’s group, version, and kind together form the fully qualified name of a Kuberentes resource type. That name must be unique across a cluster. 
 
 To learn more about Custom Resources, refer to the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
