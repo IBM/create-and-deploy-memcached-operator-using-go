@@ -69,6 +69,8 @@ Operators wrap any necessary logic for deploying and operating a Kubernetes app 
 * In stateful apps, some order is necessary. You also need to add storage and persistent volume so that the state is saved, and the cluster admin has to manage that. 
 * <b>The majority of applications are stateful. This is where Kubernetes Operators are helpful.</b>
 
+To learn more about Stateful vs. Stateless apps, read [this article](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless) from Red Hat.
+
 ## Why does Kubernetes need operators?
 
 Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
@@ -84,3 +86,11 @@ TODO:
 1. Describe the code in an operator – controller and API (what it does, not how to implement it)
 2. Introduction to operator capability levels
 3. Kubernetes Operator SDK
+
+The information in this article can be found in a few different sources:
+
+* Kubernetes Operators by Jason Doies and Joshua Wood (O'Reilly)
+
+* kublr.com/blog/understanding-kubernetes-operators
+
+* kubernetes.io/docs/concepts/extend-kubernetes/operator
