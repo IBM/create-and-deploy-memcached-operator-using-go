@@ -42,6 +42,8 @@ To read more about Kubernetes including the official definition, go to the offic
 * The controllers of the control loop implement logic to automatically check for the difference between the actual state and the desired state 
   * When the two diverge, the controller takes action and makes sure the two match
 
+To learn more about how Kuberentes works, read [this blog](https://sensu.io/blog/how-kubernetes-works#:~:text=Kubernetes%20keeps%20track%20of%20your,storage%2C%20and%20CPU%20when%20necessary.).
+
 ## What are operators?
 Operators are "software extensions to Kubernetes that make use of custom resources to amange applications and their 
 components". You can read more about the operator pattern [here](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
@@ -64,6 +66,8 @@ Operators wrap any necessary logic for deploying and operating a Kubernetes app 
   * The operators operand is what we call the app, service, or whatever resource an operator manage 
 * CRDs are one of two essential building blocks for the most basic description of the operator pattern: a custom controller managing CRs
 
+To learn more, read this [article from Red Hat](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator#:~:text=A%20Kubernetes%20operator%20is%20a,and%20managing%20a%20Kubernetes%20application.&text=A%20Kubernetes%20operator%20is%20an,behalf%20of%20a%20Kubernetes%20user.) outlining what a kubernetes operator is, and what they do.
+
 ### Stateful vs. Stateless Apps
 * In stateless deployments, the order of deploying pods, their labels, network address or port, storage class, or volume are not important. You keep them if they are healthy and serving, you dispose of them when they become unhealthy, outdated, or just no longer needed and replace them as necessary. <b>You do not need an operator for stateless applications.</b>
 * In stateful apps, some order is necessary. You also need to add storage and persistent volume so that the state is saved, and the cluster admin has to manage that. 
@@ -75,6 +79,13 @@ To learn more about Stateful vs. Stateless apps, read [this article](https://www
 
 Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
 and changing runtime configuration that is needed for many stateful applications. Read more about why Kubernetes needs operators in this [blog](https://kublr.com/blog/understanding-kubernetes-operators/).
+
+## Operator Code - the Controller and the API
+Now, let's start exploring the heart of the operator - the controller code. But before we do that we must understand custom 
+resources, and custom resource definitions, since that is what we will use to create our operator.
+
+
+
 
 
 
