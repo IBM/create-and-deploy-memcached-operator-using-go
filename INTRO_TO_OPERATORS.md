@@ -100,18 +100,25 @@ To learn more about Custom Resources, refer to the official [Kubernetes document
 
 ### Custom Controllers (the code that watches your Custom Resource)
 When you combine the custom resource with a custom controller that watches that custom resource, 
-you get what is called a "declaritive API" by Kubernetes. A declaritive API is one in which the 
-user can "declare" or "specify" (keep in mind <b>Spec</b> for later, since that is important) the
+you get what is called a "declaritive API" by Kubernetes. 
+
+* A declaritive API is one in which the user can "declare" or "specify" (keep in mind <b>Spec</b> for later, since that is important) the
 desired state of the cluster, and Kubernetes will try to change whatever resources are needed to 
-be changed in order to reach the "desired state" of the cluster. For example if we "specify" or 
-"declare" that we want 4 replicas of a certain resource, and currently we only have 3, Kuberentes 
-will automatically create that 4th replica for us.
+be changed in order to reach the "desired state" of the cluster.
+  * For example if we "specify" or "declare" that we want 4 replicas of a certain resource, and currently we only have 3, Kuberentes will automatically create that 4th replica for us.
 
 To learn more about custom controller, and if you should use one, read the official Kubernetes 
 documentation on custom controller, [here](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-controllers).
 
 
+## Operator SDK
+The Operator SDK is a framework that uses the controller-runtime library to make writing operators easier by providing:
 
+* High level APIs and abstractions to write the operational logic more intuitively
+* Tools for scaffolding and code generation to bootstrap a new project fast
+* Extensions to cover common Operator use cases
+
+For the purposes of our learning path, the operator SDK will be used to scaffold our code.
 
 
 
@@ -123,7 +130,7 @@ documentation on custom controller, [here](https://kubernetes.io/docs/concepts/e
 TODO: 
 <!-- 1. Describe the code in an operator – controller and API (what it does, not how to implement it) -->
 2. Introduction to operator capability levels
-3. Kubernetes Operator SDK
+<!-- 3. Kubernetes Operator SDK -->
 
 The information in this article can be found in a few different sources:
 
