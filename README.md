@@ -149,7 +149,8 @@ type Memcached struct {
 ```
 
 2. The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
-**Important: What is the Spec?**
+
+### What is the Spec?
 
 A good way to think about `Spec` is that any inputs (values tweaker by the user) to our controller go in the spec section. 
 
@@ -159,7 +160,8 @@ type MemcachedSpec struct {}
 
 3. The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
 
-**Important: What is the Status?**
+### What is the Status? 
+
 The status contains information that we want users or other controllers to be able to easily obtain.
 
 ```go
