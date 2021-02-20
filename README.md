@@ -134,7 +134,7 @@ will do that in the `api/v1alpha1/memcached_types.go` file.
 Let's first understand the basic foundation of our custom resource. There are 
 three main structures to understand:
 
-1. First, we need to understand the struct which defines our schema. Note that it 
+First, we need to understand the struct which defines our schema. Note that it 
 implements the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) (which means it is a kubernetes object), and also,
 it has the `Spec` and `Status` fields. More on those soon.
 
@@ -148,7 +148,7 @@ type Memcached struct {
 }
 ```
 
-2. The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
+The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
 
 ### What is the Spec?
 
@@ -158,7 +158,7 @@ A good way to think about `Spec` is that any inputs (values tweaker by the user)
 type MemcachedSpec struct {}
 ```
 
-3. The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
+The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
 
 ### What is the Status? 
 
@@ -182,7 +182,10 @@ Add the following to your struct:
 
 ```go
 type MemcachedSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
 
+	// Foo is an example field of Memcached. Edit Memcached_types.go to remove/update
 	Size int32 `json:"size"`
 }
 ```
