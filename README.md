@@ -280,7 +280,7 @@ This one:
 // +kubebuilder:subresource:status
 ```
 
-Will enable the status subresource in the in the Custom Resource Definition. If you run `make manifests` it will generate YAML under `config/crds/<kind_types.yaml`. It will add a `subresources`
+Will enable the status subresource in the Custom Resource Definition. If you run `make manifests` it will generate YAML under `config/crds/<kind_types.yaml`. It will add a `subresources`
 section like so: 
 
 ```yaml
@@ -291,7 +291,7 @@ subresources:
 We will see how to get and update the status subresource in the controller code in the section below.
 
 Just know that
-each of these markers, starting with `// +kubebuilder` will generate utility code (such as role based access control) and Kubernetes YALM. When you run `make generate` and `make manifests` 
+each of these markers, starting with `// +kubebuilder` will generate utility code (such as role based access control) and Kubernetes YAML. When you run `make generate` and `make manifests` 
 your KubeBuilder Markers will be read in order to create RBAC roles, CRDs, and code, such as runtime.Object/DeepCopy implementations. Read more about KubeBuilder markers [here](https://book.kubebuilder.io/reference/markers.html?highlight=markers#marker-syntax).
 
 
