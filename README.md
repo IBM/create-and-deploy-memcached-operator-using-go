@@ -8,7 +8,6 @@ Operators make it easy to manage complex stateful applications on top of Kuberne
 * You have some experience developing operators.
 * You've finished the `SIMPLE_OPERATOR.md` tutorial
 * You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types.
-* You've successfully deployed and developed a simple operator.
 
 ## Expectations (What you want)
 * You want deep technical knowledge of the code which enables operators to run.
@@ -78,6 +77,25 @@ Next, run the `operator-sdk init` command to create a new memcached-operator pro
 $ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator --owner="Memcache Operator authors"
 ```
 
+* The `--domain` flag is used to uniquely identify the operator resources that are created by
+this project. When we use the command `oc api-resources` later, the `example.com` domain 
+will be listed there by our `memcached` in the `APIGROUP` category.
+
+* The `--repo` flag enables us to create this project outside of the standard 
+`$GOPATH/src` strucutre. 
+  * To work properly, make sure you activate GO module support by running the following command:
+
+```bash
+$ export GO111MODULE=on
+```
+
+To verify that GO module support is turned on, issue the following command and ensure you get the same output: 
+
+```bash
+$ echo $GO111MODULE
+on
+```
+
 This will create the basic scaffold for your operator, such as the `bin`, `config` and `hack` directories, and will create the `main.go` file which initializes the manager.
 
 ## 2. Create CRD and Custom Controller
@@ -96,6 +114,14 @@ api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
 ```
 
+* The `--group` flag defines an `API Group` in Kubernetes. It is a collection of related functionality.
+* Each group has one or more `versions`, which allows us to change how an API works over time. This is what the `--version` flag represents.
+* Each API group-verison contains one or more API types, called `Kinds`. This is the name of the API type that we are creating as part of this operator. 
+  * There are more nuances when it comes to versioning which we will not cover. Read more about Groups, Versions, Kinds, and Resources from this [Kubebuilder reference](https://book.kubebuilder.io/cronjob-tutorial/gvks.html).
+* The `--controller` flag signifies that we want the sdk to scaffold a controller file.
+* The `--resource` flag signifies that we want the sdk to scaffold the schema for a resource.
+
+
 Now, once you deploy this operator, you can use the `kubectl api-resources` to see the name
 `cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
 later after we've deployed the operator.
@@ -105,18 +131,56 @@ later after we've deployed the operator.
 One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
 will do that in the `api/v1alpha1/memcached_types.go` file.
 
-To update our CRD, we will create three different structs in our 
-CRD. One will be the overarching `Memcached struct`, which will have 
-the `MemcachedStatus` and `MemcachedSpec` fields. Each of those structs,
-i.e. the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
-have their own fields to describe the observed or current state and the 
-desired state respectively.
+Let's first understand the basic foundation of our custom resource. There are 
+three main structures to understand:
 
+First, we need to understand the struct which defines our schema. Note that it 
+implements the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) (which means it is a kubernetes object), and also,
+it has the `Spec` and `Status` fields. More on those soon.
 
-First, add a `Size int32` field to your `MemcachedSpec` struct, as shown below:
+```go 
+type Memcached struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MemcachedSpec   `json:"spec,omitempty"`
+	Status MemcachedStatus `json:"status,omitempty"`
+}
+```
+
+The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
+
+### What is the Spec?
+
+A good way to think about `Spec` is that any inputs (values tweaker by the user) to our controller go in the spec section. 
 
 ```go
-// MemcachedSpec defines the desired state of Memcached
+type MemcachedSpec struct {}
+```
+
+The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
+
+### What is the Status? 
+
+The status contains information that we want users or other controllers to be able to easily obtain.
+
+```go
+type MemcachedStatus struct {}
+```
+
+Each of those structs, the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
+have their own fields to describe the observed state and the desired state respectively.
+
+First, add a `Size int32` field to your `MemcachedSpec` struct, along with their json 
+encoded string representation of the field name, in lowercase. See [golangs json encoding page](https://golang.org/pkg/encoding/json/) for more details.
+
+In our example, since `Size` is the field name, and the json encoding must be lowercase, it 
+would just look like `json:"size"`. 
+
+Add the following to your struct: 
+
+
+```go
 type MemcachedSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -127,7 +191,6 @@ type MemcachedSpec struct {
 ```
 
 When we create a custom resource later, we will need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
-
 
 Next, add a `Nodes []string` field to your `MemcachedStatus` struct, as shown below:
 
@@ -201,6 +264,37 @@ func init() {
 }
 ```
 
+Note that above our `type Memcached struct` you'll see two lines of code starting with `+kubebuilder`. Note that these are actually commented out. These are important, since they 
+tell our controller-tools extra information. For example, this one 
+
+```golang
+// +kubebuilder:object:root=true
+```
+
+tells the `object` generator that this type represents a Kind. The generator will then 
+implement the `runtime.Object` interface for us, which all Kinds must implement.
+
+This one: 
+
+```golang
+// +kubebuilder:subresource:status
+```
+
+Will enable the status subresource in the Custom Resource Definition. If you run `make manifests` it will generate YAML under `config/crds/<kind_types.yaml`. It will add a `subresources`
+section like so: 
+
+```yaml
+subresources:
+    status: {}
+```
+
+We will see how to get and update the status subresource in the controller code in the section below.
+
+Just know that
+each of these markers, starting with `// +kubebuilder` will generate utility code (such as role based access control) and Kubernetes YAML. When you run `make generate` and `make manifests` 
+your KubeBuilder Markers will be read in order to create RBAC roles, CRDs, and code, such as runtime.Object/DeepCopy implementations. Read more about KubeBuilder markers [here](https://book.kubebuilder.io/reference/markers.html?highlight=markers#marker-syntax).
+
+
 ## 4. Implement controller logic
 
 Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`. First, go ahead and copy the code from the 
@@ -239,8 +333,7 @@ Next, we'll need to confirm that the `Memcached` resource is defined within our 
 
 This can be done using the [`Get` function](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.Get), which retrieves an object from a Kubernetes cluster based on the arguments passed in. 
 
-**Important:** The `Get` function expects the Reconciler context, the object key (which is just the namespace, and the name of the object), and the object itself as arguments. The "object itself" is what we will manage using the operator. The object itself has to implement 
-the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) which means that it is serializable (runtime.Object) and identifiable (metav1.Object). Essentially, this object should be able to be written via YAML and then be created 
+**Important:** The `Get` function expects the Reconciler context, the object key (which is just the namespace, and the name of the object), and the object itself as arguments. The object has to implement the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) which means that it is serializable (runtime.Object) and identifiable (metav1.Object). This object should be able to be written via YAML and then be created 
 via `Kubectl create`.
 
 The Reconcile function gives you two things, the context i.e. `ctx` and request i.e. `req`. 
