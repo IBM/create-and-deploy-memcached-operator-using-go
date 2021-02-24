@@ -101,7 +101,7 @@ this in turn makes the necessary Kubernetes API calls, all through the API serve
 API pattern meaning that the nodes (spokes) will subscribe and communicate with the Kubernetes API
 via one hub (the API server).
 
-### Control Plane to Node
+<!-- ### Control Plane to Node
 The control plane communicates with nodes in two main ways:
 
 1. `apiserver` to `kubelet` which is used for fetching logs, attaching to running pods, and using
@@ -109,7 +109,7 @@ The control plane communicates with nodes in two main ways:
 2. `apiserver` to `nodes, pods, and services`. These are http (unsecure) connections so they are 
 not safe to run on unsecured or public networks.
 
-Read more about how nodes communicate with the control plane [from the official Kubernetes documentation](https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/)
+Read more about how nodes communicate with the control plane [from the official Kubernetes documentation](https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/) -->
 
 ## Controllers
 A control loop is a loop which regulates the state of the system. This is extremely important 
@@ -124,7 +124,7 @@ field called `spec` which is the `desired state` of that resource. When it comes
 
 The controller for that resource is responsible for bringing the `current state`
 to be closer (and eventually be equal) to the `desired state` using the API server. Read 
-more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern)
+more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Control via API Server
 There are many built-in Kubernetes controllers which will manage state by interacting with 
@@ -140,7 +140,7 @@ desired state or "spec" with the current state or "status". Cluster administrato
 are able to change the desired state of the cluster by issuing commands such as `kubectl create` 
 or `kubectl apply -f`.
 
-**You will see `spec` used a lot throughout Kubernetes documentation and that refers to `desired state`. In turn, and `status` refers to current state.** 
+**You will see `spec` used a lot throughout Kubernetes documentation and that refers to `desired state`. In turn, `status` refers to current state.** 
 
 ### Kubernetes Design
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster.
