@@ -22,12 +22,9 @@ Before we start diving into operators, you need to know basic knoweldge about Ku
 automating parts of app delivery and deployment on Kubernetes. 
 
 ## What is Kubernetes
-Kubernetes is a "portable, extensible, open-source platform for managing containerized workloads and services,
-that favilitates both declaritive configuration and automation." At the end of the day, Kubernetes is a way 
-for us to run our applications. A Kubernetes cluster is a collection of computers, called nodes. All work runs on one or more of these nodes. More on nodes in the sections below.
+Kubernetes is a portable, extensible, declaritive open-source platform for managing containerized workloads and services. Since containers are a very popular choice of deployment, there needs to be a way to manage these different containers in such a way to ensure no downtime for our application. This is where Kubernetes comes in. It manages the way we communicate with our containers, and enables us to write our own custom logic to automate dev ops practices such as seamless ungrades. Kubernetes does this by giving us commands, in the form of `kubectl` to manage our cluster, or collection of computers. All work runs on one or more of these computers, or nodes. 
 
-Read more about why Kubernetes is useful from
-the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
+Read more about why Kubernetes is useful and how it is different than other deployment solutions. [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
 
 ## What are Pods
 The basic unit of work, replication, and deployment in Kubernetes is called a pod. A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smalled deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
