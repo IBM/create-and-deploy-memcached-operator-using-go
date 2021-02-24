@@ -142,7 +142,10 @@ expected state, and the controllers again adjust the actual state to make it mat
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
 components". 
 They are used used to automate software config/maintenance activities that are typically done by human operators. That's why they are called operators.
-Additionally, they are used to automate the software management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases
+Additionally, they are used to automate the software management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases.
+
+Operators are extending the control plane by adding another controller to the control plane. The operator itself is a workload, so it is running 
+on the worker nodes. <b>This additional controller is customized for a particular (stateful) service.</b>
  
 ## What do operators do?
 The main idea is that when the desired state and the actual state of the cluster diverge, operators have custom logic that will 
@@ -180,9 +183,13 @@ Now, let's start exploring the heart of the operator - the controller code. But 
 resources, and custom resource definitions, since that is what we will use to create our operator.
 
 ### Custom Resources(CRs) - Custom API endpoints
-A resource is an endpoint in the Kubernetes API that stores a collection of API objects of a certain kind. 
-A custom resource definition is a schema that defines the fileds and types of fields within an
-instance of a Custom Resource. We will use a Custom Resource Definition as one of the initial 
+
+A CR declares that a new service instance should exist with the configuration specified in the `spec` section. The 
+operator's controller's reconcile loop acts like an admin using `kubectl` using the Kube API as directed by the custom controller
+to modify the current state.
+
+A <b>custom resource definition is a schema that defines the fileds and types of fields within an
+instance of a Custom Resource.</b> We will use a Custom Resource Definition as one of the initial 
 steps when developing our operator. Here are two useful details about Custom Resources:
 
 1. CRs hold structured data, and the Kubernetes API server provides a mechanism for reading and setting their files as you would those in a native resource, by using kubectl or another API client. 
