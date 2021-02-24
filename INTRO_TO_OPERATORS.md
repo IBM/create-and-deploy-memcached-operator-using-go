@@ -75,7 +75,7 @@ The ReplicaSet then creates and deletes pods as needed to reach the desired `num
 To read more in depth about ReplicaSets, go to the [official Kubernetes documentation for ReplicaSets](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/). -->
 
 ## How Kubernetes works 
-Each Kubernetes cluster consists of at least one worker machine 
+Each Kubernetes cluster consists of the components that make up the control plane (more on that later) and at least one worker machine 
 called a `node`.  A node may be a physical or virtual machine. The worker nodes host the 
 application workload in the form of Pods. More worker nodes on more computers provide more 
 capacity for running workloads.
