@@ -109,8 +109,17 @@ To learn more about control plane components, read from the [official Kubernetes
 ## Controllers
 A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** The control loop will 
 be continually checking for the `desired state` and making sure that it is the same as the 
-`current state`. If those two states differ, the [controller](https://kubernetes.io/docs/concepts/architecture/controller/) will communicate with the API server
-to create, delete, or update resources until the `desired state` is the same as the `current state`. We will get into desired vs current state more as we dive deeper into operators.
+`current state`. 
+
+### Desired State and Current State
+**A Cluster has two states: the desired (or expected) state, and the current state.**
+
+If those two states differ, the [controller](https://kubernetes.io/docs/concepts/architecture/controller/) will communicate with the API server
+to create, delete, or update resources until the `desired state` is the same as the `current state`. Cluster administrators 
+are able to change the desired state of the cluster by issuing commands such as `kubectl create` 
+or `kubectl apply -f`.
+
+**You will see `spec` used a lot throughout Kubernetes documentation and that refers to `desired state`. In turn, `status` refers to current state.** 
 
 ### Controller pattern
 Each controller will watch one specific type of Kubernetes resource. Each resource will have a 
@@ -119,16 +128,6 @@ field called `spec` which is the `desired state` of that resource. When it comes
 The controller for that resource is responsible for bringing the `current state`
 to be closer (and eventually be equal) to the `desired state` using the API server. Read 
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
-
-## Desired State and Current State
-**A Cluster has two states: the desired (or expected) state, and the current state.**
-
-At the heart of the Kubernetes design is a declaritive model which tries to match the 
-desired state or "spec" with the current state or "status". Cluster administrators 
-are able to change the desired state of the cluster by issuing commands such as `kubectl create` 
-or `kubectl apply -f`.
-
-**You will see `spec` used a lot throughout Kubernetes documentation and that refers to `desired state`. In turn, `status` refers to current state.** 
 
 ### Kubernetes Design
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster.
