@@ -27,7 +27,7 @@ Kubernetes is a portable, extensible, declaritive open-source platform for manag
 Read more about why Kubernetes is useful and how it is different than other deployment solutions [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
 
 ## What are Pods
-The basic unit of work, replication, and deployment in Kubernetes is called a pod. A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smallest deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
+The basic unit of work, replication, and deployment in Kubernetes is called a [pod](https://kubernetes.io/docs/concepts/workloads/pods/). A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smallest deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
 
 
 <!-- Usually, this is done in the form of a Deployment, 
@@ -91,8 +91,18 @@ custom controllers so they will ultimately be run by the `kube-controller-manage
 5. `cloud-controller-manager` lets you link your cluster into your cloud providers API. It only 
 manages controllers which are needed for your cloud provider. If you are running your cluster locally, you will not have a `cloud-controller-manager`.
 
-To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/). 
+The two components the are very important to us are
+the `kube-apiserver` and the `kube-controller-manager`.
+Whenever an admin works with a tool such as the 
+`kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
+certain way. In terms of operators, when we create a 
+new operator, our new custom controller will be added
+to the `kube-controller-manager` so that it have the 
+same core control loops that Kubernetes has. 
 
+
+To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/). 
+<!-- 
 ### Node Components
 There are several components that run on every node, to ensure Pods are running and to maintain
 the Kuberentes runtime environment: 
@@ -110,7 +120,7 @@ To learn more about Node components, read from the [official Kubernetes document
 Nodes communicate with the control plane via the `apiserver` (API server). For example, when you make a `kubectl` command,
 this in turn makes the necessary Kubernetes API calls, all through the API server. Kubernetes has a "hub-and-spoke" 
 API pattern meaning that the nodes (spokes) will subscribe and communicate with the Kubernetes API
-via one hub (the API server).
+via one hub (the API server). -->
 
 <!-- ### Control Plane to Node
 The control plane communicates with nodes in two main ways:
@@ -136,12 +146,12 @@ field called `spec` which is the `desired state` of that resource. When it comes
 The controller for that resource is responsible for bringing the `current state`
 to be closer (and eventually be equal) to the `desired state` using the API server. Read 
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
-
+<!-- 
 ### Control via API Server
 There are many built-in Kubernetes controllers which will manage state by interacting with 
 the API server. The important thing to understand is that controllers will call the API server
 to make some change to get closer to the `desired state` and then the controller will report the current state back to the cluster's API server. This change in state may in turn trigger other controllers, and this can happen forever, such as when your cluster state is not stable. Read 
-more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#control-via-api-server).
+more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#control-via-api-server). -->
 
 ## Desired State and Current State
 **A Cluster has two states: the desired (or expected) state, and the current state.**
