@@ -104,7 +104,7 @@ it has the same core functionality as the other core
 Kubernetes controllers.
 
 
-To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/). 
+To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#control-plane-components). 
 
 ## Controllers
 A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** The control loop will 
@@ -139,11 +139,11 @@ something goes wrong in a cluster, such as a pod crashing, the actual state dive
 expected state, and the controllers again adjust the actual state to make it match. -->
 
 ## What are operators?
-Operators are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
-components". You can read more about the operator pattern [here](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/). 
-
-TODO
-<!--  
+[Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
+components". 
+They are used used to automate software config/maintenance activities that are typically done by human operators. That's why they are called operators.
+Additionally, they are used to automate the software management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases
+ 
 ## What do operators do?
 The main idea is that when the desired state and the actual state of the cluster diverge, operators have custom logic that will 
 enable the app to be automatically installed, upgraded, recovered, analyzed, and scaled. 
@@ -152,43 +152,41 @@ enable the app to be automatically installed, upgraded, recovered, analyzed, and
 automation. Usually, a [SRE](https://en.wikipedia.org/wiki/Site_reliability_engineering) (site reliability engineer) would have to take care of recoving an application if it crashes, or upgrading to 
 a later version of an application. But with an operator, all of this can be automated. </b>
 
-Operators wrap any necessary logic for deploying and operating a Kubernetes app using Kubernetes constructs. Here are a few more details you should understand about operators:
+<!-- Operators wrap any necessary logic for deploying and operating a Kubernetes app using Kubernetes constructs. Here are a few more details you should understand about operators:
 
-* They provision and manage the resources that an engineer would normally need to set manually.
   * Since the operator provided with enough authorization in the cluster, it can do cluster-management for you, such as rescheduling pods as they fail, or scaling the replica sets as needed. 
 * They can help you in the selection of cloud resources from your cloud environment
 * They can automatically provision storage, volume, and any other infrastructure you may need
-* Operators are clients of the Kubernetes API that act as controllers for a custom resource
-  * Operators are application specific custom resources and a custom controller watches the custom resource and knows all the details about starting, scaling, recovering, and upgrading that specific custom resource it manages.
+  * Operators are application specific custom resources and a custom controller watches the custom resource and knows all the details about starting, scaling, recovering, and upgrading that specific custom resource it manages. -->
 
-To learn more, read this [article from Red Hat](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator#:~:text=A%20Kubernetes%20operator%20is%20a,and%20managing%20a%20Kubernetes%20application.&text=A%20Kubernetes%20operator%20is%20an,behalf%20of%20a%20Kubernetes%20user.) outlining what a kubernetes operator is, and what they do.
+To learn more, read this [article from Red Hat](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator#:~:text=A%20Kubernetes%20operator%20is%20a,and%20managing%20a%20Kubernetes%20application.&text=A%20Kubernetes%20operator%20is%20an,behalf%20of%20a%20Kubernetes%20user.).
 
-### Stateful vs. Stateless Apps
+<!-- ### Stateful vs. Stateless Apps
 * In stateless deployments, the order of deploying pods, their labels, network address or port, storage class, or volume are not important. You keep them if they are healthy and serving, you dispose of them when they become unhealthy, outdated, or just no longer needed and replace them as necessary. <b>You do not need an operator for stateless applications.</b>
 * In stateful apps, some order is necessary. You also need to add storage and persistent volume so that the state is saved, and the cluster admin has to manage that. 
 * <b>The majority of applications are stateful. This is where Kubernetes Operators are helpful.</b>
 
-To learn more about Stateful vs. Stateless apps, read [this article](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless) from Red Hat.
+To learn more about Stateful vs. Stateless apps, read [this article](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless) from Red Hat. -->
 
 ## Why does Kubernetes need operators?
 
-Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
-and changing runtime configuration that is needed for many stateful applications. Read more about why Kubernetes needs operators in this [blog](https://kublr.com/blog/understanding-kubernetes-operators/).
+<b>TODO</b>
+
+<!-- Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
+and changing runtime configuration that is needed for many stateful applications. Read more about why Kubernetes needs operators in this [blog](https://kublr.com/blog/understanding-kubernetes-operators/). -->
 
 ## Operator Code - the Controller and the API
 Now, let's start exploring the heart of the operator - the controller code. But before we do that we must understand custom 
 resources, and custom resource definitions, since that is what we will use to create our operator.
 
 ### Custom Resources(CRs) - Custom API endpoints
-A resource is an endpoint in the Kubernetes API that stores a collection of API objects of a certain kind; for example, the built-in pods resource contains a collection of Pod objects. A 
-custom resource definition is a schema that defines the fileds and types of fields within an
+A resource is an endpoint in the Kubernetes API that stores a collection of API objects of a certain kind. 
+A custom resource definition is a schema that defines the fileds and types of fields within an
 instance of a Custom Resource. We will use a Custom Resource Definition as one of the initial 
-steps when developing our operator. Here are some more useful details about Custom Resources:
+steps when developing our operator. Here are two useful details about Custom Resources:
 
-* CRs hold structured data, and the Kubernetes API server provides a mechanism for reading and setting their files as you would those in a native resource, by using kubectl or another API client. 
-* CRs are most useful when they are watched by <b>custom controller code that creates, updates, deletes other cluster objects or even resources outside of the cluster</b>
-* CRs obey Kubernetes conventions, like the resources .spec and .status 
-  * The CR’s group, version, and kind together form the fully qualified name of a Kuberentes resource type. That name must be unique across a cluster. 
+1. CRs hold structured data, and the Kubernetes API server provides a mechanism for reading and setting their files as you would those in a native resource, by using kubectl or another API client. 
+2. CRs are most useful when they are watched by <b>custom controller code that creates, updates, deletes other cluster objects or even resources outside of the cluster</b>
 
 To learn more about Custom Resources, refer to the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
 
@@ -196,10 +194,9 @@ To learn more about Custom Resources, refer to the official [Kubernetes document
 When you combine the custom resource with a custom controller that watches that custom resource, 
 you get what is called a "declaritive API" by Kubernetes. 
 
-* A declaritive API is one in which the user can "declare" or "specify" (keep in mind <b>Spec</b> for later, since that is important) the
+A declaritive API is one in which the user can "declare" or "specify" the
 desired state of the cluster, and Kubernetes will try to change whatever resources are needed to 
 be changed in order to reach the "desired state" of the cluster.
-  * For example if we "specify" or "declare" that we want 4 replicas of a certain resource, and currently we only have 3, Kuberentes will automatically create that 4th replica for us.
 
 To learn more about custom controller, and if you should use one, read the official Kubernetes 
 documentation on custom controller, [here](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-controllers).
@@ -212,7 +209,7 @@ The Operator SDK is a framework that uses the controller-runtime library to make
 * Tools for scaffolding and code generation to bootstrap a new project fast
 * Extensions to cover common Operator use cases
 
-For the purposes of our learning path, the operator SDK will be used to scaffold our code. -->
+For the purposes of our learning path, the operator SDK will be used to scaffold our code.
 
 
 
@@ -221,9 +218,9 @@ For the purposes of our learning path, the operator SDK will be used to scaffold
 <!-- What do operators do? Explain the advantages promised by using operators -->
 
 <!-- Why does Kubernetes need operators? Explain why we need operators -->
-TODO: 
+<!-- TODO:  -->
 <!-- 1. Describe the code in an operator – controller and API (what it does, not how to implement it) -->
-2. Introduction to operator capability levels
+<!-- 2. Introduction to operator capability levels -->
 <!-- 3. Kubernetes Operator SDK -->
 
 The information in this article can be found in a few different sources:
