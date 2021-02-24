@@ -93,11 +93,11 @@ known as the API server.
 4. `kube-controller-manager` runs controller processes. Each different controller is a separate process. 
 5. `cloud-controller-manager` lets you link your cluster into your cloud providers API.
 
-The two components the are very important to us are
+The two components that are very important for operator development are
 the `kube-apiserver` and the `kube-controller-manager`.
 Whenever an admin works with a tool such as the 
 `kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
-certain way. In terms of operators, when we create a 
+certain way. When we create a 
 new operator, our new custom controller will be added
 to the `kube-controller-manager's` control loop so that
 it has the same core functionality as the other core 
