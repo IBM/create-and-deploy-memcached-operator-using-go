@@ -27,7 +27,12 @@ Kubernetes is a portable, extensible, declaritive open-source platform for manag
 Read more about why Kubernetes is useful and how it is different than other deployment solutions [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
 
 ## What are Pods
-The basic unit of work, replication, and deployment in Kubernetes is called a pod. A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smalled deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
+The basic unit of work, replication, and deployment in Kubernetes is called a pod. A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smallest deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
+
+
+<!-- Usually, this is done in the form of a Deployment, 
+which is a resource type that runs a set of Pod
+replicas. These pods in turn, runs a container. -->
 
 ### What are Containers
 A [container](https://kubernetes.io/docs/concepts/containers/) is a lightweight and portable
@@ -36,10 +41,16 @@ from underlying host infrastructure so it's easy to deploy in different cloud or
 Kubernetes is often called a container-orchestrator, but it might be more accurate to describe it as a pod 
 orchestrator.
 
-### Using Pods
+### Workloads on Kubernetes
+A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A `Deployment` runs a set of pod replicas or `ReplicaSets` which just ensures that a certain amount of pods are running at a given time. Remember that each pod is running a container. 
+
+Once your application is running, you can make it available on the internet as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
+service. 
+
+<!-- ### Using Pods
 If you want to get started using Pods, you must decide on which [workload resource](https://kubernetes.io/docs/concepts/workloads/controllers/) you should use to create your Pod. A common workload is a deployment or a job, or a statefulset if you need to track state.  
 
-To read more in depth about Pods, go to the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/pods/).
+To read more in depth about Pods, go to the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/pods/). -->
 
 ## What are Deployments
 A deployment "provides declarative updates for Pods and ReplicaSets". You describe a **desired state** (keep
