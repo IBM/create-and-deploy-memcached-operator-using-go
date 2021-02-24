@@ -140,8 +140,10 @@ expected state, and the controllers again adjust the actual state to make it mat
 
 ## What are operators?
 Operators are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
-components". You can read more about the operator pattern [here](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
- 
+components". You can read more about the operator pattern [here](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/). 
+
+TODO
+<!--  
 ## What do operators do?
 The main idea is that when the desired state and the actual state of the cluster diverge, operators have custom logic that will 
 enable the app to be automatically installed, upgraded, recovered, analyzed, and scaled. 
@@ -210,7 +212,7 @@ The Operator SDK is a framework that uses the controller-runtime library to make
 * Tools for scaffolding and code generation to bootstrap a new project fast
 * Extensions to cover common Operator use cases
 
-For the purposes of our learning path, the operator SDK will be used to scaffold our code.
+For the purposes of our learning path, the operator SDK will be used to scaffold our code. -->
 
 
 
