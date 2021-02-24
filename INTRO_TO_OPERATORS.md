@@ -3,10 +3,6 @@
 This article will be the first in a series of articles and tutorials on learning how to build and deploy 
 a Kubernetes Operator. 
 
-
-**To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
-
-
 This article will assume you have no knowledge on Kubernetes Operators, and will 
 give you all of the basic knowledge needed to understand the different components and concepts of developing a
 a Golang based operator. If you are already familiar with operators, you can either skim this article or 
@@ -25,8 +21,8 @@ an OpenShift cluster.
 * This article should take roughly 15-30 minutes to complete, depending on how long you spend reading through 
 documentation.
 
-Before we start diving into operators, you need to know basic knoweldge about Kubernetes itself, since operators are just 
-automating parts of app delivery and deployment on Kubernetes. 
+
+**To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
 
 ## What is Kubernetes
 Kubernetes is a portable, extensible, declaritive open-source platform for managing containerized workloads and services. Since containers are a very popular choice of deployment, there needs to be a way to manage these different containers in such a way to ensure no downtime for our application. This is where Kubernetes comes in. It manages the way we communicate with our containers, and enables us to write our own custom logic to automate dev ops practices such as seamless ungrades. Kubernetes does this by giving us commands, in the form of `kubectl` to manage our cluster. All work runs on one or more of these computers, or nodes in our cluster. 
@@ -43,7 +39,7 @@ replicas. These pods in turn, runs a container. -->
 
 ### What are Containers
 A [container](https://kubernetes.io/docs/concepts/containers/) is a lightweight and portable
-executable image that contains software and all its dependencies. Containers decouple application
+executable image that contains software and all its dependencies. Containers decouple applications
 from underlying host infrastructure so it's easy to deploy in different cloud or OS environments.
 Kubernetes is often called a container-orchestrator, but it might be more accurate to describe it as a pod 
 orchestrator.
