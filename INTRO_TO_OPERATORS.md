@@ -1,11 +1,18 @@
 # Intro to Operators
 
 This article will be the first in a series of articles and tutorials on learning how to build and deploy 
-a Kubernetes Operator. This article will assume you have no knowledge on Kubernetes Operators, and will 
+a Kubernetes Operator. 
+
+
+**To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
+
+
+This article will assume you have no knowledge on Kubernetes Operators, and will 
 give you all of the basic knowledge needed to understand the different components and concepts of developing a
 a Golang based operator. If you are already familiar with operators, you can either skim this article or 
 simply skip ahead to the `SIMPLE_OPERATOR.md` file which shows how to develop and deploy your first operator to 
 an OpenShift cluster.
+
 
 ## Expectations (What you have)
 * You have little to no experience developing operators
@@ -97,46 +104,17 @@ Whenever an admin works with a tool such as the
 `kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
 certain way. In terms of operators, when we create a 
 new operator, our new custom controller will be added
-to the `kube-controller-manager` so that it have the 
-same core control loops that Kubernetes has. 
+to the `kube-controller-manager's` control loop so that
+it has the same core functionality as the other core 
+Kubernetes controllers.
 
 
 To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/). 
-<!-- 
-### Node Components
-There are several components that run on every node, to ensure Pods are running and to maintain
-the Kuberentes runtime environment: 
-
-1. `kubelet` makes sure that containers are running in a Pod. It ensures that conatiners 
-that are described in a certain PodSpec are running and healthy.
-2. `kube-proxy` maintains network rules on nodes, and allows network communication to your 
-Pods from network session from inside or outside your cluster. This will be very important later on.
-3. `Container-runtime` is the software responsible for running containers.
-
-To learn more about Node components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#node-components). 
-
-### How do Nodes communicate with the Control Plane
-
-Nodes communicate with the control plane via the `apiserver` (API server). For example, when you make a `kubectl` command,
-this in turn makes the necessary Kubernetes API calls, all through the API server. Kubernetes has a "hub-and-spoke" 
-API pattern meaning that the nodes (spokes) will subscribe and communicate with the Kubernetes API
-via one hub (the API server). -->
-
-<!-- ### Control Plane to Node
-The control plane communicates with nodes in two main ways:
-
-1. `apiserver` to `kubelet` which is used for fetching logs, attaching to running pods, and using
-`kubelet's` port-forwarding functionality.
-2. `apiserver` to `nodes, pods, and services`. These are http (unsecure) connections so they are 
-not safe to run on unsecured or public networks.
-
-Read more about how nodes communicate with the control plane [from the official Kubernetes documentation](https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/) -->
 
 ## Controllers
-A control loop is a loop which regulates the state of the system. This is extremely important 
-because this is the heart of Kubernetes and its declaritive system. The control loop will 
+A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** The control loop will 
 be continually checking for the `desired state` and making sure that it is the same as the 
-`current state`. If those two states differ, the controller will communicate with the apiserver
+`current state`. If those two states differ, the [controller](https://kubernetes.io/docs/concepts/architecture/controller/) will communicate with the API server
 to create, delete, or update resources until the `desired state` is the same as the `current state`. We will get into desired vs current state more as we dive deeper into operators.
 
 ### Controller pattern
@@ -146,12 +124,6 @@ field called `spec` which is the `desired state` of that resource. When it comes
 The controller for that resource is responsible for bringing the `current state`
 to be closer (and eventually be equal) to the `desired state` using the API server. Read 
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
-<!-- 
-### Control via API Server
-There are many built-in Kubernetes controllers which will manage state by interacting with 
-the API server. The important thing to understand is that controllers will call the API server
-to make some change to get closer to the `desired state` and then the controller will report the current state back to the cluster's API server. This change in state may in turn trigger other controllers, and this can happen forever, such as when your cluster state is not stable. Read 
-more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#control-via-api-server). -->
 
 ## Desired State and Current State
 **A Cluster has two states: the desired (or expected) state, and the current state.**
@@ -282,3 +254,39 @@ To learn more about how Kuberentes works, read [this blog](https://sensu.io/blog
 * One or more nodes are usually dedicated to running applications, while one or more nodes are reserved only for the control plane 
 * Multiple replicas of control plane components can run on multiple pods to provide redundancy -->
 
+<!-- 
+### Node Components
+There are several components that run on every node, to ensure Pods are running and to maintain
+the Kuberentes runtime environment: 
+
+1. `kubelet` makes sure that containers are running in a Pod. It ensures that conatiners 
+that are described in a certain PodSpec are running and healthy.
+2. `kube-proxy` maintains network rules on nodes, and allows network communication to your 
+Pods from network session from inside or outside your cluster. This will be very important later on.
+3. `Container-runtime` is the software responsible for running containers.
+
+To learn more about Node components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#node-components). 
+
+### How do Nodes communicate with the Control Plane
+
+Nodes communicate with the control plane via the `apiserver` (API server). For example, when you make a `kubectl` command,
+this in turn makes the necessary Kubernetes API calls, all through the API server. Kubernetes has a "hub-and-spoke" 
+API pattern meaning that the nodes (spokes) will subscribe and communicate with the Kubernetes API
+via one hub (the API server). -->
+
+<!-- ### Control Plane to Node
+The control plane communicates with nodes in two main ways:
+
+1. `apiserver` to `kubelet` which is used for fetching logs, attaching to running pods, and using
+`kubelet's` port-forwarding functionality.
+2. `apiserver` to `nodes, pods, and services`. These are http (unsecure) connections so they are 
+not safe to run on unsecured or public networks.
+
+Read more about how nodes communicate with the control plane [from the official Kubernetes documentation](https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/) -->
+
+<!-- 
+### Control via API Server
+There are many built-in Kubernetes controllers which will manage state by interacting with 
+the API server. The important thing to understand is that controllers will call the API server
+to make some change to get closer to the `desired state` and then the controller will report the current state back to the cluster's API server. This change in state may in turn trigger other controllers, and this can happen forever, such as when your cluster state is not stable. Read 
+more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#control-via-api-server). -->
