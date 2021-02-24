@@ -130,12 +130,13 @@ to be closer (and eventually be equal) to the `desired state` using the API serv
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Kubernetes Design
-Kubernetes uses lots of different controllers which each manage one aspect of the cluster.
+Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` rotates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. To manage the service instance, the Operator's controller will need to use the `kube-apiserver's` API to adjust the desired state to describe the service instance that the Operator wants to have running.
+<!-- 
 For example, when the admin creates a new Deployment, the current state of the cluster 
 is differnet than the one that the admin has created, so the controllers take actions by
 way of the API server to adjust the actual state to make it match the desired state. When
 something goes wrong in a cluster, such as a pod crashing, the actual state diverges from the
-expected state, and the controllers again adjust the actual state to make it match.
+expected state, and the controllers again adjust the actual state to make it match. -->
 
 ## What are operators?
 Operators are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
