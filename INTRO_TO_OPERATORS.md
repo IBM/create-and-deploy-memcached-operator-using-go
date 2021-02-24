@@ -42,7 +42,7 @@ Kubernetes is often called a container-orchestrator, but it might be more accura
 orchestrator.
 
 ### Workloads on Kubernetes
-A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A `Deployment` runs a set of pod replicas or `ReplicaSets` which just ensures that a certain amount of pods are running at a given time. Remember that each pod is running a container. 
+A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas or [`ReplicaSets`](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/) which just ensures that a certain amount of pods are running at a given time. Remember that each pod is running a container. 
 
 Once your application is running, you can make it available on the internet as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
 service. 
@@ -51,7 +51,7 @@ service.
 If you want to get started using Pods, you must decide on which [workload resource](https://kubernetes.io/docs/concepts/workloads/controllers/) you should use to create your Pod. A common workload is a deployment or a job, or a statefulset if you need to track state.  
 
 To read more in depth about Pods, go to the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/pods/). -->
-
+<!-- 
 ## What are Deployments
 A deployment "provides declarative updates for Pods and ReplicaSets". You describe a **desired state** (keep
 this in mind, since "desired state" will become very important for us), and the deployment controller changes 
@@ -69,7 +69,7 @@ guarantee a specified number of identical pods. A ReplicaSet is defined with thr
 
 The ReplicaSet then creates and deletes pods as needed to reach the desired `number of replicas` i.e. the desired state.
 
-To read more in depth about ReplicaSets, go to the [official Kubernetes documentation for ReplicaSets](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/).
+To read more in depth about ReplicaSets, go to the [official Kubernetes documentation for ReplicaSets](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/). -->
 
 ## How Kubernetes works 
 When you deploy Kubernetes, you get a cluster. Each cluster consists of at least one worker machine 
