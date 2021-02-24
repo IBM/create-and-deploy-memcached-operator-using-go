@@ -112,7 +112,7 @@ be continually checking for the `desired state` and making sure that it is the s
 `current state`. 
 
 ### Desired State and Current State
-**A Cluster has two states: the desired (or expected) state, and the current state.**
+A cluster has two states: the desired (or expected) state, and the current state.
 
 If those two states differ, the [controller](https://kubernetes.io/docs/concepts/architecture/controller/) will communicate with the API server
 to create, delete, or update resources until the `desired state` is the same as the `current state`. Cluster administrators 
