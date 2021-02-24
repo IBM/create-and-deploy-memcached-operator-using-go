@@ -21,28 +21,138 @@ documentation.
 Before we start diving into operators, you need to know basic knoweldge about Kubernetes itself, since operators are just 
 automating parts of app delivery and deployment on Kubernetes. 
 
-## What is Kubernetes (a.k.a. K8s)
-* A Kubernetes cluster is a collection of computers, called nodes 
-  * All cluster work runs on one or more of the nodes
-* The basic unit of work, and replication, is called a pod
-  * A pod is one or more Linux containers with common resources like networking, storage, and access to shared memory 
-* A Kubernetes cluster can be divided into two planes but sometimes these planes have some overlap. 
-  * <b>The control plane</b>, which is Kubernetes itself and implements the Kubernetes API and cluster orchestration logic
-  * The <b>app plane, or data plane</b>, is everything else. This is the group of pods where the app pods run
-* One or more nodes are usually dedicated to running applications, while one or more nodes are reserved only for the control plane 
-* Multiple replicas of control plane components can run on multiple pods to provide redundancy
+## What is Kubernetes
+Kubernetes is a "portable, extensible, open-source platform for managing containerized workloads and services,
+that favilitates both declaritive configuration and automation." At the end of the day, Kubernetes is a way 
+for us to run our applications. A Kubernetes cluster is a collection of computers, called nodes. All work runs on one or more of these nodes. More on nodes in the sections below.
 
-To read more about Kubernetes including the official definition, go to the official [Kuberenetes documentation](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/).
+Read more about why Kubernetes is useful from
+the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
 
-## How Kubernetes works
-* Kubernetes automates the lifecycle of an app, such as a static web server 
-* Without state, any of the app instances are interchangeable 
-  * Because the server is not tracking the state, or storing input or data of any kind, when once instance fails, Kubernetes can replace it with another. 
-* These instances are called replicas which are just copies of an app running on a cluster 
-* The controllers of the control loop implement logic to automatically check for the difference between the actual state and the desired state 
-  * When the two diverge, the controller takes action and makes sure the two match
+## What are Pods
+The basic unit of work, replication, and deployment in Kubernetes is called a pod. A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smalled deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
 
-To learn more about how Kuberentes works, read [this blog](https://sensu.io/blog/how-kubernetes-works#:~:text=Kubernetes%20keeps%20track%20of%20your,storage%2C%20and%20CPU%20when%20necessary.).
+### What are Containers
+A [container](https://kubernetes.io/docs/concepts/containers/) is a lightweight and portable
+executable image that contains software and all its dependencies. Containers decouple application
+from underlying host infrastructure so it's easy to deploy in different cloud or OS environments.
+Kubernetes is often called a container-orchestrator, but it might be more accurate to describe it as a pod 
+orchestrator.
+
+### Using Pods
+If you want to get started using Pods, you must decide on which [workload resource](https://kubernetes.io/docs/concepts/workloads/controllers/) you should use to create your Pod. A common workload is a deployment or a job, or a statefulset if you need to track state.  
+
+To read more in depth about Pods, go to the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/workloads/pods/).
+
+## What are Deployments
+A deployment "provides declarative updates for Pods and ReplicaSets". You describe a **desired state** (keep
+this in mind, since "desired state" will become very important for us), and the deployment controller changes 
+the actual state to the desired state. One of the most common use case of using a Deployment is to rollout
+a ReplicaSet. Note that it is recommneded to use Deployments when you want ReplicaSets. 
+
+To read more in depth about Deployments, go to the [official Kubernetes documentation for Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
+
+## What are ReplicaSets
+A ReplicaSet's purpose is to "maintain a stable set of replica Pods running at any given time". It is used to 
+guarantee a specified number of identical pods. A ReplicaSet is defined with three main fields:
+1. A `selector` field which specifies how to identify Pods it can acquire
+2. A `number of replicas` field which indicates how many Pods the ReplicaSet should maintain
+3. A `Pod template` field which specifies the data of new Pods it should create to meet the `number of replicas` requirement. This is what the ReplicaSet will use to create new Pods.
+
+The ReplicaSet then creates and deletes pods as needed to reach the desired `number of replicas` i.e. the desired state.
+
+To read more in depth about ReplicaSets, go to the [official Kubernetes documentation for ReplicaSets](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/).
+
+## How Kubernetes works 
+When you deploy Kubernetes, you get a cluster. Each cluster consists of at least one worker machine 
+called a `node`.  A node may be a physical or virtual machine. The worker nodes host the 
+application workload in the form of Pods. More worker nodes on more computers provide more 
+capacity for running workloads.
+
+The [control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term-control-plane) manages the worker nodes and Pods in your cluster.
+
+### Control Plane Components
+
+The control plane has the following components:
+
+1. `kube-apiserver` which exposes the Kubernetes API. The Kubernetes API enables us to define, deploy, and manage the lifecycle of containers.
+2. `etcd` which is used as the backing store for all Kubernetes cluster data.
+3. `kube-scheduler` watches for newly created Pods without an assigned Node and assigns them to a Node. 
+4. `kube-controller-manager` runs controller processes. Each different controller is a separate process. This will be extermely important once we get deeper into operators since operators are 
+custom controllers so they will ultimately be run by the `kube-controller-manager`.
+5. `cloud-controller-manager` lets you link your cluster into your cloud providers API. It only 
+manages controllers which are needed for your cloud provider. If you are running your cluster locally, you will not have a `cloud-controller-manager`.
+
+To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/). 
+
+### Node Components
+There are several components that run on every node, to ensure Pods are running and to maintain
+the Kuberentes runtime environment: 
+
+1. `kubelet` makes sure that containers are running in a Pod. It ensures that conatiners 
+that are described in a certain PodSpec are running and healthy.
+2. `kube-proxy` maintains network rules on nodes, and allows network communication to your 
+Pods from network session from inside or outside your cluster. This will be very important later on.
+3. `Container-runtime` is the software responsible for running containers.
+
+To learn more about Node components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#node-components). 
+
+### How do Nodes communicate with the Control Plane
+
+Nodes communicate with the control plane via the `apiserver` (API server). For example, when you make a `kubectl` command,
+this in turn makes the necessary Kubernetes API calls, all through the API server. Kubernetes has a "hub-and-spoke" 
+API pattern meaning that the nodes (spokes) will subscribe and communicate with the Kubernetes API
+via one hub (the API server). There are many details in terms of communication, and know that 
+Kubernetes allows users to customize their configuration so that the cluster can run on a public (unsecured) network
+
+### Control Plane to Node
+The control plane communicates with nodes in two main ways:
+
+1. `apiserver` to `kubelet` which is used for fetching logs, attaching to running pods, and using
+`kubelet's` port-forwarding functionality.
+2. `apiserver` to `nodes, pods, and services`. These are http (unsecure) connections so they are 
+not safe to run on unsecured or public networks.
+
+Read more about how nodes communicate with the control plane [from the official Kubernetes documentation](https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/)
+
+## Controllers
+A control loop is a loop which regulates the state of the system. This is extremely important 
+because this is the heart of Kubernetes and its declaritive system. The control loop will 
+be continually checking for the `desired state` and making sure that it is the same as the 
+`current state`. If those two states differ, the controller will communicate with the apiserver
+to create, delete, or update resources until the `desired state` is the same as the `current state`. We will get into desired vs current state more as we dive deeper into operators.
+
+### Controller pattern
+Each controller will watch one specific type of Kubernetes resource. Each resource will have a 
+field called `spec` which is the `desired state` of that resource. When it comes to operators we will be using the controller pattern to create a custom controller and a custom resource, and have our controller watch our custom resource.
+
+The controller for that resource is responsible for bringing the `current state`
+to be closer (and eventually be equal) to the `desired state` using the API server. Read 
+more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern)
+
+### Control via API Server
+There are many built-in Kubernetes controllers which will manage state by interacting with 
+the API server. The important thing to understand is that controllers will call the API server
+to make some change to get closer to the `desired state` and then the controller will report the current state back to the cluster's API server. This change in state may in turn trigger other controllers, and this can happen forever, such as when your cluster state is not stable. Read 
+more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#control-via-api-server).
+
+## Desired State and Current State
+**A Cluster has two states: the desired (or expected) state, and the current state.**
+
+At the heart of the Kubernetes design is a declaritive model which tries to match the 
+desired state or "spec" with the current state or "status". Cluster administrators 
+are able to change the desired state of the cluster by issuing commands such as `kubectl create` 
+or `kubectl apply -f`.
+
+**You will see `spec` used a lot throughout Kubernetes documentation and that refers to `desired state`. In turn, and `status` refers to current state.** 
+
+### Kubernetes Design
+Kubernetes uses lots of different controllers which each manage one aspect of the cluster.
+For example, when the admin creates a new Deployment, the current state of the cluster 
+is differnet than the one that the admin has created, so the controllers take actions by
+way of the API server to adjust the actual state to make it match the desired state. When
+something goes wrong in a cluster, such as a pod crashing, the actual state diverges from the
+expected state, and the controllers again adjust the actual state to make it match.
 
 ## What are operators?
 Operators are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
@@ -137,3 +247,21 @@ The information in this article can be found in a few different sources:
 * kublr.com/blog/understanding-kubernetes-operators
 
 * kubernetes.io/docs/concepts/extend-kubernetes/operator
+
+
+<!-- 
+* Kubernetes automates the lifecycle of an app, such as a static web server 
+* Without state, any of the app instances are interchangeable 
+  * Because the server is not tracking the state, or storing input or data of any kind, when once instance fails, Kubernetes can replace it with another. 
+* These instances are called replicas which are just copies of an app running on a cluster 
+* The controllers of the control loop implement logic to automatically check for the difference between the actual state and the desired state 
+  * When the two diverge, the controller takes action and makes sure the two match
+
+To learn more about how Kuberentes works, read [this blog](https://sensu.io/blog/how-kubernetes-works#:~:text=Kubernetes%20keeps%20track%20of%20your,storage%2C%20and%20CPU%20when%20necessary.). -->
+
+<!-- * A Kubernetes cluster can be divided into two planes but sometimes these planes have some overlap. 
+  * <b>The control plane</b>, which is Kubernetes itself and implements the Kubernetes API and cluster orchestration logic
+  * The <b>app plane, or data plane</b>, is everything else. This is the group of pods where the app pods run
+* One or more nodes are usually dedicated to running applications, while one or more nodes are reserved only for the control plane 
+* Multiple replicas of control plane components can run on multiple pods to provide redundancy -->
+
