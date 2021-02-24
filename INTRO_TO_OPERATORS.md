@@ -86,13 +86,12 @@ The [control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term
 
 The control plane has the following components:
 
-1. `kube-apiserver` which exposes the Kubernetes API. The Kubernetes API enables us to define, deploy, and manage the lifecycle of containers.
+1. `kube-apiserver` which exposes the Kubernetes API. The Kubernetes API enables us to define, deploy, and manage the lifecycle of containers. This is also 
+known as the API server.
 2. `etcd` which is used as the backing store for all Kubernetes cluster data.
 3. `kube-scheduler` watches for newly created Pods without an assigned Node and assigns them to a Node. 
-4. `kube-controller-manager` runs controller processes. Each different controller is a separate process. This will be extermely important once we get deeper into operators since operators are 
-custom controllers so they will ultimately be run by the `kube-controller-manager`.
-5. `cloud-controller-manager` lets you link your cluster into your cloud providers API. It only 
-manages controllers which are needed for your cloud provider. If you are running your cluster locally, you will not have a `cloud-controller-manager`.
+4. `kube-controller-manager` runs controller processes. Each different controller is a separate process. 
+5. `cloud-controller-manager` lets you link your cluster into your cloud providers API.
 
 The two components the are very important to us are
 the `kube-apiserver` and the `kube-controller-manager`.
