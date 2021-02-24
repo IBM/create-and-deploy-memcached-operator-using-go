@@ -22,9 +22,9 @@ Before we start diving into operators, you need to know basic knoweldge about Ku
 automating parts of app delivery and deployment on Kubernetes. 
 
 ## What is Kubernetes
-Kubernetes is a portable, extensible, declaritive open-source platform for managing containerized workloads and services. Since containers are a very popular choice of deployment, there needs to be a way to manage these different containers in such a way to ensure no downtime for our application. This is where Kubernetes comes in. It manages the way we communicate with our containers, and enables us to write our own custom logic to automate dev ops practices such as seamless ungrades. Kubernetes does this by giving us commands, in the form of `kubectl` to manage our cluster, or collection of computers. All work runs on one or more of these computers, or nodes. 
+Kubernetes is a portable, extensible, declaritive open-source platform for managing containerized workloads and services. Since containers are a very popular choice of deployment, there needs to be a way to manage these different containers in such a way to ensure no downtime for our application. This is where Kubernetes comes in. It manages the way we communicate with our containers, and enables us to write our own custom logic to automate dev ops practices such as seamless ungrades. Kubernetes does this by giving us commands, in the form of `kubectl` to manage our cluster. All work runs on one or more of these computers, or nodes in our cluster. 
 
-Read more about why Kubernetes is useful and how it is different than other deployment solutions. [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
+Read more about why Kubernetes is useful and how it is different than other deployment solutions [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
 
 ## What are Pods
 The basic unit of work, replication, and deployment in Kubernetes is called a pod. A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smalled deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
@@ -45,15 +45,15 @@ To read more in depth about Pods, go to the [official Kubernetes documentation](
 A deployment "provides declarative updates for Pods and ReplicaSets". You describe a **desired state** (keep
 this in mind, since "desired state" will become very important for us), and the deployment controller changes 
 the actual state to the desired state. One of the most common use case of using a Deployment is to rollout
-a ReplicaSet. Note that it is recommneded to use Deployments when you want ReplicaSets. 
+a ReplicaSet.
 
 To read more in depth about Deployments, go to the [official Kubernetes documentation for Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
 
 ## What are ReplicaSets
 A ReplicaSet's purpose is to "maintain a stable set of replica Pods running at any given time". It is used to 
 guarantee a specified number of identical pods. A ReplicaSet is defined with three main fields:
-1. A `selector` field which specifies how to identify Pods it can acquire
-2. A `number of replicas` field which indicates how many Pods the ReplicaSet should maintain
+1. A `selector` field which specifies how to identify Pods it can acquire. This can be done in the form of `labels`.
+2. A `number of replicas` field which indicates how many Pods the ReplicaSet should maintain.
 3. A `Pod template` field which specifies the data of new Pods it should create to meet the `number of replicas` requirement. This is what the ReplicaSet will use to create new Pods.
 
 The ReplicaSet then creates and deletes pods as needed to reach the desired `number of replicas` i.e. the desired state.
@@ -99,8 +99,7 @@ To learn more about Node components, read from the [official Kubernetes document
 Nodes communicate with the control plane via the `apiserver` (API server). For example, when you make a `kubectl` command,
 this in turn makes the necessary Kubernetes API calls, all through the API server. Kubernetes has a "hub-and-spoke" 
 API pattern meaning that the nodes (spokes) will subscribe and communicate with the Kubernetes API
-via one hub (the API server). There are many details in terms of communication, and know that 
-Kubernetes allows users to customize their configuration so that the cluster can run on a public (unsecured) network
+via one hub (the API server).
 
 ### Control Plane to Node
 The control plane communicates with nodes in two main ways:
