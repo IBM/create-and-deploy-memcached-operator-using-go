@@ -64,6 +64,9 @@ The [control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term
 
 ### Control Plane Components
 
+![Alt text](./images/components-of-kubernetes.svg)
+<!-- <img src="./images/components-of-kubernetes"> -->
+
 The two control plane components that are very important for operator development are
 the `kube-apiserver` and the `kube-controller-manager`.
 Whenever an admin works with a tool such as the 
@@ -86,7 +89,7 @@ state closer to the desired state.
 A cluster has two states: the desired (or expected) state, and the current state.
 
 If those two states differ, the [controller](https://kubernetes.io/docs/concepts/architecture/controller/) will communicate with the API server
-to create, delete, or update resources until the `desired state` is the same as the `current state`. Cluster administrators 
+to create, delete, or update resources until the `current state` is the same as the `desired state`. Cluster administrators 
 are able to change the desired state of the cluster by issuing commands such as `kubectl create` 
 or `kubectl apply -f`.
 
@@ -101,20 +104,24 @@ to be closer (and eventually be equal) to the `desired state` using the API serv
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Kubernetes Design
-Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Just like any other controller, your Operators controller will need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator. 
+Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Your Operators controller will be watching for a specific custom resource, and once that 
+custom resource's spec, or desired state changes, this desired state will become the desired 
+state for the cluster. 
+<!-- 
+ need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator.  -->
 
-Make sure to add that the internal controllers (replication controller) does not use the Kube API 
+<!-- Make sure to add that the internal controllers (replication controller) does not use the Kube API 
 
 talk about that the custom controller is just and now its getting iterated thru 
-since its part of the control loop. 
-
+since its part of the control loop.  -->
+<!-- 
 
 The k8s controllers are comparing actual to desired. When they find a difference, they tell the kubelets to change the
-current sttae to be the same as the desired state. 
+current sttae to be the same as the desired state.  -->
 
 What the controller is doing in the reconcile loop, the controller is not looking at desired and actual state, thats what the cluster does. The operator looks at the CR and the desired state. 
 
-There are three levels 
+<!-- There are three levels 
 
 1. CR desired state
 
@@ -125,7 +132,7 @@ There are three levels
 The operators controller just requests a new instance, but the cluster itself has to change the actual state to match the 
 desired state.
 
-the cluster is responsible for everything in the cluster. whereas each operator is responsible for instances for that service.
+the cluster is responsible for everything in the cluster. whereas each operator is responsible for instances for that service. -->
 
 
 ## What are operators?
