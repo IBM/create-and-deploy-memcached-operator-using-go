@@ -25,9 +25,9 @@ documentation.
 **To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
 
 ### Workloads on Kubernetes
-A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas or [`ReplicaSets`](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/) which just ensures that a certain amount of pods are running at a given time. Remember that each pod is running a container. 
+A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas which just ensures that a certain amount of pods are running at a given time. 
 
-Once your application is running, you can make it available on the internet as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
+Once your application is running, you can make it available as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
 service. 
 
 <!-- ### Using Pods
@@ -64,17 +64,11 @@ The [control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term
 
 ### Control Plane Components
 
-The control plane has the following components:
+![Alt text](./images/components-of-kubernetes.svg)
+<!-- <img src="./images/components-of-kubernetes"> -->
 
-1. `kube-apiserver` which exposes the Kubernetes API. The Kubernetes API enables us to define, deploy, and manage the lifecycle of containers. This is also 
-known as the API server.
-2. `etcd` which is used as the backing store for all Kubernetes cluster data.
-3. `kube-scheduler` watches for newly created Pods without an assigned Node and assigns them to a Node. 
-4. `kube-controller-manager` runs controller processes. Each different controller is a separate process. 
-5. `cloud-controller-manager` lets you link your cluster into your cloud providers API.
-
-The two components that are very important for operator development are
-the `kube-apiserver` and the `kube-controller-manager`.
+The two control plane components that are very important for operator development are
+the `kube-apiserver` (also known as API server or Kubernetes API) and the `kube-controller-manager`.
 Whenever an admin works with a tool such as the 
 `kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
 certain way. When we create a 
@@ -87,15 +81,18 @@ Kubernetes controllers.
 To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#control-plane-components). 
 
 ## Controllers
-A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** The control loop will 
-be continually checking for the `desired state` and making sure that it is the same as the 
-`current state`. 
+
+![Alt text](./images/controller-flow.png)
+
+A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** In Kubernetes, controllers are control 
+loops that watch the current state of the cluster. Each controller tries to move the current
+state closer to the desired state.
 
 ### Desired State and Current State
 A cluster has two states: the desired (or expected) state, and the current state.
 
 If those two states differ, the [controller](https://kubernetes.io/docs/concepts/architecture/controller/) will communicate with the API server
-to create, delete, or update resources until the `desired state` is the same as the `current state`. Cluster administrators 
+to create, delete, or update resources until the `current state` is the same as the `desired state`. Cluster administrators 
 are able to change the desired state of the cluster by issuing commands such as `kubectl create` 
 or `kubectl apply -f`.
 
@@ -110,20 +107,33 @@ to be closer (and eventually be equal) to the `desired state` using the API serv
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Kubernetes Design
-Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Just like any other controller, your Operators controller will need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator. 
+Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
 
-Make sure to add that the internal controllers (replication controller) does not use the Kube API 
+Controllers can act on core resources such as deployments or services, which are typically part of the Kubernetes controller manager in the control plane, or can watch and manipulate user-defined custom resources. The user-defined custom resources are what an operator helps manage. More on 
+this soon.
+
+
+<!-- 
+As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Your Operators controller will be watching for a specific custom resource, and once that 
+custom resource's spec, or desired state changes, Kubernetes will make changes to the current 
+state of that resource to make it match the desired state.   -->
+
+
+<!-- 
+ need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator.  -->
+
+<!-- Make sure to add that the internal controllers (replication controller) does not use the Kube API 
 
 talk about that the custom controller is just and now its getting iterated thru 
-since its part of the control loop. 
-
+since its part of the control loop.  -->
+<!-- 
 
 The k8s controllers are comparing actual to desired. When they find a difference, they tell the kubelets to change the
-current sttae to be the same as the desired state. 
+current sttae to be the same as the desired state.  -->
 
-What the controller is doing in the reconcile loop, the controller is not looking at desired and actual state, thats what the cluster does. The operator looks at the CR and the desired state. 
+<!-- What the controller is doing in the reconcile loop, the controller is not looking at desired and actual state, thats what the cluster does. The operator looks at the CR and the desired state.  -->
 
-There are three levels 
+<!-- There are three levels 
 
 1. CR desired state
 
@@ -134,7 +144,7 @@ There are three levels
 The operators controller just requests a new instance, but the cluster itself has to change the actual state to match the 
 desired state.
 
-the cluster is responsible for everything in the cluster. whereas each operator is responsible for instances for that service.
+the cluster is responsible for everything in the cluster. whereas each operator is responsible for instances for that service. -->
 
 
 ## What are operators?
