@@ -217,16 +217,18 @@ documentation on custom controller, [here](https://kubernetes.io/docs/concepts/e
 
 
 ## Operator SDK
-The Operator SDK is a framework that uses the controller-runtime library to make writing operators easier by providing:
 
-* High level APIs and abstractions to write the operational logic more intuitively
-* Tools for scaffolding and code generation to bootstrap a new project fast
-* Extensions to cover common Operator use cases
+Operator SDK is an open source toolkit that provides tools to build, test and package operators. The SDK cli allows you to scaffold a project and also provides commands to generate code. It generates necessary files to bootstrap and extend to fit your use case. Also operator SDK makes use of `make`, a buiild automation tool, to build, test, package and deploy your operator through series of `make` commands that is provided in generated `Makefile`. The `Makefile` comes with pre-built commands like below which we will be using in our project.
 
-For the purposes of our learning path, the operator SDK will be used to scaffold our code.
+* `manifests` generates manifests `yaml` definitions based on `kubebuilder` markers.
+* `install` compiles your code and create executables.
+* `generate` updates the generated code for based on your operator API schema.
+* `docker-build` builds the operator docker image.
+* `docker-push` pushes the operator docker image.
+* `deploy` deploys all the resources to the cluster.
+* `undeploy` deletes all the deployed resources from the cluster.
 
-cluster notifices the operator that there is anew CR. When a new CR of the right kind is created, how does it know? Does it search thru all of them. Once the controller has that data, it needs to compare the data. it uses the clusters api to   
-update its desired sttae. 
+Operator SDK also allows you to install OLM (operator lifecycle manager) using `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an Operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, to make sure all the resources in the cluster are in `installed` status.
 
 
 <!-- What are operators? -->
