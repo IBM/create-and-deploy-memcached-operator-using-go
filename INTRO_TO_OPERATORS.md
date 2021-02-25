@@ -81,6 +81,9 @@ Kubernetes controllers.
 To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#control-plane-components). 
 
 ## Controllers
+
+![Alt text](./images/controller-flow.png)
+
 A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** In Kubernetes, controllers are control 
 loops that watch the current state of the cluster. Each controller tries to move the current
 state closer to the desired state.
