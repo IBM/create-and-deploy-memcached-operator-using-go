@@ -25,9 +25,9 @@ documentation.
 **To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
 
 ### Workloads on Kubernetes
-A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas or [`ReplicaSets`](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/) which just ensures that a certain amount of pods are running at a given time. Remember that each pod is running a container. 
+A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas which just ensures that a certain amount of pods are running at a given time. 
 
-Once your application is running, you can make it available on the internet as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
+Once your application is running, you can make it available as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
 service. 
 
 <!-- ### Using Pods
@@ -64,16 +64,7 @@ The [control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term
 
 ### Control Plane Components
 
-The control plane has the following components:
-
-1. `kube-apiserver` which exposes the Kubernetes API. The Kubernetes API enables us to define, deploy, and manage the lifecycle of containers. This is also 
-known as the API server.
-2. `etcd` which is used as the backing store for all Kubernetes cluster data.
-3. `kube-scheduler` watches for newly created Pods without an assigned Node and assigns them to a Node. 
-4. `kube-controller-manager` runs controller processes. Each different controller is a separate process. 
-5. `cloud-controller-manager` lets you link your cluster into your cloud providers API.
-
-The two components that are very important for operator development are
+The two control plane components that are very important for operator development are
 the `kube-apiserver` and the `kube-controller-manager`.
 Whenever an admin works with a tool such as the 
 `kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
@@ -87,9 +78,9 @@ Kubernetes controllers.
 To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#control-plane-components). 
 
 ## Controllers
-A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** The control loop will 
-be continually checking for the `desired state` and making sure that it is the same as the 
-`current state`. 
+A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** In Kubernetes, controllers are control 
+loops that watch the current state of the cluster. Each controller tries to move the current
+state closer to the desired state.
 
 ### Desired State and Current State
 A cluster has two states: the desired (or expected) state, and the current state.
