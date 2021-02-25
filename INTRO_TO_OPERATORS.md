@@ -114,7 +114,7 @@ needed to make sure your service is up and running. The approach of using an ope
 inherently easier, and scales better, than creating all of the deployments, configmaps, secrets, and services manually. 
 
 ## Custom Resource Definitions
-A Custom Resource is how we can extend the Kubernetes API. A Custom Resource Definition is a 
+A Custom Resource is how we can extend the Kubernetes API. A [Custom Resource Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions) is a 
 type of resource in Kubernetes which defines a Custom Resource and all of the fields that 
 are associated with a particular resource. 
 
