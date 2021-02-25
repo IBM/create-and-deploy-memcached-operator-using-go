@@ -102,8 +102,7 @@ Read more about what operators from this [Red Hat blog](https://www.redhat.com/e
 
 ## What do operators do?
 
-Operators extend the control plane by adding another controller to the control plane. The operator itself is a workload, so it is running 
-on the worker nodes. <b>This additional controller is customized for a particular (stateful) service.</b> Operators enable a developer to write custom controller logic to help manage 
+Operators extend the control plane by adding another controller to the control plane. Operators enable a developer to write custom controller logic to help manage 
 a particular service, such as a database. 
  
 ![Alt text](./images/operator-interactions.png)
