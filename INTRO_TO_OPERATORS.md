@@ -85,9 +85,7 @@ more about this topic [here](https://kubernetes.io/docs/concepts/architecture/co
 
 ### Kubernetes Design
 
-![Alt text](./images/controller-flow.png)
-
-Image source: [Kubernetes Patterns](https://www.redhat.com/cms/managed-files/cm-oreilly-kubernetes-patterns-ebook-f19824-201910-en.pdf)
+![Alt text](./images/operator-reconciliation.png)
 
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
 
