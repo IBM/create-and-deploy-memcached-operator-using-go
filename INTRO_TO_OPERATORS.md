@@ -169,7 +169,7 @@ a particular service, such as a database.
 
 From the picture above, you can see that operators deploy their workload through a controller. 
 Once you've created an operator, you will create a CRD (Custom Resource Definition) and then 
-create an instance of that custom resource using the Operator Controller API.  The operator controller will have custom logic which 
+create an instance of that custom resource using the Operator Controller API. The operator controller will have custom logic which 
 will in turn call the Kube API to manage your particular service. The Kube API will in turn 
 change the cluster's desired state to be what is specified by the Operator Controller. From
 this point, all that happens in the cluster is the same that happens when an admin uses 
@@ -205,19 +205,31 @@ To learn more about Stateful vs. Stateless apps, read [this article](https://www
 ## Why does Kubernetes need operators?
 
 Kubernetes needs operators in order to automate tasks which are normally done manually by a 
-SRE. 
-<b>TODO</b>
+SRE. Instead of having to set up multiple deployments, configmaps, secrets, and services, as 
+an end user, you can just deploy your operator instead. Your operator will take care of everything
+needed to make sure your service is up and running. The approach of using an operator is 
+inherently easier, and scales better, than creating all of the deployments, configmaps, secrets, and services manually. 
 
 <!-- Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
 and changing runtime configuration that is needed for many stateful applications. Read more about why Kubernetes needs operators in this [blog](https://kublr.com/blog/understanding-kubernetes-operators/). -->
 
-## Operator Code - the Controller and the API
-Now, let's start exploring the heart of the operator - the controller code. But before we do that we must understand custom 
+## Custom Resource Definitions
+A Custom Resource is how we can extend the Kubernetes API. A Custom Resource Definition is a 
+type of resource in Kubernetes which defines a Custom Resource and all of the fields that 
+are associated with a particular resource. 
+
+When we develop an operator, we will use the SDK to create our API file, i.e. our `*_types.go` file.
+The operator SDK has a utility function which will help us automatically generate CRD's from our 
+API file. More on this in the next tutorial.
+
+High-level configuration is inputted by the user in the CR, and then the operator takes 
+whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state.
+<!-- Now, let's start exploring the heart of the operator - the controller code. But before we do that we must understand custom 
 resources, and custom resource definitions, since that is what we will use to create our operator.
 
 Talk about CRD first before CRs. Then talk about API (which is the types_go) file. Then talk about data, which is what 
-is inputted by the user.
-
+is inputted by the user. -->
+<!-- 
 ### Custom Resources(CRs) - Custom API endpoints
 
 A CR declares that a new service instance should exist with the configuration specified in the `spec` section. The 
@@ -233,19 +245,13 @@ steps when developing our operator. Here are two useful details about Custom Res
 
 To learn more about Custom Resources, refer to the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
 
-Relationship between API and CRD, and then relationship between CR and CRD. 
+Relationship between API and CRD, and then relationship between CR and CRD.  -->
 
 ### Custom Controllers (the code that watches your Custom Resource)
 When you combine the custom resource with a custom controller that watches that custom resource, 
-you get what is called a "declaritive API" by Kubernetes. 
-
-A declaritive API is one in which the user can "declare" or "specify" the
-desired state of the cluster, and Kubernetes will try to change whatever resources are needed to 
-be changed in order to reach the "desired state" of the cluster.
-
-To learn more about custom controller, and if you should use one, read the official Kubernetes 
-documentation on custom controller, [here](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#custom-controllers).
-
+you get what is called a "declaritive API" by Kubernetes. This declaritive API is used to 
+continually monitor your application's state and it can do things such as back up state, upgrade 
+the application over time, and recover from failures, automatically.
 
 ## Operator SDK
 
@@ -261,6 +267,10 @@ Operator SDK is an open source toolkit that provides tools to build, test and pa
 
 Operator SDK also allows you to install OLM (operator lifecycle manager) using `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an Operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, to make sure all the resources in the cluster are in `installed` status.
 
+## Conclusion
+In this article, we learned about how operators can extend the base Kubernetes functionality 
+by the use of custom controllers and CRDs. In the next article, we will develop and deploy 
+an operator to the OpenShift container platform using the operator-sdk.
 
 <!-- What are operators? -->
 <!-- What do operators do? Explain the advantages promised by using operators -->
