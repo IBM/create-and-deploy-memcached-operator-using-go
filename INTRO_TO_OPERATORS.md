@@ -111,6 +111,8 @@ more about this topic [here](https://kubernetes.io/docs/concepts/architecture/co
 
 ![Alt text](./images/controller-flow.png)
 
+Image source: [Kubernetes Patterns](https://www.redhat.com/cms/managed-files/cm-oreilly-kubernetes-patterns-ebook-f19824-201910-en.pdf)
+
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
 
 Controllers can act on core resources such as deployments or services, which are typically part of the Kubernetes controller manager in the control plane, or can watch and manipulate user-defined custom resources. The user-defined custom resources are what an operator helps manage. More on 
@@ -166,8 +168,8 @@ a particular service, such as a database.
 ![Alt text](./images/operator-interactions.png)
 
 From the picture above, you can see that operators deploy their workload through a controller. 
-Once you've created an operator, you can define your Operator Controller API with the fields
-that are specific to your service. The operator controller will have custom logic which 
+Once you've created an operator, you will create a CRD (Custom Resource Definition) and then 
+create an instance of that custom resource using the Operator Controller API.  The operator controller will have custom logic which 
 will in turn call the Kube API to manage your particular service. The Kube API will in turn 
 change the cluster's desired state to be what is specified by the Operator Controller. From
 this point, all that happens in the cluster is the same that happens when an admin uses 
