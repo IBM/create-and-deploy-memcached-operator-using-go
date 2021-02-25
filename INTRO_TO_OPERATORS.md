@@ -25,6 +25,9 @@ documentation.
 **To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
 
 ### Workloads on Kubernetes
+
+![Alt text](./images/operator-workload.png)
+
 A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas which just ensures that a certain amount of pods are running at a given time. 
 
 Once your application is running, you can make it available as a `Service`. A [`Service`](https://kubernetes.io/docs/concepts/services-networking/service/) is a way to expose an application running on a set of Pods as an endpoint, so that other client applications can invoke your 
@@ -82,8 +85,6 @@ To learn more about control plane components, read from the [official Kubernetes
 
 ## Controllers
 
-![Alt text](./images/controller-flow.png)
-
 A control loop is a loop which regulates the state of the system. **The control loop is the heart of Kubernetes and its declaritive system.** In Kubernetes, controllers are control 
 loops that watch the current state of the cluster. Each controller tries to move the current
 state closer to the desired state.
@@ -107,6 +108,9 @@ to be closer (and eventually be equal) to the `desired state` using the API serv
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Kubernetes Design
+
+![Alt text](./images/controller-flow.png)
+
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
 
 Controllers can act on core resources such as deployments or services, which are typically part of the Kubernetes controller manager in the control plane, or can watch and manipulate user-defined custom resources. The user-defined custom resources are what an operator helps manage. More on 
@@ -148,15 +152,28 @@ the cluster is responsible for everything in the cluster. whereas each operator 
 
 
 ## What are operators?
-[Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
-components". 
+[Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are extensions to Kubernetes that make use of custom resources to manage applications and their 
+components. 
 They are used used to automate software config/maintenance activities that are typically done by human operators. That's why they are called operators.
 Additionally, they are used to automate the software management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases.
 
-Operators are extending the control plane by adding another controller to the control plane. The operator itself is a workload, so it is running 
-on the worker nodes. <b>This additional controller is customized for a particular (stateful) service.</b>
- 
 ## What do operators do?
+
+Operators extend the control plane by adding another controller to the control plane. The operator itself is a workload, so it is running 
+on the worker nodes. <b>This additional controller is customized for a particular (stateful) service.</b> Operators enable a developer to write custom controller logic to help manage 
+a particular service, such as a database. 
+ 
+![Alt text](./images/operator-interactions.png)
+
+From the picture above, you can see that operators deploy their workload through a controller. 
+Once you've created an operator, you can define your Operator Controller API with the fields
+that are specific to your service. The operator controller will have custom logic which 
+will in turn call the Kube API to manage your particular service. The Kube API will in turn 
+change the cluster's desired state to be what is specified by the Operator Controller. From
+this point, all that happens in the cluster is the same that happens when an admin uses 
+the `kubectl` command - the Kubernetes core controllers will act on the differences between
+the current state and the desired state, and reconcile the differences. 
+<!-- 
 The operator checks the CR with the actual state. and then API will change the desired state.
 *When a CR changes, the operator has the custom logic to call the Kube api to change the desired state.
 
@@ -165,7 +182,7 @@ enable the app to be automatically installed, upgraded, recovered, analyzed, and
 
 <b> The advantage of operators lies in their 
 automation. Usually, a [SRE](https://en.wikipedia.org/wiki/Site_reliability_engineering) (site reliability engineer) would have to take care of recoving an application if it crashes, or upgrading to 
-a later version of an application. But with an operator, all of this can be automated. </b>
+a later version of an application. But with an operator, all of this can be automated. </b> -->
 
 <!-- Operators wrap any necessary logic for deploying and operating a Kubernetes app using Kubernetes constructs. Here are a few more details you should understand about operators:
 
@@ -174,7 +191,7 @@ a later version of an application. But with an operator, all of this can be auto
 * They can automatically provision storage, volume, and any other infrastructure you may need
   * Operators are application specific custom resources and a custom controller watches the custom resource and knows all the details about starting, scaling, recovering, and upgrading that specific custom resource it manages. -->
 
-To learn more, read this [article from Red Hat](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator#:~:text=A%20Kubernetes%20operator%20is%20a,and%20managing%20a%20Kubernetes%20application.&text=A%20Kubernetes%20operator%20is%20an,behalf%20of%20a%20Kubernetes%20user.).
+<!-- To learn more, read this [article from Red Hat](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator#:~:text=A%20Kubernetes%20operator%20is%20a,and%20managing%20a%20Kubernetes%20application.&text=A%20Kubernetes%20operator%20is%20an,behalf%20of%20a%20Kubernetes%20user.). -->
 
 <!-- ### Stateful vs. Stateless Apps
 * In stateless deployments, the order of deploying pods, their labels, network address or port, storage class, or volume are not important. You keep them if they are healthy and serving, you dispose of them when they become unhealthy, outdated, or just no longer needed and replace them as necessary. <b>You do not need an operator for stateless applications.</b>
@@ -185,6 +202,8 @@ To learn more about Stateful vs. Stateless apps, read [this article](https://www
 
 ## Why does Kubernetes need operators?
 
+Kubernetes needs operators in order to automate tasks which are normally done manually by a 
+SRE. 
 <b>TODO</b>
 
 <!-- Kuberenetes needs operators for stateful deployments. This is because we can automate manual tasks such as setting configuration flags, 
