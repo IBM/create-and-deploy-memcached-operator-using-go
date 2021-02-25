@@ -68,7 +68,7 @@ The [control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term
 <!-- <img src="./images/components-of-kubernetes"> -->
 
 The two control plane components that are very important for operator development are
-the `kube-apiserver` and the `kube-controller-manager`.
+the `kube-apiserver` (also known as API server or Kubernetes API) and the `kube-controller-manager`.
 Whenever an admin works with a tool such as the 
 `kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
 certain way. When we create a 
@@ -105,8 +105,8 @@ more about this topic [here](https://kubernetes.io/docs/concepts/architecture/co
 
 ### Kubernetes Design
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Your Operators controller will be watching for a specific custom resource, and once that 
-custom resource's spec, or desired state changes, this desired state will become the desired 
-state for the cluster. 
+custom resource's spec, or desired state changes, Kubernetes will make changes to the current 
+state of that resource to make it match the desired state.  
 <!-- 
  need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator.  -->
 
@@ -119,7 +119,7 @@ since its part of the control loop.  -->
 The k8s controllers are comparing actual to desired. When they find a difference, they tell the kubelets to change the
 current sttae to be the same as the desired state.  -->
 
-What the controller is doing in the reconcile loop, the controller is not looking at desired and actual state, thats what the cluster does. The operator looks at the CR and the desired state. 
+<!-- What the controller is doing in the reconcile loop, the controller is not looking at desired and actual state, thats what the cluster does. The operator looks at the CR and the desired state.  -->
 
 <!-- There are three levels 
 
