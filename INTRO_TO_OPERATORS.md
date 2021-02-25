@@ -107,7 +107,7 @@ an end user, you can just deploy your operator instead. Your operator will take 
 needed to make sure your service is up and running. The approach of using an operator is 
 inherently easier, and scales better, than creating all of the deployments, configmaps, secrets, and services manually. 
 
-## Custom Resource Definitions
+## Custom Resources
 A Custom Resource is how we can extend the Kubernetes API. A [Custom Resource Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions) is a 
 type of resource in Kubernetes which defines a Custom Resource and all of the fields that 
 are associated with a particular resource. 
@@ -117,19 +117,16 @@ The operator SDK has a utility function which will help us automatically generat
 API file. More on this in the next tutorial.
 
 High-level configuration is inputted by the user in the CR, and then the operator takes 
-whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state. We 
-can see 
+whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state.
 
-### Custom Controllers (the code that watches your Custom Resource)
+## Custom Controllers
 
 ![Alt text](./images/operator-interactions.png)
 
 Like other controllers, Operators watch for a particular type of resource, which is defined 
 in the Custom Resource Definition. Once a user inputs values into the custom resource, the 
-desired state of the custom resource has changed. The Operator API signals to the Operator 
-Controller that something has changed, so it will run its control loop to reconcile the changes.
-From the picture above, you can see that the operator controller will have custom logic which 
-will in turn call the Kube API to manage your particular service. The Kube API will in turn 
+desired state of the custom resource has changed, and the Operator API is invoked. Meanwhile, the Operator's custom controller is running its control loop so it sees these changes and it works to reconcile the changes.
+From the picture above, you can see that the operator controller calls the Kube API to manage your particular service. The scenarios that it calls the Kube API are programmed into the custom controller. The Kube API will in turn 
 change the cluster's desired state to be what is specified by the Operator Controller. From
 this point, all that happens in the cluster is the same that happens when an admin uses 
 the `kubectl` command - the Kubernetes core controllers will act on the differences between
