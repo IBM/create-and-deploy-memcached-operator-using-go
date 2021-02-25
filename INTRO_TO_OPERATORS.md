@@ -24,26 +24,6 @@ documentation.
 
 **To understand how Operators work at a high level, first we need to understand some of the basic features of how Kubernetes works**, features which Operators take advantage of.
 
-## What is Kubernetes
-Kubernetes is a portable, extensible, declaritive open-source platform for managing containerized workloads and services. Since containers are a very popular choice of deployment, there needs to be a way to manage these different containers in such a way to ensure no downtime for our application. This is where Kubernetes comes in. It manages the way we communicate with our containers, and enables us to write our own custom logic to automate dev ops practices such as seamless ungrades. Kubernetes does this by giving us commands, in the form of `kubectl` to manage our cluster.
-
-Read more about why Kubernetes is useful and how it is different than other deployment solutions [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
-
-## What are Pods
-The basic unit of work, replication, and deployment in Kubernetes is called a [pod](https://kubernetes.io/docs/concepts/workloads/pods/). A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smallest deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container. 
-
-
-<!-- Usually, this is done in the form of a Deployment, 
-which is a resource type that runs a set of Pod
-replicas. These pods in turn, runs a container. -->
-
-### What are Containers
-A [container](https://kubernetes.io/docs/concepts/containers/) is a lightweight and portable
-executable image that contains software and all its dependencies. Containers decouple applications
-from underlying host infrastructure so it's easy to deploy in different cloud or OS environments.
-Kubernetes is often called a container-orchestrator, but it might be more accurate to describe it as a pod 
-orchestrator.
-
 ### Workloads on Kubernetes
 A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas or [`ReplicaSets`](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/) which just ensures that a certain amount of pods are running at a given time. Remember that each pod is running a container. 
 
@@ -130,13 +110,32 @@ to be closer (and eventually be equal) to the `desired state` using the API serv
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Kubernetes Design
-Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` rotates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Just like any other controller, your Operators controller will need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator.
-<!-- 
-For example, when the admin creates a new Deployment, the current state of the cluster 
-is differnet than the one that the admin has created, so the controllers take actions by
-way of the API server to adjust the actual state to make it match the desired state. When
-something goes wrong in a cluster, such as a pod crashing, the actual state diverges from the
-expected state, and the controllers again adjust the actual state to make it match. -->
+Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Just like any other controller, your Operators controller will need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator. 
+
+Make sure to add that the internal controllers (replication controller) does not use the Kube API 
+
+talk about that the custom controller is just and now its getting iterated thru 
+since its part of the control loop. 
+
+
+The k8s controllers are comparing actual to desired. When they find a difference, they tell the kubelets to change the
+current sttae to be the same as the desired state. 
+
+What the controller is doing in the reconcile loop, the controller is not looking at desired and actual state, thats what the cluster does. The operator looks at the CR and the desired state. 
+
+There are three levels 
+
+1. CR desired state
+
+2. Cluster desired state
+
+3. Current state
+
+The operators controller just requests a new instance, but the cluster itself has to change the actual state to match the 
+desired state.
+
+the cluster is responsible for everything in the cluster. whereas each operator is responsible for instances for that service.
+
 
 ## What are operators?
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are "software extensions to Kubernetes that make use of custom resources to manage applications and their 
@@ -148,6 +147,9 @@ Operators are extending the control plane by adding another controller to the co
 on the worker nodes. <b>This additional controller is customized for a particular (stateful) service.</b>
  
 ## What do operators do?
+The operator checks the CR with the actual state. and then API will change the desired state.
+*When a CR changes, the operator has the custom logic to call the Kube api to change the desired state.
+
 The main idea is that when the desired state and the actual state of the cluster diverge, operators have custom logic that will 
 enable the app to be automatically installed, upgraded, recovered, analyzed, and scaled. 
 
@@ -182,11 +184,14 @@ and changing runtime configuration that is needed for many stateful applications
 Now, let's start exploring the heart of the operator - the controller code. But before we do that we must understand custom 
 resources, and custom resource definitions, since that is what we will use to create our operator.
 
+Talk about CRD first before CRs. Then talk about API (which is the types_go) file. Then talk about data, which is what 
+is inputted by the user.
+
 ### Custom Resources(CRs) - Custom API endpoints
 
 A CR declares that a new service instance should exist with the configuration specified in the `spec` section. The 
 operator's controller's reconcile loop acts like an admin using `kubectl` using the Kube API as directed by the custom controller
-to modify the current state.
+to modify the cluster's desired state.
 
 A <b>custom resource definition is a schema that defines the fileds and types of fields within an
 instance of a Custom Resource.</b> We will use a Custom Resource Definition as one of the initial 
@@ -196,6 +201,8 @@ steps when developing our operator. Here are two useful details about Custom Res
 2. CRs are most useful when they are watched by <b>custom controller code that creates, updates, deletes other cluster objects or even resources outside of the cluster</b>
 
 To learn more about Custom Resources, refer to the official [Kubernetes documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/).
+
+Relationship between API and CRD, and then relationship between CR and CRD. 
 
 ### Custom Controllers (the code that watches your Custom Resource)
 When you combine the custom resource with a custom controller that watches that custom resource, 
@@ -218,7 +225,8 @@ The Operator SDK is a framework that uses the controller-runtime library to make
 
 For the purposes of our learning path, the operator SDK will be used to scaffold our code.
 
-
+cluster notifices the operator that there is anew CR. When a new CR of the right kind is created, how does it know? Does it search thru all of them. Once the controller has that data, it needs to compare the data. it uses the clusters api to   
+update its desired sttae. 
 
 
 <!-- What are operators? -->
@@ -291,3 +299,34 @@ There are many built-in Kubernetes controllers which will manage state by intera
 the API server. The important thing to understand is that controllers will call the API server
 to make some change to get closer to the `desired state` and then the controller will report the current state back to the cluster's API server. This change in state may in turn trigger other controllers, and this can happen forever, such as when your cluster state is not stable. Read 
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#control-via-api-server). -->
+
+
+<!-- ## What is Kubernetes
+Kubernetes is a portable, extensible, declaritive open-source platform for managing containerized workloads and services. Since containers are a very popular choice of deployment, there needs to be a way to manage these different containers in such a way to ensure no downtime for our application. This is where Kubernetes comes in. It manages the way we communicate with our containers, and enables us to write our own custom logic to automate dev ops practices such as seamless ungrades. Kubernetes does this by giving us commands, in the form of `kubectl` to manage our cluster.
+
+Read more about why Kubernetes is useful and how it is different than other deployment solutions [here](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/). 
+
+## What are Pods
+The basic unit of work, replication, and deployment in Kubernetes is called a [pod](https://kubernetes.io/docs/concepts/workloads/pods/). A pod is one or more containers with common resources like networking, storage, and access to shared memory. Pods are the smallest deployable units of computing that you can create and manage in Kubernetes. More specifically, if you want to run a container in Kubernetes, you must deploy a pod that runs and manages a container.  -->
+
+
+<!-- Usually, this is done in the form of a Deployment, 
+which is a resource type that runs a set of Pod
+replicas. These pods in turn, runs a container. -->
+
+<!-- ### What are Containers
+A [container](https://kubernetes.io/docs/concepts/containers/) is a lightweight and portable
+executable image that contains software and all its dependencies. Containers decouple applications
+from underlying host infrastructure so it's easy to deploy in different cloud or OS environments.
+Kubernetes is often called a container-orchestrator, but it might be more accurate to describe it as a pod 
+orchestrator. -->
+
+<!-- 
+For example, when the admin creates a new Deployment, the current state of the cluster 
+is differnet than the one that the admin has created, so the controllers take actions by
+way of the API server to adjust the actual state to make it match the desired state. When
+something goes wrong in a cluster, such as a pod crashing, the actual state diverges from the
+expected state, and the controllers again adjust the actual state to make it match. -->
+
+<!-- 
+does the operator actually get added to the list -->
