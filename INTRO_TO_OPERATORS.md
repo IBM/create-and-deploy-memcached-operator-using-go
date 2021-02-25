@@ -104,9 +104,18 @@ to be closer (and eventually be equal) to the `desired state` using the API serv
 more about this topic [here](https://kubernetes.io/docs/concepts/architecture/controller/#controller-pattern).
 
 ### Kubernetes Design
-Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Your Operators controller will be watching for a specific custom resource, and once that 
+Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (replication controller, endpoints controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
+
+Controllers can act on core resources such as deployments or services, which are typically part of the Kubernetes controller manager in the control plane, or can watch and manipulate user-defined custom resources. The user-defined custom resources are what an operator helps manage. More on 
+this soon.
+
+
+<!-- 
+As an operator developer you will need to understand this because your Operator will have a controller that will be added to the `kube-controller-manager's` control loop. Your Operators controller will be watching for a specific custom resource, and once that 
 custom resource's spec, or desired state changes, Kubernetes will make changes to the current 
-state of that resource to make it match the desired state.  
+state of that resource to make it match the desired state.   -->
+
+
 <!-- 
  need to use the `kube-apiserver's` API to adjust the current state to be identical (or closer) to the desired state that as specified by the Operator.  -->
 
