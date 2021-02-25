@@ -50,12 +50,7 @@ The two control plane components that are very important for operator developmen
 the `kube-apiserver` (also known as API server or Kubernetes API) and the `kube-controller-manager`.
 Whenever an admin works with a tool such as the 
 `kubectl` CLI, the admin is using the `kube-apiserver` to tell the control plane to manage the cluster in a 
-certain way. When we create a 
-new operator, our new custom controller will be added
-to the `kube-controller-manager's` control loop so that
-it has the same core functionality as the other core 
-Kubernetes controllers.
-
+certain way. When we deploy a workload, the `kube-controller-manager` will use its controllers to update resources so that the actual state is the same as the desired state.
 
 To learn more about control plane components, read from the [official Kubernetes documentation](https://kubernetes.io/docs/concepts/overview/components/#control-plane-components). 
 
