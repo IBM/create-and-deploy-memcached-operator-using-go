@@ -26,7 +26,7 @@ documentation.
 
 ### Workloads on Kubernetes
 
-<div style="text-align:center"><img src="./images/operator-workload.png" /></div>
+<center><div><img src="./images/operator-workload.png" /></div></center>
 
 <!-- ![Alt text]() -->
 
