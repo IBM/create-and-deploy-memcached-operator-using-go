@@ -26,7 +26,9 @@ documentation.
 
 ### Workloads on Kubernetes
 
-![Alt text](./images/operator-workload.png)
+<div style="text-align:center"><img src="./images/operator-workload.png" /></div>
+
+<!-- ![Alt text]() -->
 
 A "workload" is an application running on Kubernetes. Usually, this is done in as a `Deployment`. A [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) runs a set of pod replicas which just ensures that a certain amount of pods are running at a given time. 
 
@@ -159,6 +161,8 @@ components.
 They are used used to automate software config/maintenance activities that are typically done by human operators. That's why they are called operators.
 Additionally, they are used to automate the software management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases.
 
+Read more about what operators from this [Red Hat blog](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator).
+
 ## What do operators do?
 
 Operators extend the control plane by adding another controller to the control plane. The operator itself is a workload, so it is running 
@@ -281,6 +285,8 @@ an operator to the OpenShift container platform using the operator-sdk.
 <!-- 2. Introduction to operator capability levels -->
 <!-- 3. Kubernetes Operator SDK -->
 
+### Sources
+
 The information in this article can be found in a few different sources:
 
 * Kubernetes Operators by Jason Doies and Joshua Wood (O'Reilly)
@@ -289,7 +295,7 @@ The information in this article can be found in a few different sources:
 
 * kubernetes.io/docs/concepts/extend-kubernetes/operator
 
-
+* https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator
 <!-- 
 * Kubernetes automates the lifecycle of an app, such as a static web server 
 * Without state, any of the app instances are interchangeable 
