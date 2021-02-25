@@ -105,17 +105,6 @@ Read more about what operators from this [Red Hat blog](https://www.redhat.com/e
 Operators extend the control plane by adding another controller to the control plane. Operators enable a developer to write custom controller logic to help manage 
 a particular service, such as a database. 
  
-![Alt text](./images/operator-interactions.png)
-
-From the picture above, you can see that operators deploy their workload through a controller. 
-Once you've created an operator, you will create a CRD (Custom Resource Definition) and then 
-create an instance of that custom resource using the Operator Controller API. The operator controller will have custom logic which 
-will in turn call the Kube API to manage your particular service. The Kube API will in turn 
-change the cluster's desired state to be what is specified by the Operator Controller. From
-this point, all that happens in the cluster is the same that happens when an admin uses 
-the `kubectl` command - the Kubernetes core controllers will act on the differences between
-the current state and the desired state, and reconcile the differences. 
-
 ## Why does Kubernetes need operators?
 
 Kubernetes needs operators in order to automate tasks which are normally done manually by a 
@@ -134,13 +123,24 @@ The operator SDK has a utility function which will help us automatically generat
 API file. More on this in the next tutorial.
 
 High-level configuration is inputted by the user in the CR, and then the operator takes 
-whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state.
+whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state. We 
+can see 
 
 ### Custom Controllers (the code that watches your Custom Resource)
-When you combine the custom resource with a custom controller that watches that custom resource, 
-you get what is called a "declaritive API" by Kubernetes. This declaritive API is used to 
-continually monitor your application's state and it can do things such as back up state, upgrade 
-the application over time, and recover from failures, automatically.
+
+![Alt text](./images/operator-interactions.png)
+
+Like other controllers, Operators watch for a particular type of resource, which is defined 
+in the Custom Resource Definition. Once a user inputs values into the custom resource, the 
+desired state of the custom resource has changed. The Operator API signals to the Operator 
+Controller that something has changed, so it will run its control loop to reconcile the changes.
+From the picture above, you can see that the operator controller will have custom logic which 
+will in turn call the Kube API to manage your particular service. The Kube API will in turn 
+change the cluster's desired state to be what is specified by the Operator Controller. From
+this point, all that happens in the cluster is the same that happens when an admin uses 
+the `kubectl` command - the Kubernetes core controllers will act on the differences between
+the current state and the desired state, and reconcile the differences. 
+
 
 ## Operator SDK
 
