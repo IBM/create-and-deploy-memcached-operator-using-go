@@ -170,8 +170,8 @@ The information in this article can be found in a few different sources:
 
 * Kubernetes Operators by Jason Doies and Joshua Wood (O'Reilly)
 
-* kublr.com/blog/understanding-kubernetes-operators
+* http://kublr.com/blog/understanding-kubernetes-operators
 
-* kubernetes.io/docs/concepts/extend-kubernetes/operator
+* https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
 
 * https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator
