@@ -13,6 +13,7 @@ an OpenShift cluster.
 ## Expectations (What you have)
 * You have little to no experience developing operators
 * You have little to no knowledge on Kubernetes Operators concepts
+* You have a basic understanding of Kubernetes concepts
 
 ## Expectations (What you want)
 * You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
