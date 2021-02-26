@@ -1,4 +1,4 @@
-# Deep dive into Memcached Operator Code on OpenShift Container Platform
+# Deep dive into Memcached Operator Code
 
 ## Expectations (What you have)
 * You have some experience developing operators.

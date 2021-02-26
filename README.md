@@ -11,14 +11,14 @@ to advanced.
 
 ## Beginner level
 
-1. [Environment Setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)
+1. [Environment Setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md): 
 This article will guide you through all of the prerequisites and environment setup needed to develop an Operator using the Operator-SDK.
 
-2. [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md) This article does a summary into Kubernetes concepts such as workloads, architecture, controllers, and custom resources. It explains the control loop and the declaritive API that is 
+2. [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md): This article does a summary into Kubernetes concepts such as workloads, architecture, controllers, and custom resources. It explains the control loop and the declaritive API that is 
 at the heart of Kubernetes, and how the operator pattern works.
 
-3. [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/SIMPLE_OPERATOR.md)
+3. [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md): 
 In this tutorial we will be creating a simple Go-based operator that walks you through an example of building a simple memcached-operator using operator-sdk, and then deploying it onto the OpenShift Container Platform. 
 
 ## Intermediate level
-1. [Deep dive into Memcached Operator Code on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/SIMPLE_OPERATOR.md)
+1. [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/SIMPLE_OPERATOR.md): In this tutorial we will build upon the memcached-operator we deployed in the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial, and deep-dive into the code to understand what the operator is doing in the custom controller code, and why it is doing it.

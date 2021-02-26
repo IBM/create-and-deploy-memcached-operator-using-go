@@ -1,4 +1,4 @@
-# Build a simple Golang-based operator Part 1
+# Develop and Deploy a Memcached Operator on OpenShift Container Platform
 
 In this tutorial, we will provide all of the information needed to get quickly up and running building and deploying
 your first operator to OpenShift. **Note** that this same general idea can be applied to MiniKube, or other Kubernetes 
