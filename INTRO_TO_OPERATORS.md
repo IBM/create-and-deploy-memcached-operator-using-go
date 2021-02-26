@@ -124,7 +124,7 @@ whatever action is necessary as indicated by the custom controller logic (the re
 
 ![Alt text](./images/operator-interactions.png)
 
-Like other controllers, Operators watch for a particular type of resource, which is defined 
+Like other controllers, Operator controllers watch for a particular type of resource, which is defined 
 in the Custom Resource Definition. Once a user inputs values into the custom resource, the 
 desired state of the custom resource has changed, and the Operator API is invoked. Meanwhile, the Operator's custom controller is running its control loop so it sees these changes and it works to reconcile the changes.
 From the picture above, you can see that the operator controller calls the Kube API to manage your particular service. The scenarios that it calls the Kube API are programmed into the custom controller. The Kube API will in turn 
