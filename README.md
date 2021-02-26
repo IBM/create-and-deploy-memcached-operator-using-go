@@ -18,7 +18,7 @@ This article will guide you through all of the prerequisites and environment set
 at the heart of Kubernetes, and how the operator pattern works.
 
 3. [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md): 
-In this tutorial we will be creating a simple Go-based operator that walks you through an example of building a simple memcached-operator using operator-sdk, and then deploying it onto the OpenShift Container Platform. 
+In this tutorial we will be creating a simple Go-based Memcached operator using operator-sdk, and then deploying it onto the OpenShift Container Platform. 
 
 ## Intermediate level
-1. [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/SIMPLE_OPERATOR.md): In this tutorial we will build upon the memcached-operator we deployed in the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial, and deep-dive into the code to understand what the operator is doing in the custom controller code, and why it is doing it.
+1. [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/SIMPLE_OPERATOR.md): In this tutorial we will build upon the [Memcached Operator tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) and deep-dive into the code to understand what the operator is doing in the custom controller code, and why it is doing it.
