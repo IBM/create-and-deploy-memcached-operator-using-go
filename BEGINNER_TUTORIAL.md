@@ -6,23 +6,15 @@ clusters, but the commands may be just a bit different.
 
 ## Expectations (What you have)
 * You have little to no experience developing operators
-* You have little to no knowledge on Kubernetes Operators concepts
+* You have some knowledge on Kubernetes Operators concepts
+* You've read the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md).
+* You've setup your environment as shown in the [Setup your Environment](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md) tutorial
 
 ## Expectations (What you want)
 * You want hands-on experience developing and deploying your first operator to OpenShift
 * You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
 
-This tutorial does NOT cover all the Kubernetes concepts needed to understand operators. Instead, it offers
-the commands and basic knowledge needed to deploy your first operator. To learn more about the concepts 
-needed to understand how to build your first Golang based operator, read my notes [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/notes/what-i-learned-notes.md). Also, make sure to read this [blog post](https://www.openshift.com/blog/introducing-the-operator-framework) by 
-Red Hat introducing the high-level idea of operators.
-
-If you already know all of the basic concepts of operators and have developed and deployed on before, this tutorial 
-is not for you. Move on to the intermediate-level tutorial, [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/README.md), which will explain the low-level functions within the Operator reconcile 
-function in more detail.
-
-Now that we've got that out of the way, let's get started. First, we need to make sure your machine is ready for 
-operator development. Read the installation requirements and prerequisites [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md).
+If you already know all of the basic concepts of operators and have developed and deployed an operator before you can move on to the [intermediate-level tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md), which will explain the low-level functions within the Operator reconcile function in more detail. It will also explain the kube-builder markers, creating the CRDs from the API, and other important operator-specific details.
 
 ## Flow
 
@@ -40,7 +32,7 @@ operator development. Read the installation requirements and prerequisites [here
 
 ## 1. Create a new project using Operator SDK
 
-🚧🚧🚧 Note: this steps are taken from the [Operator-SDK tutorial](https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/). All credit goes to them.🚧🚧🚧
+🚧🚧🚧 Note: these steps are taken from the [Operator-SDK tutorial](https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/). All credit goes to them.🚧🚧🚧
 
 First check your Go version. This tutorial is tested with the following Go version:
 
@@ -54,9 +46,9 @@ Next, create a directory for where you will hold your project files.
 $ mkdir $HOME/projects/memcached-operator
 $ cd $HOME/projects/memcached-operator
 ```
-<!-- 
+
 Since we are not in our $GOPATH, we can activate module support by running the 
-`export GO111MODULE=on` command before using the operator-sdk. -->
+`export GO111MODULE=on` command before using the operator-sdk.
 
 Next, run the `operator-sdk init` command to create a new memcached-operator project:
 

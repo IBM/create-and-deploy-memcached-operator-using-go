@@ -6,7 +6,7 @@ a Kubernetes Operator.
 This article will assume you have no knowledge on Kubernetes Operators, and will 
 give you all of the basic knowledge needed to understand the different components and concepts of developing a
 a Golang based operator. If you are already familiar with operators, you can either skim this article or 
-simply skip ahead to the `SIMPLE_OPERATOR.md` file which shows how to develop and deploy your first operator to 
+simply skip ahead to the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) which shows how to develop and deploy your first operator to 
 an OpenShift cluster.
 
 
@@ -150,7 +150,7 @@ Operator SDK also allows you to install OLM (operator lifecycle manager) using `
 
 ## Conclusion
 In this article, we learned about how operators can extend the base Kubernetes functionality 
-by the use of custom controllers and CRDs. In the [next article](https://github.ibm.com/TT-ISV-org/operator/blob/220-kube-overview/SIMPLE_OPERATOR.md), we will develop and deploy 
+by the use of custom controllers and CRDs. In the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md), we will develop and deploy 
 an operator to the OpenShift container platform using the operator-sdk.
 
 ### Sources
