@@ -1,7 +1,7 @@
 # Deep dive into Memcached Operator Code
 In this article, we will discuss the low-level functions needed to write your own operator. This article builds off of the 
 previous [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial, so if you want the complete steps to develop and deploy the Memcached operator, view that tutorial. This 
-article will just discuss the Memcached custom controller code in depth.
+article will discuss the Memcached custom controller code in depth.
 
 ## Expectations (What you have)
 * You have some experience developing operators.
@@ -22,7 +22,7 @@ article will just discuss the Memcached custom controller code in depth.
 1. [Understanding the Update function](#5-Understanding-the-Update-function)
 1. [Understanding KubeBuilder Markers](#6-Understanding-KubeBuilder-Markers)
 
-In this tutorial, we will cover the custom controller code for the Memcached Operator, found [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go).
+In this article, we will cover the custom controller code for the Memcached Operator, found [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go).
 
 ## 1. Reconcile function overview
 
