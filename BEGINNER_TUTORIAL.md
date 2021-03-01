@@ -798,7 +798,9 @@ You can also update the spec.size from `OpenShift web console` by going to `Depl
 
 ![kubectl get all](images/inc-dec-size.png)
 
-**Congratulations!** You've successfully deployed an operator using the `operator-sdk`!
+**Congratulations!** You've successfully deployed an Memcached operator using the `operator-sdk`! To learn more, go ahead and read
+the [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md) tutorial, 
+which explains the controller logic from step 4 in more depth.
 
 
 ## Cleanup

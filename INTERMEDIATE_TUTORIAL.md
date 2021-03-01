@@ -316,7 +316,7 @@ the operator is able to get, list, watch, create, update, path, and delete these
 RBAC configuration.
 
 For example, if our memcached resource didn't have the `List` verb listed in the kubebuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our kubebuilder commands into our `config/rbac` yaml files. To 
-learn more about kubebuilder markets, see the docs [here](https://book.kubebuilder.io/reference/markers/rbac.html).
+learn more about KubeBuilder markers, see the docs [here](https://book.kubebuilder.io/reference/markers/rbac.html).
 
 
 # License
