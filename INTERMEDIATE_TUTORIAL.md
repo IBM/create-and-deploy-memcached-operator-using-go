@@ -1,6 +1,6 @@
 # Deep dive into Memcached Operator Code
 In this article, we will discuss the low-level functions needed to write your own operator. This article builds off of the 
-previous [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) article, so if you want the complete steps to develop and deploy the Memcached operator, view that article. This 
+previous [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial, so if you want the complete steps to develop and deploy the Memcached operator, view that tutorial. This 
 article will just discuss the Memcached custom controller code in depth.
 
 ## Expectations (What you have)
@@ -14,11 +14,7 @@ article will just discuss the Memcached custom controller code in depth.
 * You want to learn more about the basic Get, Update, and Create functions used to save resources to your Kubernetes cluster.
 * You want to learn more about Kubebuilder markers and how to use them to set role based access control.
 
-**IMPORTANT**
-This tutorial is inspired from the operator-sdk tutorial - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/. **All credit goes to the operator-sdk team** for 
-a great tutorial.
-
-## Steps
+## Outline
 1. [Reconcile function overview](#1-reconcile-function-overivew)
 1. [Understanding the Get function](#2-Understanding-the-get-function)
 1. [Understanding the Reconcile function return types](#3-Understanding-the-reconcile-function-return-types)
