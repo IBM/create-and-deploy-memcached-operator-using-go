@@ -6,7 +6,7 @@ a Kubernetes Operator.
 This article will assume you have no knowledge on Kubernetes Operators, and will 
 give you all of the basic knowledge needed to understand the different components and concepts of developing a
 a Golang based operator. If you are already familiar with operators, you can either skim this article or 
-simply skip ahead to the `SIMPLE_OPERATOR.md` file which shows how to develop and deploy your first operator to 
+simply skip ahead to the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) which shows how to develop and deploy your first operator to 
 an OpenShift cluster.
 
 
@@ -81,7 +81,7 @@ more about this topic [here](https://kubernetes.io/docs/concepts/architecture/co
 
 ### Kubernetes Design
 
-![Alt text](./images/operator-reconciliation.png)
+![Alt text](./images/operator-reconciliation-kube-only.png)
 
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (Deployment controller, Job controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
 
@@ -97,8 +97,13 @@ Read more about what operators from this [Red Hat blog](https://www.redhat.com/e
 
 ## What do operators do?
 
-Operators extend the control plane by adding another controller to the control plane. Operators enable a developer to write custom controller logic to help manage 
-a particular service, such as a database. 
+![Alt text](./images/operator-interactions.png)
+
+Operators extend the control plane by adding another controller to the control plane. Operators enable a developer to write an API and custom controller logic to help manage 
+a particular service, such as a database. Instead of the admin using `kubectl` commands 
+in order to change the desired state, an operator does this for you, automatically, using 
+its custom controller. This is illustrated in the `How an operator deploys a workload` section
+from the image above.
  
 ## Why does Kubernetes need operators?
 
@@ -122,7 +127,7 @@ whatever action is necessary as indicated by the custom controller logic (the re
 
 ## Custom Controllers
 
-![Alt text](./images/operator-interactions.png)
+![Alt text](./images/operator-reconciliation.png)
 
 Like other controllers, Operator controllers watch for a particular type of resource, which is defined 
 in the Custom Resource Definition. Once a user inputs values into the custom resource, the 
@@ -150,7 +155,7 @@ Operator SDK also allows you to install OLM (operator lifecycle manager) using `
 
 ## Conclusion
 In this article, we learned about how operators can extend the base Kubernetes functionality 
-by the use of custom controllers and CRDs. In the [next article](https://github.ibm.com/TT-ISV-org/operator/blob/220-kube-overview/SIMPLE_OPERATOR.md), we will develop and deploy 
+by the use of custom controllers and CRDs. In the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md), we will develop and deploy 
 an operator to the OpenShift container platform using the operator-sdk.
 
 ### Sources

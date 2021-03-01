@@ -6,41 +6,48 @@ clusters, but the commands may be just a bit different.
 
 ## Expectations (What you have)
 * You have little to no experience developing operators
-* You have little to no knowledge on Kubernetes Operators concepts
+* You have some knowledge on Kubernetes Operators concepts
+* You've read the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md).
+* You've setup your environment as shown in the [Setup your Environment](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md) tutorial
 
 ## Expectations (What you want)
 * You want hands-on experience developing and deploying your first operator to OpenShift
 * You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
 
-This tutorial does NOT cover all the Kubernetes concepts needed to understand operators. Instead, it offers
-the commands and basic knowledge needed to deploy your first operator. To learn more about the concepts 
-needed to understand how to build your first Golang based operator, read my notes [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/notes/what-i-learned-notes.md). Also, make sure to read this [blog post](https://www.openshift.com/blog/introducing-the-operator-framework) by 
-Red Hat introducing the high-level idea of operators.
+If you already know all of the basic concepts of operators and have developed and deployed an operator before you can move on to the [intermediate-level tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md), which will explain the low-level functions within the Operator reconcile function in more detail. It will also explain the kube-builder markers, creating the CRDs from the API, and other important operator-specific details.
 
-If you already know all of the basic concepts of operators and have developed and deployed on before, this tutorial 
-is not for you. Move on to the intermediate-level tutorial, [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/README.md), which will explain the low-level functions within the Operator reconcile 
-function in more detail.
-
-Now that we've got that out of the way, let's get started. First, we need to make sure your machine is ready for 
-operator development. Read the installation requirements and prerequisites [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md).
+**IMPORTANT**
+This tutorial is inspired from the operator-sdk tutorial - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/. **All credit goes to the operator-sdk team** for 
+a great tutorial.
 
 ## Flow
 
 ![Flow](images/architecture.png)
 
+1. Create a new operator project using the SDK Command Line Interface(CLI)
+2. Define new resource APIs by adding Custom Resource Definitions(CRD)
+3. Define Controllers to watch and reconcile resources
+4. Write the reconciling logic for your Controller using the SDK and controller-runtime APIs
+5. Use the SDK CLI to build and generate the operator deployment manifests
+6. Use the SDK CLI to build operator docker image, push and deploy to OpenShift
+7. Operator docker image is deployed to OpenShift cluster creating manager and application replicas.
+8. Reconcile loop watches and heals the resources as needed.
+
+## Environment Setup
+
+**IMPORTANT**
+If you haven't setup your environment for building Kubernetes operators, setup your environment from these [instructions](installation.md).
+
 ## Steps
 1. [Create a new project using Operator SDK](#1-create-a-new-project-using-operator-sdk)
-1. [Create CRD and Custom Controller](#2-Create-CRD-and-Custom-Controller)
-1. [Update CRD and generate CRD manifest](#3-Update-CRD-and-generate-CRD-manifest)
+1. [Create API and Custom Controller](#2-Create-API-and-Custom-Controller)
+1. [Update API](#3-Update-API)
 1. [Implement Controller Logic](#4-implement-controller-logic)
 1. [Compile, build and push](#5-compile-build-and-push)
 1. [Deploy the operator](#6-deploy-the-operator)
 1. [Test and verify](#7-test-and-verify)
 
-
 ## 1. Create a new project using Operator SDK
-
-🚧🚧🚧 Note: this steps are taken from the [Operator-SDK tutorial](https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/). All credit goes to them.🚧🚧🚧
 
 First check your Go version. This tutorial is tested with the following Go version:
 
@@ -64,12 +71,30 @@ Next, run the `operator-sdk init` command to create a new memcached-operator pro
 $ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator --owner="Memcache Operator authors"
 ```
 
+* The `--domain` flag is used to uniquely identify the operator resources that are created by
+this project. When we use the command `oc api-resources` later, the `example.com` domain 
+will be listed there by our `memcached` in the `APIGROUP` category.
+
+* The `--repo` flag enables us to create this project outside of the standard 
+`$GOPATH/src` strucutre. 
+  * To work properly, make sure you activate GO module support by running the following command:
+
+```bash
+$ export GO111MODULE=on
+```
+
+To verify that GO module support is turned on, issue the following command and ensure you get the same output: 
+
+```bash
+$ echo $GO111MODULE
+on
+```
+
 This will create the basic scaffold for your operator, such as the `bin`, `config` and `hack` directories, and will create the `main.go` file which initializes the manager.
 
-## 2. Create CRD and Custom Controller
+## 2. Create API and Custom Controller
 
-Next, we will use the `operator-sdk create api` command to create a blank <b>custom resource definition,
-or CRD</b> which will be in your `api` directory and a blank custom controller file, which will be in your 
+Next, we will use the `operator-sdk create api` command to create an API which will be in your `api` directory and a blank custom controller file, which will be in your 
 `controllers` directory.
 
 We will use the --group, --version, and --kind flags to pass in the resource 
@@ -82,19 +107,70 @@ api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
 ```
 
+* The `--group` flag defines an `API Group` in Kubernetes. It is a collection of related functionality.
+* Each group has one or more `versions`, which allows us to change how an API works over time. This is what the `--version` flag represents.
+* Each API group-verison contains one or more API types, called `Kinds`. This is the name of the API type that we are creating as part of this operator. 
+  * There are more nuances when it comes to versioning which we will not cover. Read more about Groups, Versions, Kinds, and Resources from this [Kubebuilder reference](https://book.kubebuilder.io/cronjob-tutorial/gvks.html).
+* The `--controller` flag signifies that we want the sdk to scaffold a controller file.
+* The `--resource` flag signifies that we want the sdk to scaffold the schema for a resource.
+
+
 Now, once you deploy this operator, you can use the `kubectl api-resources` to see the name
 `cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
 later after we've deployed the operator.
 
-## 3. Update CRD and generate CRD manifest
+## 3. Update API
 
-One of the two main parts of the operator pattern is defining a Custom Resource Definition(CRD). We
-will do that in the `api/v1alpha1/memcached_types.go` file.
+One of the two main parts of the operator pattern is defining an API, which will be used to create our Custom Resource Definition(CRD).
+We will do that in the `api/v1alpha1/memcached_types.go` file.
 
-First, add a `Size int32` field to your `MemcachedSpec` struct, as shown below:
+First, we need to understand the struct which defines our schema. Note that it 
+implements the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) (which means it is a kubernetes object), and also,
+it has the `Spec` and `Status` fields. More on those soon.
+
+```go 
+type Memcached struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MemcachedSpec   `json:"spec,omitempty"`
+	Status MemcachedStatus `json:"status,omitempty"`
+}
+```
+
+The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
+
+### What is the Spec?
+
+A good way to think about `Spec` is that any inputs (values tweaker by the user) to our controller go in the spec section. 
 
 ```go
-// MemcachedSpec defines the desired state of Memcached
+type MemcachedSpec struct {}
+```
+
+The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
+
+### What is the Status? 
+
+The status contains information that we want users or other controllers to be able to easily obtain.
+
+```go
+type MemcachedStatus struct {}
+```
+
+Each of those structs, the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
+have their own fields to describe the observed state and the desired state respectively.
+
+First, add a `Size int32` field to your `MemcachedSpec` struct, along with their json 
+encoded string representation of the field name, in lowercase. See [golangs json encoding page](https://golang.org/pkg/encoding/json/) for more details.
+
+In our example, since `Size` is the field name, and the json encoding must be lowercase, it 
+would just look like `json:"size"`. 
+
+Add the following to your struct: 
+
+
+```go
 type MemcachedSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -104,8 +180,7 @@ type MemcachedSpec struct {
 }
 ```
 
-When we create a custom resource later, we will  need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
-
+When we create a custom resource later, we will need to fill out the size, which is the number of `Memcached` replicas we want as the `desired state` of my system. 
 
 Next, add a `Nodes []string` field to your `MemcachedStatus` struct, as shown below:
 
@@ -118,12 +193,14 @@ type MemcachedStatus struct {
 }
 ```
 
+
 The `MemcachedStatus` struct will use a string array to list the name of the Memcached pods in the current state.
-At a high-level the `Memcached` struct will have the fields `Spec` and `Status` to denote the desired state (spec) and the observed state (status) of the cluster. When the system recognizes there is a difference in the spec and the status, the operator will use custom controller logic defined in our 
+
+Lastly, the `Memcached` struct will have the fields `Spec` and `Status` to denote the desired state (spec) and the observed state (status). At a high-level, when the system recognizes there is a difference in the spec and the status, the operator will use custom controller logic defined in our 
 `controllers/memcached_controller.go` file to update the 
 system to be in the desired state.
 
-After making the changes from above, your memcached_types.go file show look like the following:
+Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go).
 
 ```go
 package v1alpha1
@@ -177,30 +254,50 @@ func init() {
 }
 ```
 
+Note that above our `type Memcached struct` you'll see two lines of code starting with `+kubebuilder`. Note that these are actually commented out. These are important, since they 
+tell our controller-tools extra information. For example, this one 
+
+```golang
+// +kubebuilder:object:root=true
+```
+
+tells the `object` generator that this type represents a Kind. The generator will then 
+implement the `runtime.Object` interface for us, which all Kinds must implement.
+
+This one: 
+
+```golang
+// +kubebuilder:subresource:status
+```
+
+Will enable the status subresource in the Custom Resource Definition. If you run `make manifests` it will generate YAML under `config/crds/<kind_types.yaml`. It will add a `subresources`
+section like so: 
+
+```yaml
+subresources:
+    status: {}
+```
+
+We will see how to get and update the status subresource in the controller code in the section below.
+
+Just know that
+each of these markers, starting with `// +kubebuilder` will generate utility code (such as role based access control) and Kubernetes YAML. When you run `make generate` and `make manifests` 
+your KubeBuilder Markers will be read in order to create RBAC roles, CRDs, and code, such as runtime.Object/DeepCopy implementations. Read more about KubeBuilder markers [here](https://book.kubebuilder.io/reference/markers.html?highlight=markers#marker-syntax).
+
+
 ## 4. Implement controller logic
 
-Now that we have our CRDs registered, our next step is to implement our controller logic in `controllers/memcached_controller.go`. First, go ahead and copy the code from the 
-[artifacts/memcached_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go) file, and replace your current controller code. The next
-few paragraphs will explain the controller code in detail. 
+<b>Note: If you want to learn more in depth about the controller logic that is written here,
+please view our [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md) article.</b>
 
-The controller "Reconcile" method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
+Now that we have our API updated, our next step is to implement our controller logic in `controllers/memcached_controller.go`. First, go ahead and copy the code from the 
+[artifacts/memcached_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go) file, and replace your current controller code.
 
-After scaffolding our controller via the operator-sdk, we'll have an empty Reconciler function.
-
-In this example, we want our Reconciler to
-1. Check for an existing memcached deployment, and create one if it does not exist.
-2. Retrieve the current state of our memcached deployment, and compare it to our desired state. More specifically, we'll compare the memcached deployment ReplicaSet value to the "Size" parameter that we defined earlier in our `memcached_types.go` file.
-3. If the number of pods in the deployment ReplicaSet does not match the provided `Size`, then our Reconciler will update the ReplicaSet value, and re-queue the Reconciler until the desired state is achieved.
-
-🚧🚧🚧 Note: we will not dive deep into the logic right now. Just know that this operator will create a deployment for a memcached resource if one does not exist already. If you want to learn more about the deep dive into the 
-controller logic, go to the intermediate tutorial [here](https://github.ibm.com/TT-ISV-org/operator/blob/main/README.md)🚧🚧🚧
-
-
-Once you've pasted the [example controller code](https://github.com/operator-framework/operator-sdk/blob/v1.3.0/testdata/go/v3/memcached-operator/controllers/memcached_controller.go) into your `memcached_controller.go` file is complete, your controller should look the following:
+Once this is complete, your controller should look like the following:
 
 ```go
 /*
-Copyright 2020.
+Copyright 2021.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -215,12 +312,12 @@ limitations under the License.
 package controllers
 
 import (
+	"reflect"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"reflect"
 
 	"context"
 
@@ -239,11 +336,20 @@ type MemcachedReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds,verbs=get;list;watch;create;update;patch;delete
+
+// generate rbac to get, update and patch the memcached status the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/status,verbs=get;update;patch
+
+// generate rbac to update the memcached/finalizers
 // +kubebuilder:rbac:groups=cache.example.com,resources=memcacheds/finalizers,verbs=update
+
+// generate rbac to get, list, watch, create, update, patch, and delete deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;
+
+// generate rbac to get,list, and watch pods
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -275,7 +381,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: memcached.Name, Namespace: memcached.Namespace}, found)
+	err = r.Get(ctx, req.NamespacedName, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
 		dep := r.deploymentForMemcached(memcached)
@@ -395,9 +501,7 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 ### Build manifests and go files
 
-Before we compile our code, we need to change a couple of things in order to make sure we can deploy onto
-OpenShift. If you are not deploying onto OpenShift, you may not need to change the Dockerfile or `manager.yaml` 
-in your `config/manager` directory 
+Before we compile our code, we need to change a couple of things. 
 
 1. Make sure to change 
 your Dockerfile so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/Dockerfile). It should look like this:
@@ -492,7 +596,6 @@ spec:
       terminationGracePeriodSeconds: 10
 ```
 
-🚧🚧🚧 Note: this step and explanations are taken from the [Operator-SDK tutorial](https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/). All credit goes to them.🚧🚧🚧
 
 Now that we have our controller code and memcached types implemented, run the following command to update the generated code for that resource type:
 
@@ -695,7 +798,9 @@ You can also update the spec.size from `OpenShift web console` by going to `Depl
 
 ![kubectl get all](images/inc-dec-size.png)
 
-**Congratulations!** You've successfully deployed an operator using the `operator-sdk`!
+**Congratulations!** You've successfully deployed an Memcached operator using the `operator-sdk`! To learn more, go ahead and read
+the [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md) tutorial, 
+which explains the controller logic from step 4 in more depth.
 
 
 ## Cleanup
