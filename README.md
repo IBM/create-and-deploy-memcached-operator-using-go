@@ -10,15 +10,11 @@ The learning path has several levels of tutorials, starting from beginner, to in
 to advanced.
 
 ## Beginner level
-
-1. [Environment Setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md): 
-This article will guide you through all of the prerequisites and environment setup needed to develop an Operator using the Operator-SDK.
-
-2. [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md): This article does a summary into Kubernetes concepts such as workloads, architecture, controllers, and custom resources. It explains the control loop and the declaritive API that is 
+1. [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md): This article does a summary into Kubernetes concepts such as workloads, architecture, controllers, and custom resources. It explains the control loop and the declaritive API that is 
 at the heart of Kubernetes, and how the operator pattern works.
 
-3. [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md): 
-In this tutorial we will be creating a simple Go-based Memcached operator using operator-sdk, and then deploying it onto the OpenShift Container Platform. 
+2. [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md): 
+In this tutorial we will start by ensuring we have our [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md) in order to be able to use the Operator-SDK. Next, we create a simple Go-based Memcached operator using operator-sdk, and then deploy it onto the OpenShift Container Platform. 
 
 ## Intermediate level
 1. [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md): In this tutorial we will build upon the [Memcached Operator tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) and deep-dive into the code to understand what the operator is doing in the custom controller code, and why it is doing it.
