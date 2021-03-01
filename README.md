@@ -22,3 +22,6 @@ In this tutorial we will be creating a simple Go-based Memcached operator using 
 
 ## Intermediate level
 1. [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md): In this tutorial we will build upon the [Memcached Operator tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) and deep-dive into the code to understand what the operator is doing in the custom controller code, and why it is doing it.
+
+2. [Anatomy of an operator, demystified](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/demystified.md): In this article we will build upon the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md) article and explore
+the Kubernetes architecture which enable the custom functionality of operators.
