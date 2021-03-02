@@ -37,7 +37,7 @@ then the controller takes action to fix the problem. Similarly, a Kubernetes ope
 
 Operators have the following features:
 
-* The user provides configuration and setings within a CR, and then the operator translates the configuration into low-level actions,
+* The user provides configuration and settings within a CR, and then the operator translates the configuration into low-level actions,
 based on the logic defined in the operator's custom controller logic.
 * Operator intoduce new object types through its custom resource definition. These objects can be handeled by the Kubernetes API just like
 native Kubernetes objects, including interaction via `kubectl` and inclusion in role-based access control policies.
