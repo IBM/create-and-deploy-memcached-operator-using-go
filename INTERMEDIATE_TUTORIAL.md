@@ -414,27 +414,27 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 	ls := labelsForMemcached(m.Name)
 	replicas := m.Spec.Size
 
-  dep := &appsv1.Deployment{
+  	dep := &appsv1.Deployment{
     ...
-    Spec: appsv1.DeploymentSpec{
-      Replicas: &replicas,
-      ...
-      Template: corev1.PodTemplateSpec{
-        ...
-        Spec: corev1.PodSpec{
-          Containers: []corev1.Container{{
-            Image:   "memcached:1.4.36-alpine",
-            Name:    "memcached",
-            Command: []string{"memcached", "-m=64", "-o", "modern", "-v"},
-            Ports: []corev1.ContainerPort{{
-              ContainerPort: 11211,
-              Name:          "memcached",
-            }},
-          }},
-        },
-      },
-    },
-  }
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			...
+			Template: corev1.PodTemplateSpec{
+				...
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Image:   "memcached:1.4.36-alpine",
+						Name:    "memcached",
+						Command: []string{"memcached", "-m=64", "-o", "modern", "-v"},
+						Ports: []corev1.ContainerPort{{
+							ContainerPort: 11211,
+							Name:          "memcached",
+						}},
+					}},
+				},
+			},
+		},
+  	}
 	return dep
 ```
 
