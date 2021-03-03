@@ -231,7 +231,7 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 ## 1. Reconcile function overview
 
-The controller "Reconcile" method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
+The controller [Reconcile](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
 
 After scaffolding our controller via the operator-sdk, we'll have an empty Reconciler function.
 
@@ -303,7 +303,7 @@ Read more about context in Golang [here](https://blog.golang.org/context).
 
 Now, let's understand the object that we pass into the `Get` function. The object has to implement the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) which means that it needs to embed both [runtime.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#Object), and [metav1.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Object). This object should be able to be written via YAML and then be created 
 via `Kubectl create`. All of this means that the object will be treated like a Kubernetes native object. You will see that in the later 
-parts of the code, we will pass in a different type of resource (a Deployment). Since the `Get` function is accepting any Kubernetes 
+parts of the code we will pass in a different type of resource (a Deployment) to the `Get` function. Since the `Get` function is accepting any Kubernetes 
 object that implements the Object interface, it doesn't matter if our object is a custom resource we created (Memcached) or a native 
 Kubernetes resource, like a [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
 
@@ -374,7 +374,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 ## 4. Create Deployment
 
 Assuming the resource is defined, we can continue on by observing the state of our Memcached Deployment. When we say "Memcached Deployment"
-we are referring to the standard `Deployment` Kubernetes resource, but the difference is that that these deployments are created by the CR,
+we are referring to the standard `Deployment` Kubernetes resource, but the difference is that that these deployments are created by the Custom Resource,
 instead of a SRE or Kubernetes admin. 
 
 First, we'll want to confirm that a Memcached deployment exists within the namespace. To do so, we'll need to use the [k8s.io/api/apps/v1](https://godoc.org/k8s.io/api/apps/v1#Deployment) package, which is defined in our import statement.
@@ -439,12 +439,14 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 ```
 
 Creating a deployment, and more specifically creating a [`PodSpec`](https://pkg.go.dev/k8s.io/api/core/v1#PodSpec) is extremely important. Specifically the [`Image`](https://kubernetes.io/docs/concepts/containers/images/) and Ports field are important. 
-We are using the Docker Hub's Official [`Memcached Image`](https://hub.docker.com/_/memcached) and using version 1.4.36-alpine and we are exposing container port 11211 in our PodSpec.
+In the code above, we are using the Docker Hub's Official [`Memcached Image`](https://hub.docker.com/_/memcached) and using version 1.4.36-alpine and we are exposing container port 11211 in our PodSpec.
 
-### Use Create(ctx context.Context, obj client.Object) to save the object
+### Use the Create function to save a new object to the cluster 
 
-Once we create that deployment, we use the [`r.Create(ctx context.Context, obj client.Object)`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function to actually save the 
-object in the Kubernetes cluster. The `r.Create(ctx context.Context, obj client.Object)` 
+Once we create that deployment, we use the [`r.Create(ctx context.Context, obj client.Object)`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function to save the 
+object in the Kubernetes cluster. We use this function only if this object does not exist yet. If the object does exist and we want to save changes that we've made to it, we will use the Update() function. More on that soon.
+
+The `r.Create(ctx context.Context, obj client.Object)` 
 function takes in the context (which is passed into our reconcile function) and the Kubernetes object we want to save (which in our case is the deployment we just created) in the `deploymentForMemcached` function:
 
 ```go
@@ -458,21 +460,22 @@ Since we've made an update to our cluster, we will requeue:
 return ctrl.Result{Requeue: true}, nil
 ```
 
-To summarize: using the [Create](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/
-pkg/client#Writer) function is an important step in changing the current state of the 
-cluster. The difference between Create and Update is that Create is used the first time when a user wants to create an object while [`Update`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/
-client#Writer) is used after the first time to update an object.
+To summarize: using the [Create](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is an important step in changing the current state of the 
+cluster. The difference between Create and Update is that Create is used the first time when a user wants to create an object while [`Update`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) is used after the first time to update an object.
 
 
 ## 5. Understanding the Update Function
 
-Next, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace.
+Next, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace. This is going to change the desired state of our cluster to be 
+the same as the desired state of the Custom Resource. 
 
-### Use Update(ctx context.Context, obj Object) to update the replicas in the Spec
+### Use Update() to save the state after modifying an existing object
 
-First, request the desired `Size` and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment.
+First, request the `Size` field from our Memcached Custom Resource and then compare the desired size to the number of replicas running in the deployment. If the numbers of replicas isn't the same as the desired `Size` from our Memcached Spec, we'll use the `Update` method to adjust the amount of replicas in the deployment to be the same as the desired `Size` from our Memcached Spec. The Update(ctx context.Context, obj Object) function has a similar function definition to Create(), except that we must pass in a struct pointer to the object we want to update. In our case, this is the Memcached Deployment resource we created in the `deploymentForMemcached` function.  
 
 ```go
+found := &appsv1.Deployment{}
+...
 size := memcached.Spec.Size
 if *found.Spec.Replicas != size {  
   found.Spec.Replicas = &size
@@ -480,6 +483,11 @@ if *found.Spec.Replicas != size {
   ...
 }
 ```
+What we've done here is that the Custom Resource has effectively 
+changed the desired state. We do this by setting the deployment's replicas value to be the value that the user sets 
+in the custom resource. This is changing the desired state of the cluster to be the same as the desired state of the custom
+resource. 
+
 If all goes well, the spec is updated, and we requeue. Otherwise, we return an error. Again this is important. 
 We always want to requeue after we update the state of the cluster. If the actual state is equal to the desired state,
 then we do not have to requeue. 
@@ -493,15 +501,32 @@ if err != nil {
 return ctrl.Result{Requeue: true}, nil
 ```
 
-### Use Update(ctx context.Context, obj Object) to update the status
+### Update the Status to save the current state of the cluster 
 
-Lastly, we will retrieve the list of pods in a specific namespace by using the 
-[r.List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function. The r.List function will create a `.Items` field in the 
-ObjectList we pass in which will be populated with the objects for a given namespace.
+In this section, we will see how to save the current state of the cluster, by modifying the `Status` subresource of 
+our Memcached object using the [`StatusClient`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusClient.Status) interface. But first, let's remember what type our status subresouce is, according to our `api` which we created. 
+Our Status struct looks like the following:
+
+```go
+type MemcachedStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
+}
+```
+
+This means that our Status subresource is expecting an array of strings which represent the current list of pods in our namespace.
+Let's see how we will get the current list of Pods in our current namespace.
+
+We will use the [`List`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function to retrieve the list of pods in a specific namespace. 
+
+<!-- The r.List function will create a `.Items` field in the 
+ObjectList we pass in which will be populated with the objects for a given namespace. -->
 
 This code is really important since it uses the [ListOption](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#ListOption) package which offers options for filtering results. In our case, we want to filter all the the pods which
 are in our given namespace and have the same labels as our Memcached custom resource. Matching labels is important, since this
 is how we will distinguish certain groups of pods from others.
+
 ```go
 podList := &corev1.PodList{}
 listOpts := []client.ListOption{
@@ -509,12 +534,12 @@ listOpts := []client.ListOption{
   client.MatchingLabels(labelsForMemcached(memcached.Name)),
 }
 ```
+
 The filters we set in the previous `ListOpts` variable are passed into the List function, as a way to actually 
 see which pods are currently in our namespace and also match the same labels as our custom resource. 
 
 The [List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function
-will update the list which you pass into it, which in our 
-case is the `podList` which we pass in.
+will update the list which you pass into it, which in our case is the `podList` which we pass in.
 
 ```go
 if err = r.List(ctx, podList, listOpts...); err != nil {
@@ -523,7 +548,7 @@ if err = r.List(ctx, podList, listOpts...); err != nil {
 }
 ```
 
-It will also give the `podList` variable a `.Items` field, which we will pass into getPodNames below.
+The List function will also give the `podList` variable a `.Items` field, which we will pass into getPodNames below.
 
 GetPodNames converts the PodList returned from our List function into a string array, since that 
 is what our `MemcachedStatus` struct is expecting, as we have defined it in our `memcached_types.go` file.
@@ -555,12 +580,17 @@ if !reflect.DeepEqual(podNames, memcached.Status.Nodes) {
 }
 ```
 
-If all goes well, we return without an error. 
+By updating the status, we are updating the current state of the cluster. Again, when we update the Spec, we update thedesired state, and when we update the status, we update the current state of the cluster. 
+
+If all goes well, we return without an error. This means that the current state of the cluster is the same as the desired state. 
+This means we do not have to reconcile until the desired state has changed. 
+
 ```go
 return ctrl.Result{}, nil
 ```
 
-To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is a very important step in changing the actual state of the cluster. This is used if there is an object already existing in the cluster. 
+
+To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is a very important step in changing the state of the cluster. The update function allows us to save the desired state when we update the Spec and it allows us to save the current state when we update the Status.
 
 ## 6. Understanding KubeBuilder Markers
 
@@ -601,6 +631,17 @@ RBAC configuration.
 For example, if our memcached resource didn't have the `List` verb listed in the kubebuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our kubebuilder commands into our `config/rbac` yaml files. To 
 learn more about KubeBuilder markers, see the docs [here](https://book.kubebuilder.io/reference/markers/rbac.html).
 
+## Conclusion
+
+In this article, we've learned how to use the Go Client [Reader](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.Get) and [Writer](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) interface to Get, Create, Update, and List our resources. We've also explored how to use the [StatusWriter](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusWriter) interface to update the status of a subresource, i.e. the current state.
+
+The main idea is that we want to automate the deployment for the Memcached service. We want to ensure a deployment is up, 
+and we want to ensure that the number of replicas in that deployment is the same as the number that we've listed in our 
+custom resource. If the number of replicas in that deployment is the same as the Size from the custom resource Spec, then 
+we are done, and we can wait until the Spec has changed. 
+
+Lastly, we've seen that we can use KubeBuilder markers to change role-based access control policies, and apply those 
+policies to our custom resource as well.
 
 # License
 
