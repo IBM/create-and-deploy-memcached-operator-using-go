@@ -471,7 +471,7 @@ the same as the desired state of the Custom Resource.
 
 ### Use Update() to save the state after modifying an existing object
 
-First, request the desired `Size` and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment. The Update(ctx context.Context, obj Object) function has a similar function definition to Create(), except that we must pass in a struct pointer 
+First, request the `Size` field from our Memcached Custom Resource and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment. The Update(ctx context.Context, obj Object) function has a similar function definition to Create(), except that we must pass in a struct pointer 
 to the object we want to update. 
 
 ```go
