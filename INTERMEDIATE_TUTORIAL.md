@@ -231,7 +231,7 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 ## 1. Reconcile function overview
 
-The controller `[Reconcile]`(https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
+The controller [Reconcile](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
 
 After scaffolding our controller via the operator-sdk, we'll have an empty Reconciler function.
 
