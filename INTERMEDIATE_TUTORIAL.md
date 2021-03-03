@@ -590,7 +590,7 @@ return ctrl.Result{}, nil
 ```
 
 
-To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is a very important step in changing the state of the cluster. The update function allows us to save the desired state when we update the spec and it allows us to save the current state when we update the Status.
+To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is a very important step in changing the state of the cluster. The update function allows us to save the desired state when we update the Spec and it allows us to save the current state when we update the Status.
 
 ## 6. Understanding KubeBuilder Markers
 
@@ -631,6 +631,17 @@ RBAC configuration.
 For example, if our memcached resource didn't have the `List` verb listed in the kubebuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our kubebuilder commands into our `config/rbac` yaml files. To 
 learn more about KubeBuilder markers, see the docs [here](https://book.kubebuilder.io/reference/markers/rbac.html).
 
+## Conclusion
+
+In this article, we've learned how to use the Go Client [Reader](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.Get) and [Writer](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) interface to Get, Create, Update, and List our resources. We've also explored how to use the [StatusWriter](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusWriter) interface to update the status of a subresource, i.e. the current state.
+
+The main idea is that we want to automate the deployment for the Memcached service. We want to ensure a deployment is up, 
+and we want to ensure that the number of replicas in that deployment is the same as the number that we've listed in our 
+custom resource. If the number of replicas in that deployment is the same as the Size from the custom resource Spec, then 
+we are done, and we can wait until the Spec has changed. 
+
+Lastly, we've seen that we can use KubeBuilder markers to change role-based access control policies, and apply those 
+policies to our custom resource as well.
 
 # License
 
