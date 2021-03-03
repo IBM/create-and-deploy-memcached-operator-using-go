@@ -435,7 +435,7 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
       },
     },
   }
-	return dep
+  return dep
 ```
 
 Creating a deployment, and more specifically creating a [`PodSpec`](https://pkg.go.dev/k8s.io/api/core/v1#PodSpec) is extremely important. Specifically the [`Image`](https://kubernetes.io/docs/concepts/containers/images/) and Ports field are important. 
