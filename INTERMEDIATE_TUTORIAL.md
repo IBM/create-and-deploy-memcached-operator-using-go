@@ -468,11 +468,14 @@ cluster. The difference between Create and Update is that Create is used the fir
 
 Next, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace.
 
-### Use Update(ctx context.Context, obj Object) to update the replicas in the Spec
+### Use Update() to save the state after modifying an existing object
 
-First, request the desired `Size` and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment.
+First, request the desired `Size` and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment. The Update(ctx context.Context, obj Object) function has a similar function definition to Create(), except that we must pass in a struct pointer 
+to the object we want to update. 
 
 ```go
+found := &appsv1.Deployment{}
+...
 size := memcached.Spec.Size
 if *found.Spec.Replicas != size {  
   found.Spec.Replicas = &size
@@ -480,6 +483,11 @@ if *found.Spec.Replicas != size {
   ...
 }
 ```
+What we've done here is that the Custom Resource has effectively 
+changed the desired state. We do this by setting the deployment's replicas value to be the value that the user sets 
+in the custom resource. This is changing the desired state of the cluster to be the same as the desired state of the custom
+resource. 
+
 If all goes well, the spec is updated, and we requeue. Otherwise, we return an error. Again this is important. 
 We always want to requeue after we update the state of the cluster. If the actual state is equal to the desired state,
 then we do not have to requeue. 
@@ -493,7 +501,10 @@ if err != nil {
 return ctrl.Result{Requeue: true}, nil
 ```
 
-### Use Update(ctx context.Context, obj Object) to update the status
+### Update the Status to save the current state of the cluster 
+
+In this section, we will see how to save the current state of the cluster, by modifying the `Status` subresource of 
+our Memcached object using the [`StatusClient`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusClient.Status) interface.
 
 Lastly, we will retrieve the list of pods in a specific namespace by using the 
 [r.List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function. The r.List function will create a `.Items` field in the 
