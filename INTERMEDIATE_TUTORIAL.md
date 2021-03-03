@@ -499,8 +499,9 @@ Lastly, we will retrieve the list of pods in a specific namespace by using the
 [r.List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function. The r.List function will create a `.Items` field in the 
 ObjectList we pass in which will be populated with the objects for a given namespace.
 
-This code is really important since it uses the [ListOption](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#ListOption) package which offers options for filtering results. In our case, we want to filter all the the po
-
+This code is really important since it uses the [ListOption](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#ListOption) package which offers options for filtering results. In our case, we want to filter all the the pods which
+are in our given namespace and have the same labels as our Memcached custom resource. Matching labels is important, since this
+is how we will distinguish certain groups of pods from others.
 ```go
 podList := &corev1.PodList{}
 listOpts := []client.ListOption{
@@ -508,6 +509,8 @@ listOpts := []client.ListOption{
   client.MatchingLabels(labelsForMemcached(memcached.Name)),
 }
 ```
+The filters we set in the previous `ListOpts` variable are passed into the List function, as a way to actually 
+see which pods are currently in our namespace and also match the same labels as our custom resource. 
 
 The [List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function
 will update the list which you pass into it, which in our 
@@ -520,7 +523,9 @@ if err = r.List(ctx, podList, listOpts...); err != nil {
 }
 ```
 
-Then, we have a function to convert the PodList into a string array, since that 
+It will also give the `podList` variable a `.Items` field, which we will pass into getPodNames below.
+
+GetPodNames converts the PodList returned from our List function into a string array, since that 
 is what our `MemcachedStatus` struct is expecting, as we have defined it in our `memcached_types.go` file.
 
 ```go
