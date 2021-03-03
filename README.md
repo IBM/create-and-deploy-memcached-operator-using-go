@@ -9,7 +9,7 @@ a Golang based operator from scratch.
 are and why they are useful.
 
 2. [Anatomy of an operator, demystified](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/demystified.md): In this article we will build upon the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md) article and explore Kubernetes concepts such as workloads, controllers, custom resources, and the control loop. This article will explain how operators extend
-Kuberentes functionality. 
+Kubernetes functionality. 
 
 ## Intermediate level
 

@@ -68,16 +68,28 @@ Since we are not in our $GOPATH, we can activate module support by running the
 Next, run the `operator-sdk init` command to create a new memcached-operator project:
 
 ```bash
-$ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator --owner="Memcache Operator authors"
+$ operator-sdk init --domain=example.com --repo=github.com/example/memcached-operator
 ```
 
 * The `--domain` flag is used to uniquely identify the operator resources that are created by
 this project. When we use the command `oc api-resources` later, the `example.com` domain 
-will be listed there by our `memcached` in the `APIGROUP` category.
+will be listed there by our `memcached` in the `APIGROUP` category. 
 
-* The `--repo` flag enables us to create this project outside of the standard 
-`$GOPATH/src` strucutre. 
-  * To work properly, make sure you activate GO module support by running the following command:
+* Let's discuss [Go Modules](https://blog.golang.org/using-go-modules). This is very important since if this is not setup properly, you will not be able to develop and run your operator. By using the `--repo` flag you are setting the name to use for your go module, which is specified at the top of your `go.mod` file:
+
+```go
+module github.com/example/memcached-operator
+``` 
+
+* Setting up your Go Module will enable us to work outside of our [GOPATH](https://golang.org/doc/gopath_code#GOPATH), as long as the working directory of the project is the same as the name of the module in the top of the `go.mod` file. Again,
+make sure that your directory is called `memcached-operator` and that your `go.mod` file shows the 
+following go module:
+
+```go
+module github.com/example/memcached-operator
+```
+
+* For Go Modules to work properly, make sure you activate GO module support by running the following command:
 
 ```bash
 $ export GO111MODULE=on
@@ -635,6 +647,9 @@ From the OpenShift web console, copy the login command from the account drop dow
 ![OpenShift](images/openshift-3.png)
 
 and from your terminal run the command to login to your cluster.
+
+<b>This is extremely important.</b> By running the login command, we should now be able to run `oc project` to see which project we 
+are currently in. The project we are in is our namespace as well, which is very important since our operator will only run in the namespace which we deploy it to. OpenShift is connecting to our cluster by using the login command, and if you do not do this step properly, you will not be able to deploy your operator.
 
 If you haven't created a project, create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
 
