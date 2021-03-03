@@ -466,7 +466,8 @@ cluster. The difference between Create and Update is that Create is used the fir
 
 ## 5. Understanding the Update Function
 
-Next, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace.
+Next, we'll add logic to our method to adjust the number of replicas in our deployment whenever the `Size` parameter is adjusted. This is assuming the deployment already exists in our namespace. This is going to change the desired state of our cluster to be 
+the same as the desired state of the Custom Resource. 
 
 ### Use Update() to save the state after modifying an existing object
 
