@@ -471,8 +471,7 @@ the same as the desired state of the Custom Resource.
 
 ### Use Update() to save the state after modifying an existing object
 
-First, request the `Size` field from our Memcached Custom Resource and then compare the desired size to the number of replicas running in the deployment. If the states don't match, we'll use the `Update` method to adjust the amount of replicas in the deployment. The Update(ctx context.Context, obj Object) function has a similar function definition to Create(), except that we must pass in a struct pointer 
-to the object we want to update. 
+First, request the `Size` field from our Memcached Custom Resource and then compare the desired size to the number of replicas running in the deployment. If the numbers of replicas isn't the same as the desired `Size` from our Memcached Spec, we'll use the `Update` method to adjust the amount of replicas in the deployment to be the same as the desired `Size` from our Memcached Spec. The Update(ctx context.Context, obj Object) function has a similar function definition to Create(), except that we must pass in a struct pointer to the object we want to update. In our case, this is the Memcached Deployment resource we created in the `deploymentForMemcached` function.  
 
 ```go
 found := &appsv1.Deployment{}
@@ -505,15 +504,29 @@ return ctrl.Result{Requeue: true}, nil
 ### Update the Status to save the current state of the cluster 
 
 In this section, we will see how to save the current state of the cluster, by modifying the `Status` subresource of 
-our Memcached object using the [`StatusClient`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusClient.Status) interface.
+our Memcached object using the [`StatusClient`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusClient.Status) interface. But first, let's remember what type our status subresouce is, according to our `api` which we created. 
+Our Status struct looks like the following:
 
-Lastly, we will retrieve the list of pods in a specific namespace by using the 
-[r.List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function. The r.List function will create a `.Items` field in the 
-ObjectList we pass in which will be populated with the objects for a given namespace.
+```go
+type MemcachedStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
+}
+```
+
+This means that our Status subresource is expecting an array of strings which represent the current list of pods in our namespace.
+Let's see how we will get the current list of Pods in our current namespace.
+
+We will use the [`List`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function to retrieve the list of pods in a specific namespace. 
+
+<!-- The r.List function will create a `.Items` field in the 
+ObjectList we pass in which will be populated with the objects for a given namespace. -->
 
 This code is really important since it uses the [ListOption](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#ListOption) package which offers options for filtering results. In our case, we want to filter all the the pods which
 are in our given namespace and have the same labels as our Memcached custom resource. Matching labels is important, since this
 is how we will distinguish certain groups of pods from others.
+
 ```go
 podList := &corev1.PodList{}
 listOpts := []client.ListOption{
@@ -521,12 +534,12 @@ listOpts := []client.ListOption{
   client.MatchingLabels(labelsForMemcached(memcached.Name)),
 }
 ```
+
 The filters we set in the previous `ListOpts` variable are passed into the List function, as a way to actually 
 see which pods are currently in our namespace and also match the same labels as our custom resource. 
 
 The [List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function
-will update the list which you pass into it, which in our 
-case is the `podList` which we pass in.
+will update the list which you pass into it, which in our case is the `podList` which we pass in.
 
 ```go
 if err = r.List(ctx, podList, listOpts...); err != nil {
@@ -535,7 +548,7 @@ if err = r.List(ctx, podList, listOpts...); err != nil {
 }
 ```
 
-It will also give the `podList` variable a `.Items` field, which we will pass into getPodNames below.
+The List function will also give the `podList` variable a `.Items` field, which we will pass into getPodNames below.
 
 GetPodNames converts the PodList returned from our List function into a string array, since that 
 is what our `MemcachedStatus` struct is expecting, as we have defined it in our `memcached_types.go` file.
@@ -567,12 +580,17 @@ if !reflect.DeepEqual(podNames, memcached.Status.Nodes) {
 }
 ```
 
-If all goes well, we return without an error. 
+By updating the status, we are updating the current state of the cluster. Again, when we update the Spec, we update thedesired state, and when we update the status, we update the current state of the cluster. 
+
+If all goes well, we return without an error. This means that the current state of the cluster is the same as the desired state. 
+This means we do not have to reconcile until the desired state has changed. 
+
 ```go
 return ctrl.Result{}, nil
 ```
 
-To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is a very important step in changing the actual state of the cluster. This is used if there is an object already existing in the cluster. 
+
+To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is a very important step in changing the state of the cluster. The update function allows us to save the desired state when we update the spec and it allows us to save the current state when we update the Status.
 
 ## 6. Understanding KubeBuilder Markers
 
