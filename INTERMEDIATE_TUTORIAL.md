@@ -231,7 +231,7 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 ## 1. Reconcile function overview
 
-The controller "Reconcile" method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
+The controller `[Reconcile]`(https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) method contains the logic responsible for monitoring and applying the requested state for specific deployments. It does so by sending client requests to Kubernetes APIs, and will run every time a Custom Resource is modified by a user or changes state (ex. pod fails). If the reconcile method fails, it can be re-queued to run again.
 
 After scaffolding our controller via the operator-sdk, we'll have an empty Reconciler function.
 
@@ -303,7 +303,7 @@ Read more about context in Golang [here](https://blog.golang.org/context).
 
 Now, let's understand the object that we pass into the `Get` function. The object has to implement the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) which means that it needs to embed both [runtime.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#Object), and [metav1.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Object). This object should be able to be written via YAML and then be created 
 via `Kubectl create`. All of this means that the object will be treated like a Kubernetes native object. You will see that in the later 
-parts of the code, we will pass in a different type of resource (a Deployment). Since the `Get` function is accepting any Kubernetes 
+parts of the code we will pass in a different type of resource (a Deployment) to the `Get` function. Since the `Get` function is accepting any Kubernetes 
 object that implements the Object interface, it doesn't matter if our object is a custom resource we created (Memcached) or a native 
 Kubernetes resource, like a [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
 
@@ -374,7 +374,7 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 ## 4. Create Deployment
 
 Assuming the resource is defined, we can continue on by observing the state of our Memcached Deployment. When we say "Memcached Deployment"
-we are referring to the standard `Deployment` Kubernetes resource, but the difference is that that these deployments are created by the CR,
+we are referring to the standard `Deployment` Kubernetes resource, but the difference is that that these deployments are created by the Custom Resource,
 instead of a SRE or Kubernetes admin. 
 
 First, we'll want to confirm that a Memcached deployment exists within the namespace. To do so, we'll need to use the [k8s.io/api/apps/v1](https://godoc.org/k8s.io/api/apps/v1#Deployment) package, which is defined in our import statement.
@@ -439,12 +439,14 @@ func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached)
 ```
 
 Creating a deployment, and more specifically creating a [`PodSpec`](https://pkg.go.dev/k8s.io/api/core/v1#PodSpec) is extremely important. Specifically the [`Image`](https://kubernetes.io/docs/concepts/containers/images/) and Ports field are important. 
-We are using the Docker Hub's Official [`Memcached Image`](https://hub.docker.com/_/memcached) and using version 1.4.36-alpine and we are exposing container port 11211 in our PodSpec.
+In the code above, we are using the Docker Hub's Official [`Memcached Image`](https://hub.docker.com/_/memcached) and using version 1.4.36-alpine and we are exposing container port 11211 in our PodSpec.
 
-### Use Create(ctx context.Context, obj client.Object) to save the object
+### Use the Create function to save a new object to the cluster 
 
-Once we create that deployment, we use the [`r.Create(ctx context.Context, obj client.Object)`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function to actually save the 
-object in the Kubernetes cluster. The `r.Create(ctx context.Context, obj client.Object)` 
+Once we create that deployment, we use the [`r.Create(ctx context.Context, obj client.Object)`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function to save the 
+object in the Kubernetes cluster. We use this function only if this object does not exist yet. If the object does exist and we want to save changes that we've made to it, we will use the Update() function. More on that soon.
+
+The `r.Create(ctx context.Context, obj client.Object)` 
 function takes in the context (which is passed into our reconcile function) and the Kubernetes object we want to save (which in our case is the deployment we just created) in the `deploymentForMemcached` function:
 
 ```go
@@ -458,10 +460,8 @@ Since we've made an update to our cluster, we will requeue:
 return ctrl.Result{Requeue: true}, nil
 ```
 
-To summarize: using the [Create](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/
-pkg/client#Writer) function is an important step in changing the current state of the 
-cluster. The difference between Create and Update is that Create is used the first time when a user wants to create an object while [`Update`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/
-client#Writer) is used after the first time to update an object.
+To summarize: using the [Create](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is an important step in changing the current state of the 
+cluster. The difference between Create and Update is that Create is used the first time when a user wants to create an object while [`Update`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) is used after the first time to update an object.
 
 
 ## 5. Understanding the Update Function
