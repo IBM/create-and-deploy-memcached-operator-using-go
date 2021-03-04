@@ -93,7 +93,7 @@ Ansible and Go can be used to achieve all five capability levels. Helm can only 
 
 Let's take a look at level one in more detail:
 
-### Understand Operator Capability Level 1 - Basic Install 
+### Operator Capability Level 1 - Basic Install 
 
 In level 1, your operator can provision an application through a custom resource. All of the configuration
 details are specified in the CR. You should also be able to install your operator in multiple ways (`kubectl`, Operator Hub, 
