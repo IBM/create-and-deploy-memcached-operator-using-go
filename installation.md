@@ -53,7 +53,7 @@ commands have changed with the 1.0 release.
 Run the following command in the terminal of your choice:
 
 ```bash
-$ operator-sdk --version
+$ operator-sdk version
 ```
 
 You should see output like this:
@@ -105,10 +105,10 @@ Server Version: version.Info{Major:"1", Minor:"18+", GitVersion:"v1.18.3+e574db2
 
 As a note, if you still need to provision an OpenShift cluster, it takes some time
 so it is recommended to do that **now** if you don't have one already. Skip down to
-[the deploy step](https://github.ibm.com/TT-ISV-org/operator#7-deploy-the-operator) to see 
+[the prepare your OpenShift Cluster step](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#prepare-your-openshift-cluster) to see 
 how to create an OpenShift cluster on IBM Cloud.
 
-First, we need to take care of some cluster admin tasks. We will need to make sure our OpenShift Lifecycle Manager is 
+Lastly, we will need to make sure our OpenShift Lifecycle Manager is 
 up to date and running properly before we develop our operator. To do this, run the `operator-sdk olm status` command:
 
 ```
@@ -139,6 +139,7 @@ system:controller:operator-lifecycle-manager                 ClusterRole        
 ```
 
 As you can see from my output above, all of the components of the OLM are in the `Installed` status.
+If your components are in the `Installed` status, that means your Operator Lifecycle Manager is working properly.
 <b>Note: if you see an error, you should still be able to proceed.</b>
 
 ## Conclusion
