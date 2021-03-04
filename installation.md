@@ -140,7 +140,7 @@ system:controller:operator-lifecycle-manager                 ClusterRole        
 
 As you can see from my output above, all of the components of the OLM are in the `Installed` status.
 If your components are in the `Installed` status, that means your Operator Lifecycle Manager is working properly.
-<b>Note: if you see an error, you should still be able to proceed.</b>
+<b>Note: if you see an error, you can read [this guide](https://sdk.operatorframework.io/docs/olm-integration/quickstart-bundle/#enabling-olm) which will show you how to install OLM on your cluster.</b>
 
 ## Conclusion
 <b>Congratulations!!</b> You've now setup your environment to develop an operator 
