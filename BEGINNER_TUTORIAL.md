@@ -531,22 +531,39 @@ From the OpenShift web console, copy the login command from the account drop dow
 
 ![OpenShift](images/openshift-3.png)
 
-and from your terminal run the command to login to your cluster.
+and from your terminal run the command to login to your cluster. Once you've logged in, you should see output like the following:
+
+```bash
+$ oc login --token=fFQ-HbFVBT4qHKl1n0b*****63U --server=https://c****-e.us-south.containers.cloud.ibm.com:31047
+s-south.containers.cloud.ibm.com:31047
+
+Logged into "https://c116-e.us-south.containers.cloud.ibm.com:31047" as "IAM#horea.porutiu@ibm.com" using the token provided.
+
+You have access to 84 projects, the list has been suppressed. You can list all projects with 'oc projects'
+
+Using project "horea-test-scc".
+```
 
 <b>This is extremely important.</b> By running the login command, we should now be able to run `oc project` to see which project we 
 are currently in. The project we are in is our namespace as well, which is very important since our operator will only run in the namespace which we deploy it to. OpenShift is connecting to our cluster by using the login command, and if you do not do this step properly, you will not be able to deploy your operator.
 
-If you haven't created a project, create a project by going to projects and clicking `Create Project`. From the terminal after you logged in change the project by running following in your terminal.
-
-Note: you can also use the `oc new-project <new-project-name>` command to create a new project.
-The below command simply switches you to an existing project.
+Next create a new project using the following command:
 
 ```bash
-oc project <project name>
+$ oc new-project <new-project-name>
 ```
 
+Once you've created a new project, you will be automatically switched to that project, as shown in the output below:
+
+```bash
+$ oc new-project horea-demo-project
+Now using project "horea-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
+```
+
+Now, for the rest of the tutorial, you will use `horea-demo-project` or whatever you named your project, as your namespace. More on this in the following steps. Just know that your project is the same as your namespace in terms of OpenShift. 
+
 ### Edit the restricted security context constraint
-OpenShift is built with the best security practices in mind. For that reason, we need to [relax the security of our clusterhttps://docs.openshift.com/enterprise/3.0/admin_guide/manage_scc.html#enable-images-to-run-with-user-in-the-dockerfile so that our operator image
+OpenShift is built with the best security practices in mind. For that reason, we need to [relax the security of our cluster](https://docs.openshift.com/enterprise/3.0/admin_guide/manage_scc.html#enable-images-to-run-with-user-in-the-dockerfile) so that our operator image
 can run as any user. To do this, run the following command in the OpenShift project where you will deploy your operator:
 
 ```bash
