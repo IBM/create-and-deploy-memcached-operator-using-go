@@ -46,6 +46,8 @@ Because operators are specialized applications, they run in the worker nodes. Ye
 
 [A cluster's state is managed by controllers reconciling the current state to match the desired state](https://kubernetes.io/docs/concepts/architecture/controller/). A cluster always has two states: desired and current. Desired state represents cluster resources that should exist. Current state represents the resources that actually do exist. Controllers watch for changes in the desired state and then change the current state to make it look like the desired state. The controllers included with Kubernetes run in the control plane.
 
+<b>Note: when you see Spec in the Custom Resource, you can think of it as the desired state. When you see `Status` that refers to the current state. This is very important, since that is how we will update the status of the cluster in our controller code. We will update the Spec when we want to update the desired state, and [update the status subresource](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md#update-the-status-to-save-the-current-state-of-the-cluster) when we want to update the current state.</b> 
+
 ## Workload deployment
 
 A very basic workload deployed into a Kubernetes cluster has this structure:

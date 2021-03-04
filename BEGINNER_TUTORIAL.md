@@ -154,7 +154,7 @@ The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resou
 
 ### What is the Spec?
 
-A good way to think about `Spec` is that any inputs (values tweaker by the user) to our controller go in the spec section. 
+A good way to think about `Spec` is that any inputs (values tweaked by the user) to our controller go in the spec section. 
 
 ```go
 type MemcachedSpec struct {}
