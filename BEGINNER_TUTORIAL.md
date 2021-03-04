@@ -595,22 +595,25 @@ Once you've saved the file, you should see the following output:
 securitycontextconstraints.security.openshift.io/restricted edited
 ```
 
-Now that we have our controller code and memcached types implemented, and our security context is updated in order for our operator to run, run the following command to update the generated code for that resource type:
+### Create CRD and RBAC
+
+
+Now that we have our controller code and API implemented, and our security context updated, run the following command to create the CRD from
+our API defined in our `_types.go` file:
 
 ```bash
 $ make generate
 ```
 
-The above command will use the controller-gen utility in `bin/controller-gen` to update the api/v1alpha1/zz_generated.deepcopy.go file to ensure our API’s Go type definitions implement the `runtime.Object` interface that all Kind types must implement.
+The above command will update our `api/v1alpha1/zz_generated.deepcopy.go` file to implement the [metav1.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Object) and [runtime.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#Object) interfaces. This will enable our Custom Resource to be treated like a native Kubernetes resource.
 
-Once the API is defined with spec/status fields and CRD validation markers, the CRD manifests can be generated and updated with the following command:
+Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests:
 
 ```bash
 $ make manifests
 ```
 
-This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation 
-of the object we specified in our `_types.go` file. 
+This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation of the object we specified in our `_types.go` file. 
 
 ### Create Operator Image
 
