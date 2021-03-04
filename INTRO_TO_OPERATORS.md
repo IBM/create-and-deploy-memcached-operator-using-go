@@ -103,6 +103,11 @@ Operator SDK is an open source toolkit that provides tools to build, test and pa
 
 Operator SDK also allows you to install OLM (operator lifecycle manager) using `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an Operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, to make sure all the resources in the cluster are in `installed` status.
 
+## Operator Capability Levels
+
+![Alt text](./images/operator-capability-level.png)
+
+
 ## Conclusion
 In this article, we learned about how operators can extend the base Kubernetes functionality 
 by the use of custom controllers and CRDs. In the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md), we will develop and deploy 
