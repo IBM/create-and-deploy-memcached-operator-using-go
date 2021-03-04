@@ -580,7 +580,7 @@ if !reflect.DeepEqual(podNames, memcached.Status.Nodes) {
 }
 ```
 
-By updating the status, we are updating the current state of the cluster. Again, when we update the Spec, we update thedesired state, and when we update the status, we update the current state of the cluster. 
+By updating the status, we are updating the current state of the cluster. Again, when we update the Spec, we update desired state, and when we update the status, we update the current state of the cluster. 
 
 If all goes well, we return without an error. This means that the current state of the cluster is the same as the desired state. 
 This means we do not have to reconcile until the desired state has changed. 
