@@ -10,7 +10,14 @@ In this way, operators are the browser plugins of the Kubernetes world, adding c
 
 This article explains how operators work, using aspects of how a Kubernetes cluster works to illustrate that operators work similarly.
 
-## Operator structure
+## Outline
+1. [Operator Structure](#1-operator-Structure)
+1. [Kubernetes architecture](#2-Kubernetes-architecture)
+1. [Workload Deployment](#3-workload-deployment)
+1. [Reconcile Loop](#4-Reconcile-Loop)
+1. [Reconcile States](#5-Reconcile-States)
+
+## 1. Operator Structure
 
 As far as the Kubernetes cluster is concerned, an operator is just an application. It's a very specialized application, designed to manage another resource running in Kubernetes, such as another application. Kubernetes out-of-the-box is pretty good at managing stateless workloads because all of them are similar enough that they can be managed pretty much the same way. It has difficulty managing stateful workloads because they are more complex and each one is different, requiring custom management. An operator is a specialized application that provides custom management for specialized resources, often stateful workloads. 
 
@@ -28,7 +35,7 @@ These components form the three main parts of an operator:
 
 A particular operator can be much more complex, but it will still contain this basic structure.
 
-## Kubernetes architecture
+## 2. Kubernetes Architecture
 
 Before we continue, let's quickly review how Kubernetes works. [A Kubernetes cluster consists of these components](https://kubernetes.io/docs/concepts/overview/components/):
 
@@ -48,7 +55,7 @@ Because operators are specialized applications, they run in the worker nodes. Ye
 
 <b>Note: when you see Spec in the Custom Resource, you can think of it as the desired state. When you see `Status` that refers to the current state. This is very important, since that is how we will update the status of the cluster in our controller code. We will update the Spec when we want to update the desired state, and [update the status subresource](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md#update-the-status-to-save-the-current-state-of-the-cluster) when we want to update the current state.</b> 
 
-## Workload deployment
+## 3. Workload Deployment
 
 A very basic workload deployed into a Kubernetes cluster has this structure:
 
@@ -73,7 +80,7 @@ When an operator deploys a workload, it does much the same thing:
 
 The Kube API doesn't know whether its client is an admin using client tools or an operator running a controller. Either way, it performs the commands the client invokes by updating the desired state, which the controllers use to update the current state. In this way, the operator does what the admin would do, but in an automated way that's encapsulated in its controller's implementation.
 
-## Reconcile loop
+## 4. Reconcile Loop
 
 Out of the box, a Kubernetes cluster's control plane implements a reconciliation loop that manages the cluster:
 
@@ -87,7 +94,7 @@ Each operator extends the reconciliation loop by adding its custom controller to
 
 When the Controller Manager runs the reconciliation loop, it not only tells each controller in the control plane to reconcile itself, it also tells each operator's custom controller to reconcile itself. Like a standard controller, Reconcile is the custom controller's opportunity to react to any changes since the last time it reconciled itself.
 
-## Reconcile states
+## 5. Reconcile States
 
 Thus far, we've talked about the relationship between a cluster's desired state and its current state, and how a controller reconciles between those two states for the part of the cluster it manages. The way Kube controllers and operator controllers reconcile is very analogous:
 
