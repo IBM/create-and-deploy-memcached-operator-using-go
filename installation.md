@@ -79,7 +79,7 @@ If you plan to use an OpenShift cluster, then you can install the OpenShift CLI 
 
 Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
-Alternatively, here is another way to install the `oc` cli:
+Alternatively, here is another way to install the `oc` cli, through the OpenShift web console, as shown in [this article](https://developers.redhat.com/openshift/command-line-tools):
 
 First, go to your OpenShift console and click on the question mark in the 
 top-right corner. From there, click on `Command Line Tools` and then choose
