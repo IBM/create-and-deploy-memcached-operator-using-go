@@ -511,121 +511,6 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 ```
 
-### Build manifests and go files
-
-Before we compile our code, we need to change a couple of things. 
-
-1. Make sure to change 
-your Dockerfile so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/Dockerfile). It should look like this:
-
-```Dockerfile
-# Build the manager binary
-FROM golang:1.15 as builder
-
-WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
-RUN go mod download
-
-# Copy the go source
-COPY main.go main.go
-COPY api/ api/
-COPY controllers/ controllers/
-
-# Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
-
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
-WORKDIR /
-COPY --from=builder /workspace/manager .
-
-ENTRYPOINT ["/manager"]
-```
-
-2. Make sure to change 
-your `manager.yaml` file in your `config/manager` directory so it looks exactly as the [one in the Artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/manager.yaml). It 
-should look like the following: 
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: controller-manager
-  name: system
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: controller-manager
-  namespace: system
-  labels:
-    control-plane: controller-manager
-spec:
-  selector:
-    matchLabels:
-      control-plane: controller-manager
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        control-plane: controller-manager
-    spec:
-      securityContext:
-      containers:
-      - command:
-        - /manager
-        args:
-        - --leader-elect
-        image: controller:latest
-        name: manager
-        securityContext:
-          allowPrivilegeEscalation: false
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-          initialDelaySeconds: 15
-          periodSeconds: 20
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        resources:
-          limits:
-            cpu: 100m
-            memory: 30Mi
-          requests:
-            cpu: 100m
-            memory: 20Mi
-      terminationGracePeriodSeconds: 10
-```
-
-
-Now that we have our controller code and memcached types implemented, run the following command to update the generated code for that resource type:
-
-```bash
-$ make generate
-```
-
-The above command will use the controller-gen utility in `bin/controller-gen` to update the api/v1alpha1/zz_generated.deepcopy.go file to ensure our API’s Go type definitions implement the `runtime.Object` interface that all Kind types must implement.
-
-Once the API is defined with spec/status fields and CRD validation markers, the CRD manifests can be generated and updated with the following command:
-
-```bash
-$ make manifests
-```
-
-This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation 
-of the object we specified in our `_types.go` file. 
-
 ## 5. Compile, build and push
 
 At this point, we are ready to compile, build the image of our operator, and push the image to an 
@@ -658,8 +543,57 @@ The below command simply switches you to an existing project.
 
 ```bash
 oc project <project name>
-
 ```
+
+### Edit the restricted security context constraint
+OpenShift is built with the best security practices in mind. For that reason, we need to [relax the security of our clusterhttps://docs.openshift.com/enterprise/3.0/admin_guide/manage_scc.html#enable-images-to-run-with-user-in-the-dockerfile so that our operator image
+can run as any user. To do this, run the following command in the OpenShift project where you will deploy your operator:
+
+```bash
+$ oc edit scc restricted
+```
+
+Next, scroll down to where you see something like this:
+```bash
+runAsUser:
+  type:
+```
+
+And change it to:
+
+```bash
+runAsUser:
+  type: RunAsAny
+```
+
+Now, save the file by issuing the following command:
+
+```bash
+:wq
+```
+
+Once you've saved the file, you should see the following output: 
+
+```bash
+securitycontextconstraints.security.openshift.io/restricted edited
+```
+
+Now that we have our controller code and memcached types implemented, and our security context is updated in order for our operator to run, run the following command to update the generated code for that resource type:
+
+```bash
+$ make generate
+```
+
+The above command will use the controller-gen utility in `bin/controller-gen` to update the api/v1alpha1/zz_generated.deepcopy.go file to ensure our API’s Go type definitions implement the `runtime.Object` interface that all Kind types must implement.
+
+Once the API is defined with spec/status fields and CRD validation markers, the CRD manifests can be generated and updated with the following command:
+
+```bash
+$ make manifests
+```
+
+This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation 
+of the object we specified in our `_types.go` file. 
 
 ### Create Operator Image
 
@@ -667,8 +601,30 @@ The generated code from the `operator-sdk` creates a `Makefile` which allows you
 
 To compile the code run the following command in the terminal from your project root:
 ```bash
-make install
+$ make install
 ```
+
+Next, we need to make sure to update our config to tell our operator to run in our own project namespace. Do this by issuing the following Kustomize 
+commands:
+
+```bash
+$ export IMG=docker.io/<username>/memcached-operator:<version>
+$ export NAMESPACE=<oc-project-name>
+
+$ cd config/manager
+$ kustomize edit set image controller=${IMG}
+$ kustomize edit set namespace "${NAMESPACE}"
+$ cd ../../
+
+$ cd config/default
+$ kustomize edit set namespace "${NAMESPACE}"
+$ cd ../../
+```
+
+`<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
+version of the operator image you will deploy. Note that each time you 
+make a change to your operator code, it is good practice to increment the 
+version. `NAMESPACE` is your oc project name in which you plan to deploy your operator. 
 
 **Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
 operator image. Use `Docker login` to login.
@@ -676,47 +632,24 @@ operator image. Use `Docker login` to login.
 To build the Docker image run the following command. Note that you can also 
 use the regular `docker build -t` command to build as well. 
 
-`<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
-version of the operator image you will deploy. Note that each time you 
-make a change to your operator code, it is good practice to increment the 
-version.
-
-
 ```bash
-make docker-build IMG=docker.io/<username>/memcached-operator:<version>
+
+$ make docker-build IMG=$IMG
 ```
 and push the docker image to your registry using following from your terminal:
 
- ```bash
-make docker-push IMG=docker.io/<username>/memcached-operator:<version>
-
- ```
+```bash
+$ make docker-push IMG=$IMG
+```
 
 ## 6. Deploy the operator
 
 #### Deploy the operator to OpenShift cluster
 
-Make sure that the controller manager manifest has the right namespace and docker image. Apply the same to the default manifest as well by running following command:
-
-```bash
-export IMG=docker.io/<username>/memcached-operator:<version>
-export NAMESPACE=<oc-project-name>
-
-cd config/manager
-kustomize edit set image controller=${IMG}
-kustomize edit set namespace "${NAMESPACE}"
-cd ../../
-
-cd config/default
-kustomize edit set namespace "${NAMESPACE}"
-cd ../../
-```
-
-
 To Deploy the operator run the following command from your terminal:
 
 ```bash
-make deploy IMG=docker.io/<username>/memcached-operator:<version>
+make deploy IMG=$IMG
 ```
 
 The output of the deployment should look like the following:
