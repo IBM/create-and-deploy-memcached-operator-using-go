@@ -9,7 +9,6 @@ Golang based operator. If you are already familiar with operators, you can eithe
 simply skip ahead to the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) which shows how to develop and deploy your first operator to 
 an OpenShift cluster.
 
-
 ## Expectations (What you have)
 * You have little to no experience developing operators
 * You have little to no knowledge on Kubernetes Operators concepts
@@ -22,7 +21,14 @@ an OpenShift cluster.
 * This article should take roughly 15-30 minutes to complete, depending on how long you spend reading through 
 documentation.
 
-## What are operators?
+## Outline
+1. [What are operators](#1-What-are-operators)
+1. [What do operators do](#2-what-do-operators-do)
+1. [Operator SDK](#3-Operator-SDK)
+1. [Operator Capability Levels](#4-operator-capability-levels)
+1. [Operator Hub](#5-Operator-Hub)
+
+## 1. What are operators
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are extensions to Kubernetes that make use of custom resources 
 to manage Kubernetes applications and their components. Operators are used used to automate software configuration and maintenance activities 
 that are typically done by human operators. That's why they are called operators. Additionally, they are used to automate the software 
@@ -45,7 +51,7 @@ native Kubernetes objects, including interaction via `kubectl` and inclusion in 
 
 Read more about what operators from this [Red Hat blog](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator).
 
-## What do operators do?
+## 2. What do operators do
 
 ![Alt text](./images/operator-interactions.png)
 
@@ -63,7 +69,7 @@ an end user, you can just deploy your operator instead. Your operator will take 
 needed to make sure your service is up and running. The approach of using an operator is 
 inherently easier, and scales better, than creating all of the deployments, configmaps, secrets, and services manually. 
 
-## Operator SDK
+## 3. Operator SDK
 
 Operator SDK is an open source toolkit that provides tools to build, test and package operators. The SDK cli allows you to scaffold a project and also provides commands to generate code. Also operator SDK makes use of `make`, a build automation tool, to build, test, package and deploy your operator through series of `make` commands that is provided in generated `Makefile`. The `Makefile` comes with pre-built commands like below which we will be using in our project.
 
@@ -77,7 +83,7 @@ Operator SDK is an open source toolkit that provides tools to build, test and pa
 
 Operator SDK also allows you to install OLM (operator lifecycle manager) using `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an Operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, to make sure all the resources in the cluster are in `installed` status.
 
-## Operator Capability Levels
+## 4. Operator Capability Levels
 
 ![Alt text](./images/operator-capability-level.png)
 
@@ -87,7 +93,9 @@ Ansible and Go can be used to achieve all five capability levels. Helm can only 
 
 Let's take a look at level one in more detail:
 
-<b>Level 1 - Basic Install</b> Your operator can provision an application through a custom resource. All of the configuration
+### Operator Capability Level 1 - Basic Install 
+
+In level 1, your operator can provision an application through a custom resource. All of the configuration
 details are specified in the CR. You should also be able to install your operator in multiple ways (`kubectl`, Operator Hub, 
 or through the Operator Lifecycle Manager). Avoid the practice of making the user create / manage configuration files outside
 of Kubernetes.
@@ -107,9 +115,9 @@ what was declared in the `Spec` section of the Custom Resource.
 
 To read more about the other capability levels, read this article from the [Operator SDK documentation](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/).
 
-## Finding Operators via Operator Hub
+## 5. Operator Hub
 
-![Alt text](./images/operator-capability-level.png)
+![Alt text](./images/operatorHub.png)
 
 [OperatorHub.io](https://operatorhub.io/) is where you can find and share Operators. As you can see in the picture above, there
 are more than 180 different operators to choose from on on OperatorHub.io. OperatorHub.io is very important since this is where 
@@ -117,10 +125,14 @@ you can use other operators to automate the configuration of your Kubernetes app
 
 ## Conclusion
 In this article, we learned about how operators can extend the base Kubernetes functionality 
-by the use of custom controllers and CRDs. In the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md), we will develop and deploy 
+by the use of custom controllers and custom resources. We've also learned that the Operator SDK offers code scaffolding 
+tools to enable you to write your operator faster, and offers guidelines for the capability levels of an operator. Lastly,
+we learned that we can view operators and submit our own on OperatorHub.io.
+
+In the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md), we will develop and deploy 
 an operator to the OpenShift container platform using the operator-sdk.
 
-### Sources
+<!-- ### Sources
 
 The information in this article can be found in a few different sources:
 
@@ -130,7 +142,7 @@ The information in this article can be found in a few different sources:
 
 * https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
 
-* https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator
+* https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator -->
 
 <!-- 
 

@@ -35,7 +35,7 @@ version is the easiest, but is only available for macOS.
 
 ## 1. Install Operator SDK
 
-### Install operator-sdk (version 1.0+) and Kustomize for macOS
+### Install operator-sdk (version 1.0+) for macOS
 
 * Use the homebrew command `brew install operator-sdk`
 to install operator-sdk for macOS. Note that this guide 
@@ -43,50 +43,43 @@ is tested for operator-sdk version 1.0+, since the commands have changed with th
  If you don't have homebrew 
 installed, install it from [here](https://docs.brew.sh/Installation).
 
-* Use the homebrew command `brew install kustomize` to install Kustomize.
-
-### Install operator-sdk (version 1.0+) and Kustomize for Linux or Windows
+### Install operator-sdk (version 1.0+) for Linux or Windows
 
 * For Linux or Windows, install the operator-sdk (version 1.0+) from the GitHub release [here](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that
 commands have changed with the 1.0 release.
-
-* You can use the following script to install Kustomize for Windows or Linux but note that it doesn't work for ARM architecture. For ARM architecture download 
-Kustomize from the [releases page](https://github.com/kubernetes-sigs/kustomize/releases).
-
-```
-curl -s "https://raw.githubusercontent.com/\
-kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-```
 
 ### Test your environment for operator-sdk
 
 Run the following command in the terminal of your choice:
 
-```
-operator-sdk version
+```bash
+$ operator-sdk --version
 ```
 
 You should see output like this:
 
-```
+```bash 
 operator-sdk version: "v1.3.0", commit: "1abf57985b43bf6a59dcd18147b3c574fa57d3f6", kubernetes version: "v1.19.4", go version: "go1.15.5", GOOS: "darwin", GOARCH: "amd64"
 ```
 
 Now, let's ensure kustomize is installed.
 
-```
-kustomize version
+```bash 
+$ kustomize version
 ```
 
 You should see output like this:
 
-```
+```bash
 {Version:kustomize/v3.9.1 GitCommit:7439f1809e5ccd4677ed52be7f98f2ad75122a93 BuildDate:2020-12-30T01:08:17+00:00 GoOs:darwin GoArch:amd64}
 ```
 
 ## 2. Install oc or kubectl cli
-If you plan to use an OpenShift cluster, then you can install the OpenShift CLI via
-your web console. Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+If you plan to use an OpenShift cluster, then you can install the OpenShift CLI using [these instructions](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html).
+
+Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
+
+Alternatively, here is another way to install the `oc` cli:
 
 First, go to your OpenShift console and click on the question mark in the 
 top-right corner. From there, click on `Command Line Tools` and then choose
@@ -99,6 +92,13 @@ Test your cli by issuing the following command to see the version of your cli:
 $ oc version
 Client Version: openshift-clients-4.5.0-202006231303.p0-18-g6082e941e
 Kubernetes Version: v1.19.2
+```
+
+If you plan to use `kubectl` instead of `oc`:
+```bash
+$ kubectl version
+Client Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-14T05:15:04Z", GoVersion:"go1.15.6", Compiler:"gc", Platform:"darwin/amd64"}
+Server Version: version.Info{Major:"1", Minor:"18+", GitVersion:"v1.18.3+e574db2", GitCommit:"e574db2", GitTreeState:"clean", BuildDate:"2021-01-30T06:33:00Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
 ```
 
 ## Make sure OpenShift Lifecycle Manager (OLM) is up to date
@@ -138,4 +138,9 @@ catalogsources.operators.coreos.com                          CustomResourceDefin
 system:controller:operator-lifecycle-manager                 ClusterRole                 Installed
 ```
 
-Note: if you see an error, you should still be able to proceed. Now you are ready to start developing your first operator.
+As you can see from my output above, all of the components of the OLM are in the `Installed` status.
+<b>Note: if you see an error, you should still be able to proceed.</b>
+
+## Conclusion
+<b>Congratulations!!</b> You've now setup your environment to develop an operator 
+and deploy it to an OpenShift (or Kubernetes) cluster. You are ready to move on to the [Develop and Deploy a Memcached Operator](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial.
