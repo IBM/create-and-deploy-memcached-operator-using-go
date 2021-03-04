@@ -117,7 +117,7 @@ To read more about the other capability levels, read this article from the [Oper
 
 ## 5. Operator Hub
 
-![Alt text](./images/operator-capability-level.png)
+![Alt text](./images/operatorHub.png)
 
 [OperatorHub.io](https://operatorhub.io/) is where you can find and share Operators. As you can see in the picture above, there
 are more than 180 different operators to choose from on on OperatorHub.io. OperatorHub.io is very important since this is where 
