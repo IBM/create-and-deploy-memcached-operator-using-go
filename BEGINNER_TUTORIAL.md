@@ -613,7 +613,8 @@ Once we've generated the code for our custom resource, we can use the `make mani
 $ make manifests
 ```
 
-This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation of the object we specified in our `_types.go` file. It will also generate RBAC yaml files in the `config/rbac` directory.
+This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation of the object we specified in our `_types.go` file. It will also generate RBAC yaml files in the `config/rbac` directory based on 
+your KubeBuilder markers.
 
 
 Don't worry about [KubeBuilder Markers](https://book.kubebuilder.io/reference/markers.html) for now, we will cover them in the deep-dive article.
@@ -648,7 +649,14 @@ $ cd ../../
 `<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
 version of the operator image you will deploy. Note that each time you 
 make a change to your operator code, it is good practice to increment the 
-version. `NAMESPACE` is your oc project name in which you plan to deploy your operator. 
+version. `NAMESPACE` is your oc project name in which you plan to deploy your operator. For me, this would be `horea-demo-project`.
+
+For example, my export statements would look like the following:
+
+```bash
+$ export IMG=docker.io/horeaporutiu/memcached-operator:latest
+$ export NAMESPACE=horea-demo-project
+```
 
 **Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
 operator image. Use `Docker login` to login.
