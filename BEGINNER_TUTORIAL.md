@@ -607,13 +607,17 @@ $ make generate
 
 The above command will update our `api/v1alpha1/zz_generated.deepcopy.go` file to implement the [metav1.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Object) and [runtime.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#Object) interfaces. This will enable our Custom Resource to be treated like a native Kubernetes resource.
 
-Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests:
+Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests and RBAC from KubeBuilder Markers:
 
 ```bash
 $ make manifests
 ```
 
-This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation of the object we specified in our `_types.go` file. 
+This command will invoke controller-gen to generate the CRD manifests at `config/crd/bases/cache.example.com_memcacheds.yaml` - you can see the yaml representation of the object we specified in our `_types.go` file. It will also generate RBAC yaml files in the `config/rbac` directory.
+
+
+Don't worry about [KubeBuilder Markers](https://book.kubebuilder.io/reference/markers.html) for now, we will cover them in the deep-dive article.
+
 
 ### Create Operator Image
 
