@@ -91,7 +91,7 @@ Thus far, we've talked about the relationship between a cluster's desired state 
 
 ![reconcile states](../images/operator-controller-reconciliation.png)
 
-That said, the operator controllers work one level of abstraction higher than the Kube controllers. An operator's desired state is not the cluster's desired state, it is the custom resources (CRs) that drive the operator's controller. The operator's current state--the state the operator is adjusting to make it match the state described in the CRs--is the cluster's desired state. The cluster then uses that desired state to adjust its current state. So both kinds of controllers reconcile between desired and current state, but there are three layers of state to adjust between: operators' custom resources reconcile to the cluster's desired state which reconciles to the cluster's current state.
+That said, the operator controllers work one level of abstraction higher than the Kube controllers. An operator's desired state is not the cluster's desired state, it is the custom resources (CRs) that drive the operator's controller. This means that when we use operators, the custom resource is what is driving the desired state. The cluster then uses that desired state to adjust its current state. So both kinds of controllers reconcile between desired and current state, <b>but with operators</b> there are three layers of state to adjust between: operators' custom resources reconcile to the cluster's desired state which reconciles to the cluster's current state.
 
 ## Conclusion
 
@@ -99,6 +99,6 @@ This article has shown how operators work the way Kubernetes does and extends a 
 - The brains of an operator is a controller whose responsibilities are very much like those of a controller in the control plane
 - The way an operator deploys a workload is very much like how an administrator deploys a workload; the control plane doesn't know the difference
 - The control plane implements a reconciliation loop that gives each controller an opportunity to reconcile itself, and operators add their controllers to that loop
-- Both Kube controllers and custom controllers adjust between what they think of as their desired state and their current state, but operators' current state is the control plane's desired state
+- Both Kube controllers and custom controllers adjust between what they think of as their desired state and their current state, but operators' enable the use of (CRs) to manage desired state.
 
 With this understanding, you'll be better prepared to write your own operators and understand how they work as a part of Kubernetes.
