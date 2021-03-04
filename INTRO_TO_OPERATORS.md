@@ -39,7 +39,7 @@ Operators have the following features:
 
 * The user provides configuration and settings within a CR, and then the operator translates the configuration into low-level actions,
 based on the logic defined in the operator's custom controller logic.
-* Operator intoduce new object types through its custom resource definition. These objects can be handeled by the Kubernetes API just like
+* Operator introduce new object types through its custom resource definition. These objects can be handled by the Kubernetes API just like
 native Kubernetes objects, including interaction via `kubectl` and inclusion in role-based access control policies.
 
 
@@ -62,32 +62,6 @@ SRE. Instead of having to set up multiple deployments, configmaps, secrets, and 
 an end user, you can just deploy your operator instead. Your operator will take care of everything
 needed to make sure your service is up and running. The approach of using an operator is 
 inherently easier, and scales better, than creating all of the deployments, configmaps, secrets, and services manually. 
-
-## Custom Resources
-A Custom Resource is how we can extend the Kubernetes API. A [Custom Resource Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions) is a 
-type of resource in Kubernetes which defines a Custom Resource and all of the fields that 
-are associated with a particular resource. 
-
-When we develop an operator, we will use the SDK to create our API file, i.e. our `*_types.go` file.
-The operator SDK has a utility function which will help us automatically generate CRD's from our 
-API file. More on this in the next tutorial.
-
-High-level configuration is inputted by the user in the CR, and then the operator takes 
-whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state.
-
-## Custom Controllers
-
-![Alt text](./images/operator-reconciliation.png)
-
-Like other controllers, Operator controllers watch for a particular type of resource, which is defined 
-in the Custom Resource Definition. Once a user inputs values into the custom resource, the 
-desired state of the custom resource has changed, and the Operator API is invoked. Meanwhile, the Operator's custom controller is running its control loop so it sees these changes and it works to reconcile the changes.
-From the picture above, you can see that the operator controller calls the Kube API to manage your particular service. The scenarios that it calls the Kube API are programmed into the custom controller. The Kube API will in turn 
-change the cluster's desired state to be what is specified by the Operator Controller. From
-this point, all that happens in the cluster is the same that happens when an admin uses 
-the `kubectl` command - the Kubernetes core controllers will act on the differences between
-the current state and the desired state, and reconcile the differences. 
-
 
 ## Operator SDK
 
@@ -191,3 +165,29 @@ more about this topic [here](https://kubernetes.io/docs/concepts/architecture/co
 Kubernetes uses lots of different controllers which each manage one aspect of the cluster. To align the current state with the desired state, the `kube-controller-manager` iterates through a set of controllers (Deployment controller, Job controller, etc.) in an infinite loop that detects how current state is different from desired state and adjusts current state to eliminate (attempt to eliminate) those differences. 
 
 Controllers can act on core resources such as deployments or services, which are typically part of the Kubernetes controller manager in the control plane, or can watch and manipulate user-defined custom resources. The user-defined custom resources are what an operator helps manage.  -->
+
+<!-- 
+## Custom Resources
+A Custom Resource is how we can extend the Kubernetes API. A [Custom Resource Definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions) is a 
+type of resource in Kubernetes which defines a Custom Resource and all of the fields that 
+are associated with a particular resource. 
+
+When we develop an operator, we will use the SDK to create our API file, i.e. our `*_types.go` file.
+The operator SDK has a utility function which will help us automatically generate CRD's from our 
+API file. More on this in the next tutorial.
+
+High-level configuration is inputted by the user in the CR, and then the operator takes 
+whatever action is necessary as indicated by the custom controller logic (the reconcile function we will write in the next tutorial) to ensure the actual state matches the desired state.
+
+## Custom Controllers
+
+![Alt text](./images/operator-reconciliation.png)
+
+Like other controllers, Operator controllers watch for a particular type of resource, which is defined 
+in the Custom Resource Definition. Once a user inputs values into the custom resource, the 
+desired state of the custom resource has changed, and the Operator API is invoked. Meanwhile, the Operator's custom controller is running its control loop so it sees these changes and it works to reconcile the changes.
+From the picture above, you can see that the operator controller calls the Kube API to manage your particular service. The scenarios that it calls the Kube API are programmed into the custom controller. The Kube API will in turn 
+change the cluster's desired state to be what is specified by the Operator Controller. From
+this point, all that happens in the cluster is the same that happens when an admin uses 
+the `kubectl` command - the Kubernetes core controllers will act on the differences between
+the current state and the desired state, and reconcile the differences.  -->
