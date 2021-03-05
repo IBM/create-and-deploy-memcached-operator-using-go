@@ -6,8 +6,8 @@ a Kubernetes Operator.
 This article will assume you have no knowledge on Kubernetes Operators, and will 
 give you all of the basic knowledge needed to develop a
 Golang based operator. If you are already familiar with operators, you can either skim this article or 
-simply skip ahead to the [Deep dive into Memcached operator code](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) which shows how to develop and deploy your first operator to 
-an OpenShift cluster.
+simply skip ahead to the [develop and deploy a Memcached Operator on OpenShift](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) which shows how to develop and deploy your first operator to 
+an OpenShift cluster, or go back to one of the other articles in the [learning path](https://github.ibm.com/TT-ISV-org/operator#kubernetes-operators-learning-path).
 
 ## Expectations (What you have)
 * You have little to no experience developing operators

@@ -75,7 +75,7 @@ You should see output like this:
 ```
 
 ## 2. Install oc or kubectl cli
-If you plan to use an OpenShift cluster, then you can install the OpenShift CLI using [these instructions](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html).
+If you plan to use an OpenShift cluster, then you can install the OpenShift CLI using [these instructions](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html).
 
 Otherwise you can install kubectl from [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
@@ -141,6 +141,68 @@ system:controller:operator-lifecycle-manager                 ClusterRole        
 As you can see from my output above, all of the components of the OLM are in the `Installed` status.
 If your components are in the `Installed` status, that means your Operator Lifecycle Manager is working properly.
 <b>Note: if you see an error, you can read [this guide](https://sdk.operatorframework.io/docs/olm-integration/quickstart-bundle/#enabling-olm) which will show you how to install OLM on your cluster.</b>
+
+### (Optional) Troubleshooting OLM error
+If you've ran into an error like this one:
+
+```bash
+$ operator-sdk olm status 
+FATA[0002] Failed to get OLM status: error getting installed OLM version (set --version to override the default version): no existing installation found 
+```
+
+or something like this: 
+
+```bash 
+$ operator-sdk olm status 
+FATA[0002] Failed to get OLM status: error getting installed OLM version (set --version to override the default version): no existing installation found 
+
+
+$ operator-sdk olm install
+FATA[0005] Failed to install OLM version "latest": detected existing OLM resources: OLM must be completely uninstalled before installation 
+
+
+$ operator-sdk olm uninstall
+FATA[0002] Failed to uninstall OLM: error getting installed OLM version (set --version to override the default version): no existing installation found 
+
+Sometimes, you will have to uninstall a specific version. For my OpenShift Cluster which is version `4.5.31_1531`,
+I had to uninstall version `0.16.1`
+
+$ operator-sdk olm uninstall --version 0.16.1
+INFO[0009] Successfully uninstalled OLM version "0.16.1" 
+```
+
+Then I just installed the same version, and checked the status:
+
+```bash 
+$ operator-sdk olm install --version 0.16.1 
+INFO[0072] Successfully installed OLM version "0.16.1"  
+
+$ operator-sdk olm status 
+INFO[0004] Successfully got OLM status for version "0.16.1" 
+
+NAME                                            NAMESPACE    KIND                        STATUS
+operators.operators.coreos.com                               CustomResourceDefinition    Installed
+operatorgroups.operators.coreos.com                          CustomResourceDefinition    Installed
+installplans.operators.coreos.com                            CustomResourceDefinition    Installed
+clusterserviceversions.operators.coreos.com                  CustomResourceDefinition    Installed
+olm-operator                                    olm          Deployment                  Installed
+subscriptions.operators.coreos.com                           CustomResourceDefinition    Installed
+olm-operator-binding-olm                                     ClusterRoleBinding          Installed
+operatorhubio-catalog                           olm          CatalogSource               Installed
+olm-operators                                   olm          OperatorGroup               Installed
+aggregate-olm-view                                           ClusterRole                 Installed
+catalog-operator                                olm          Deployment                  Installed
+aggregate-olm-edit                                           ClusterRole                 Installed
+olm                                                          Namespace                   Installed
+global-operators                                operators    OperatorGroup               Installed
+operators                                                    Namespace                   Installed
+packageserver                                   olm          ClusterServiceVersion       Installed
+olm-operator-serviceaccount                     olm          ServiceAccount              Installed
+catalogsources.operators.coreos.com                          CustomResourceDefinition    Installed
+system:controller:operator-lifecycle-manager                 ClusterRole                 Installed
+```
+
+
 
 ## Conclusion
 <b>Congratulations!!</b> You've now setup your environment to develop an operator 
