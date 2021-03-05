@@ -14,7 +14,7 @@ clusters, but the commands may be just a bit different.
 * You want hands-on experience developing and deploying your first operator to OpenShift
 * You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
 
-If you already know all of the basic concepts of operators and have developed and deployed an operator before you can move on to the [intermediate-level tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md), which will explain the low-level functions within the Operator reconcile function in more detail. It will also explain the kube-builder markers, creating the CRDs from the API, and other important operator-specific details.
+If you already know all of the basic concepts of operators and have developed and deployed an operator before you can move on to the [Deep dive into Memcached ](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md), which will explain the low-level functions within the Operator reconcile function in more detail. It will also explain the kube-builder markers, creating the CRDs from the API, and other important operator-specific details.
 
 **IMPORTANT**
 This tutorial is inspired from the operator-sdk tutorial - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/. **All credit goes to the operator-sdk team** for 
@@ -64,6 +64,8 @@ $ cd $HOME/projects/memcached-operator
 <!-- 
 Since we are not in our $GOPATH, we can activate module support by running the 
 `export GO111MODULE=on` command before using the operator-sdk. -->
+
+Note: before your run the `operator-sdk init` command your `memcached-operator` directory must be completely empty, otherwise KubeBuilder will complain with an error. This means no `.git` folder, etc.
 
 Next, run the `operator-sdk init` command to create a new memcached-operator project:
 
@@ -117,6 +119,24 @@ $ operator-sdk create api --group=cache --version=v1alpha1 --kind=Memcached --co
 Writing scaffold for you to edit...
 api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
+```
+
+### (Optional) Troubleshooting the create api command
+
+If you get an error during the create api command, that means you will likely have to install the modules manually. 
+Here is an example error: 
+
+```bash
+Error: go exit status 1: go: github.com/example/memcached-operator/controllers: package github.com/go-logr/logr imported from implicitly required module; to add missing requirements, run:
+        go get github.com/go-logr/logr@v0.3.0
+```
+
+you will have to install the modules manually by running the following commands:
+
+```bash
+$ go get github.com/go-logr/logr@v0.3.0
+$ go get github.com/onsi/ginkgo@v1.14.1
+$ go get github.com/onsi/gomega@v1.10.2
 ```
 
 * The `--group` flag defines an `API Group` in Kubernetes. It is a collection of related functionality.
@@ -519,7 +539,9 @@ plan on deploying to an OpenShift cluster, we need to login to our cluster now.
 
 ### Prepare your OpenShift Cluster
 
-(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` and get into 
+(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` tile. From there, you can select the flavor of your OpenShift cluster. 
+
+<b> It is highly recommended to use an OpenShift cluster of version 4.6 or higher.</b>
 
 ![OpenShift](images/openshift-1.png)
 
