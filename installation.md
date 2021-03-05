@@ -202,7 +202,7 @@ catalogsources.operators.coreos.com                          CustomResourceDefin
 system:controller:operator-lifecycle-manager                 ClusterRole                 Installed
 ```
 
-Once everything says installed, <congratulations!!><b> you are ready to start developing!
+Once everything says installed, <b>congratulations</b> you are ready to start developing!
 
 
 ## Conclusion
