@@ -15,6 +15,7 @@ version is the easiest, but is only available for macOS.
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * [Docker](https://docs.docker.com/get-docker/) v17.03+
 * OpenShift CLI (**If you plan to deploy to OpenShift Cluster**) [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html)
+* If you plan to use an OpenShift Cluster, it is recommended to use <b>version 4.6+</b>
 
 ### Prerequisites for installing for Linux and Windows
 * [dep](https://golang.github.io/dep/docs/installation.html) v0.5.0+
@@ -26,6 +27,7 @@ version is the easiest, but is only available for macOS.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 * OpenShift CLI (**If you plan to deploy to OpenShift Cluster**) [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html)
+* If you plan to use an OpenShift Cluster, it is recommended to use <b>version 4.6+</b>
 
 
 ## Steps
