@@ -31,14 +31,16 @@ documentation.
 ## 1. What are operators
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are extensions to Kubernetes that make use of custom resources 
 to manage Kubernetes applications and their components. Operators are used used to automate software configuration and maintenance activities 
-that are typically done by human operators. That's why they are called operators. Additionally, they are used to automate the software 
-management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases.
+that are typically done by human operators. That's why they are called operators. Kubernetes is great at managing 
+stateless applications, but when you need more complex configuration details for a stateful application, such as a 
+database, that is when operators are very useful. Other more complex lifecycle management tasks such as patches and minor
+upgrades can be automated using an operator. 
 
 Operators are application-specific controllers which extend the functionality of the Kubernetes API to manage instances of complex applications, on behalf of a Kubernetes admin. The [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)(CR) is the mechanism through which the Kubernetes API is extended. 
 A Custom Resource Definition (CRD) lists out all of the configuration available to users of the operator. 
 
 In Kubernetes, controllers of the
-control plane implement control loops that repeatedly compare the desired state of the cluster to its actual state. If the states don't match,
+[control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term-control-plane) implement control loops that repeatedly compare the desired state of the cluster to its actual state. If the states don't match,
 then the controller takes action to fix the problem. Similarly, a Kubernetes operator watches a specific CR type and takes application-specific actions to make the current state match the desired state in that resource.
 
 Operators have the following features:
@@ -129,8 +131,10 @@ by the use of custom controllers and custom resources. We've also learned that t
 tools to enable you to write your operator faster, and offers guidelines for the capability levels of an operator. Lastly,
 we learned that we can view operators and submit our own on OperatorHub.io.
 
-In the [next tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md), we will develop and deploy 
-an operator to the OpenShift container platform using the operator-sdk.
+In the [next article](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/demystified.md), we will dive deeper 
+into the Kubernetes architecture that enables operators to work. 
+
+If you would rather go straight to developing an operator, you can go to the intermediate level tutorial [develop and deploy and operator to OpenShift](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial instead.
 
 <!-- ### Sources
 
