@@ -163,10 +163,12 @@ FATA[0005] Failed to install OLM version "latest": detected existing OLM resourc
 
 $ operator-sdk olm uninstall
 FATA[0002] Failed to uninstall OLM: error getting installed OLM version (set --version to override the default version): no existing installation found 
+```
 
-Sometimes, you will have to uninstall a specific version. For my OpenShift Cluster which is version `4.5.31_1531`,
-I had to uninstall version `0.16.1`
+If you run into the errors above, you will have to uninstall a specific version. For my OpenShift Cluster which is version `4.5.31_1531`,
+I had to uninstall version `0.16.1`. 
 
+```bash
 $ operator-sdk olm uninstall --version 0.16.1
 INFO[0009] Successfully uninstalled OLM version "0.16.1" 
 ```
