@@ -31,8 +31,9 @@ documentation.
 ## 1. What are operators
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are extensions to Kubernetes that make use of custom resources 
 to manage Kubernetes applications and their components. Operators are used used to automate software configuration and maintenance activities 
-that are typically done by human operators. That's why they are called operators. Additionally, they are used to automate the software 
-management lifecycle and they are extensible enough that they can be used to support life cycle management of stateful applications such as databases.
+that are typically done by human operators. That's why they are called operators. Kubernetes is great at managing 
+stateless applications, but when you need more complex configuration details for a stateful application, such as a 
+database, that is when operators are very useful. 
 
 Operators are application-specific controllers which extend the functionality of the Kubernetes API to manage instances of complex applications, on behalf of a Kubernetes admin. The [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)(CR) is the mechanism through which the Kubernetes API is extended. 
 A Custom Resource Definition (CRD) lists out all of the configuration available to users of the operator. 
