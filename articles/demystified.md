@@ -23,7 +23,7 @@ As far as the Kubernetes cluster is concerned, an operator is just an applicatio
 
 A basic operator consists of these components:
 
-![operator structure](../images/memcached-structure.png)
+![operator structure](../images/memcached-operator.png)
 
 These components form the three main parts of an operator:
 - API -- The data that describes the resource to be managed and its configuration, comprised of three parts:
