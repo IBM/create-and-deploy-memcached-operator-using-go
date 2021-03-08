@@ -62,6 +62,11 @@ a particular service, such as a database. Instead of the admin using `kubectl` c
 in order to change the desired state, an operator does this for you, automatically, using 
 its custom controller. This is illustrated in the `How an operator deploys a workload` section
 from the image above.
+
+### Operators vs. Operands
+An operator is the combination of CRs and a custom controller that extends Kubernetes functionality
+to enable the starting, scaling, and recovering of a specific application or service. <b>The `operand`, on the 
+other hand, is what we call the resources an operator manages, i.e. the workload. </b>
  
 ## Why does Kubernetes need operators?
 
@@ -102,18 +107,22 @@ details are specified in the CR. You should also be able to install your operato
 or through the Operator Lifecycle Manager). Avoid the practice of making the user create / manage configuration files outside
 of Kubernetes.
 
-### Level 1 Example - installing the workload
+### Level 1 Example - Installing the Workload
 
-The operator deploys a database by creating a `Deployment`, `ServiceAccount`, `RoleBinding`, `ConfigMap`, `PersistentVolumeClaim`,
-and `Secret` objects. It then initializes an empty database schema, and alerts the user when the database is ready to accept requests by updating the `status` section of the custom resource.
+The operator enables the deployment of a database by ensuring that `Deployment`, `ServiceAccount`, `RoleBinding`, `ConfigMap`, `PersistentVolumeClaim`,
+and `Secret` resources are created. These resources are specified in the custom resource's `spec` section (more on this soon). Once the custom resource is 
+created, the custom resource will install the workload (or operand). If the custom resource is deleted, then the workload (or operand) is 
+removed. 
+
+Once the custom resource installs the workload, it then initializes an empty database schema, and alerts the user when the database is ready to accept requests by updating the `status` section of the custom resource.
 
 
-### Level 1 Example - managing the workload
+### Level 1 Example - Managing the Workload 
 
-Now, let's say that you want to increase the capacity of your underlying database. How would you do this through the operator?
-This should be done by resizing the `PersistentVolumeClaim` resources within the `Spec` section of the Custom Resource. Once 
-these changes are applied, the operator will take care of scaling the underlying `PersistentVolumeClaim` resource to match 
-what was declared in the `Spec` section of the Custom Resource. 
+Now, let's say that you want to increase the capacity of your underlying database. How would you do this using operators?
+This should be done by resizing the `PersistentVolumeClaim` resources within the `Spec` section of the Custom Resource. When we update the `Spec` section of the custom resource, we are configuring the workload (or operand). Once 
+these changes are applied, the custom resource will take care of scaling the underlying `PersistentVolumeClaim` resource to match 
+what was declared in the `Spec` section of the Custom Resource.
 
 To read more about the other capability levels, read this article from the [Operator SDK documentation](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/).
 
