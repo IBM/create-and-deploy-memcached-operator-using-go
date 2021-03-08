@@ -62,6 +62,11 @@ a particular service, such as a database. Instead of the admin using `kubectl` c
 in order to change the desired state, an operator does this for you, automatically, using 
 its custom controller. This is illustrated in the `How an operator deploys a workload` section
 from the image above.
+
+### Operators vs. Operands
+An operator is the combination of CRs and a custom controller that extends Kubernetes functionality
+to enable the starting, scaling, and recovering of a specific application or service. <b>The `operand`, on the 
+other hand, is what we call the resources an operator manages, i.e. the workload. </b>
  
 ## Why does Kubernetes need operators?
 
