@@ -66,7 +66,7 @@ The workload consists of a Deployment that runs a set of Pod replicas, each of w
 An operator deploys a workload in very much the same way that a human administrator (or a build pipeline) deploys a workload, but
 an operator manages its operand (or workload) using a custom resource. <b>Whenever an operator 
 manages a workload, we call that workload (i.e. the resources the operator manages) the `operand`. </b> As illustrated below, the main distinction between
-deploying a workload as an admin compared to deploying it as an operator, is the custom resource. 
+deploying a workload as an admin compared to deploying it as an operator, is the use of custom resources to change the desired state of the cluster. 
 
 ![deploying workloads](../images/operator-interactions.png)
 
