@@ -64,12 +64,9 @@ A very basic workload deployed into a Kubernetes cluster has this structure:
 The workload consists of a Deployment that runs a set of Pod replicas, each of which runs a duplicate Container. The Deployment is exposed as a Service, which provides a single fixed endpoint for clients to invoke behavior in the set of replicas.
 
 An operator deploys a workload in very much the same way that a human administrator (or a build pipeline) deploys a workload, but
-an operator manages its operand (or workload) using a custom resource. As illustrated below, the main distinction between
-deploying a workload as an admin compared to deploying it as an operator, is the custom resource. <b>Whenever an operator 
-manages a workload, we call that workload (i.e. the resources the operator manages) the `operand`. </b>
-
- The custom resource is the main distinction between 
-deploying a workload as an admin compared to deploying a workload (or operand in this case) as an operator.
+an operator manages its operand (or workload) using a custom resource. <b>Whenever an operator 
+manages a workload, we call that workload (i.e. the resources the operator manages) the `operand`. </b> As illustrated below, the main distinction between
+deploying a workload as an admin compared to deploying it as an operator, is the custom resource. 
 
 ![deploying workloads](../images/operator-interactions.png)
 
