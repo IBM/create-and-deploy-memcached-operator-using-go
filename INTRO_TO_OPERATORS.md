@@ -30,7 +30,7 @@ documentation.
 
 ## 1. What are operators
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are extensions to Kubernetes that make use of custom resources 
-to manage Kubernetes applications and their components. Operators are used used to automate software configuration and maintenance activities 
+to manage Kubernetes applications and their components. Operators are used to automate software configuration and maintenance activities 
 that are typically done by human operators. That's why they are called operators. Kubernetes is great at managing 
 stateless applications, but when you need more complex configuration details for a stateful application, such as a 
 database, that is when operators are very useful. Other more complex lifecycle management tasks such as patches and minor
@@ -51,7 +51,7 @@ based on the logic defined in the operator's custom controller logic.
 native Kubernetes objects, including interaction via `kubectl` and inclusion in role-based access control policies.
 
 
-Read more about what operators from this [Red Hat blog](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator).
+Read more about operators from this [Red Hat blog](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator).
 
 ## 2. What do operators do
 
@@ -77,7 +77,7 @@ Operator SDK is an open source toolkit that provides tools to build, test and pa
 
 * `make manifests` generates manifests `yaml` definitions based on `kubebuilder` markers.
 * `make install` compiles your code and create executables.
-* `make generate` updates the generated code for based on your operator API schema.
+* `make generate` updates the generated code based on your operator API schema.
 * `make docker-build` builds the operator docker image.
 * `make docker-push` pushes the operator docker image.
 * `make deploy` deploys all the resources to the cluster.
@@ -122,7 +122,7 @@ To read more about the other capability levels, read this article from the [Oper
 ![Alt text](./images/operatorHub.png)
 
 [OperatorHub.io](https://operatorhub.io/) is where you can find and share Operators. As you can see in the picture above, there
-are more than 180 different operators to choose from on on OperatorHub.io. OperatorHub.io is very important since this is where 
+are more than 180 different operators to choose from on OperatorHub.io. OperatorHub.io is very important since this is where 
 you can use other operators to automate the configuration of your Kubernetes applications, and submit your own operator to be published online. All of the details of how to package, test, preview, and submit your operator can be found in [this article](https://operatorhub.io/contribute). 
 
 ## Conclusion
