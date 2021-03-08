@@ -46,6 +46,7 @@ If you haven't setup your environment for building Kubernetes operators, setup y
 1. [Compile, build and push](#5-compile-build-and-push)
 1. [Deploy the operator](#6-deploy-the-operator)
 1. [Create the Custom Resource](#7-Create-the-Custom-Resource)
+1. [Test and Verify](#8-test-and-verify)
 
 ## 1. Create a new project using Operator SDK
 
@@ -792,7 +793,7 @@ Run the script by issuing the following command:
 $ ./build-and-deploy.sh
 ```
 
-## 7. Test and verify
+## 8. Test and verify
 
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase the application pods from 3 to 5.
 
