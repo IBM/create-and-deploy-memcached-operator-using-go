@@ -45,7 +45,7 @@ If you haven't setup your environment for building Kubernetes operators, setup y
 1. [Implement Controller Logic](#4-implement-controller-logic)
 1. [Compile, build and push](#5-compile-build-and-push)
 1. [Deploy the operator](#6-deploy-the-operator)
-1. [Test and verify](#7-test-and-verify)
+1. [Create the Custom Resource](#7-Create-the-Custom-Resource)
 
 ## 1. Create a new project using Operator SDK
 
@@ -232,7 +232,7 @@ Lastly, the `Memcached` struct will have the fields `Spec` and `Status` to denot
 `controllers/memcached_controller.go` file to update the 
 system to be in the desired state.
 
-Modify the `api/v1alpha1/memcached_types.go` to look like the the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go).
+Now that we've modified the file `api/v1alpha1/memcached_types.go`, it should look like the [file in the artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go):
 
 ```go
 package v1alpha1
@@ -735,9 +735,13 @@ NAME                                                     READY   STATUS    RESTA
 memcached-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
 ```
 
-This means your operator is up and running. Next, let's create some custom resources via our operator.
+This means your operator is up and running. Great job!
 
-Next, update your custom resource, by modifying the `config/samples/cache_v1alpha1_memcached.yaml` file
+## 7. Create the Custom Resource
+
+Next, let's create the custom resource.
+
+Update your custom resource, by modifying the `config/samples/cache_v1alpha1_memcached.yaml` file
 to look like the following:
 
 ```yaml
@@ -793,12 +797,20 @@ $ ./build-and-deploy.sh
 Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase the application pods from 3 to 5.
 
 ```bash
-oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
+$ oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
 ```
 
 You can also update the spec.size from `OpenShift web console` by going to `Deployments` and selecting `memcached-sample` and increase/decrease using the up or down arrow:
 
 ![kubectl get all](images/inc-dec-size.png)
+
+Next, let's verify that our pods have scaled up. Run the following command:
+
+```bash
+$ kubectl get pods
+```
+
+You should now see that there are 5 total `memcached-sample` pods.
 
 **Congratulations!** You've successfully deployed an Memcached operator using the `operator-sdk`! To learn more, go ahead and read
 the [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md) tutorial, 
