@@ -585,41 +585,75 @@ Now using project "horea-demo-project" on server "https://c116-e.us-south.contai
 
 Now, for the rest of the tutorial, you will use `horea-demo-project` or whatever you named your project, as your namespace. More on this in the following steps. Just know that your project is the same as your namespace in terms of OpenShift. 
 
-### Edit the restricted security context constraint
-OpenShift is built with the best security practices in mind. For that reason, we need to [relax the security of our cluster](https://docs.openshift.com/enterprise/3.0/admin_guide/manage_scc.html#enable-images-to-run-with-user-in-the-dockerfile) so that our operator image
-can run as any user. To do this, run the following command in the OpenShift project where you will deploy your operator:
+### Edit the manager.yaml file
+OpenShift is built with the best security practices in mind. For that reason, we need to defer the security context 
+to OpenShift. To do this, we can modify the `config/manager/manager.yaml` file to remove the following line:
 
-```bash
-$ oc edit scc restricted
+```
+runAsUser: 65532
 ```
 
-Next, scroll down to where you see something like this:
-```bash
-runAsUser:
-  type:
-```
+This will enable OpenShift to run its default security constraint. Once you've saved the file after you've removed the `runAsUser`
+line, your file should look like the following: 
 
-And change it to:
-
-```bash
-runAsUser:
-  type: RunAsAny
-```
-
-Now, save the file by issuing the following command:
-
-```bash
-:wq
-```
-
-Once you've saved the file, you should see the following output: 
-
-```bash
-securitycontextconstraints.security.openshift.io/restricted edited
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+  labels:
+    control-plane: controller-manager
+spec:
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      securityContext:
+      containers:
+      - command:
+        - /manager
+        args:
+        - --leader-elect
+        image: controller:latest
+        name: manager
+        securityContext:
+          allowPrivilegeEscalation: false
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      terminationGracePeriodSeconds: 10
 ```
 
 ### Create CRD and RBAC
-
 
 Now that we have our controller code and API implemented, and our security context updated, run the following command to create the CRD from
 our API defined in our `_types.go` file:
