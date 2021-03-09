@@ -1,35 +1,36 @@
 # Develop and Deploy a Memcached Operator on OpenShift Container Platform
 
 In this tutorial, we will provide all of the information needed to get quickly up and running building and deploying
-your first operator to OpenShift. **Note** that this same general idea can be applied to MiniKube, or other Kubernetes 
-clusters, but the commands may be just a bit different.
+your first operator to OpenShift. 
+
+**Note:** this tutorial can apply to other Kubernetes clusters as well. The commands may differ slightly however. 
 
 ## Expectations (What you have)
-* You have little to no experience developing operators
-* You have some knowledge on Kubernetes Operators concepts
-* You've read the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md).
+* You have little or no experience developing operators
+* You have some knowledge of Kubernetes Operators concepts
+* You've read the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md)
 * You've setup your environment as shown in the [Setup your Environment](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md) tutorial
 
 ## Expectations (What you want)
 * You want hands-on experience developing and deploying your first operator to OpenShift
 * You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
 
-If you already know all of the basic concepts of operators and have developed and deployed an operator before you can move on to the [Deep dive into Memcached ](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md), which will explain the low-level functions within the Operator reconcile function in more detail. It will also explain the kube-builder markers, creating the CRDs from the API, and other important operator-specific details.
+If you already know all of the basic concepts of operators and have developed and deployed an operator before you can move on to the [Deep dive into Memcached ](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md), which will explain the low-level functions within the Operator reconcile function in more detail. It will also explain the KubeBuilder markers, creating the CRDs from the API, and other important operator-specific details.
 
 **IMPORTANT**
-This tutorial is inspired from the operator-sdk tutorial - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/. **All credit goes to the operator-sdk team** for 
+This tutorial is inspired from the Operator SDK tutorial - https://sdk.operatorframework.io/docs/building-operators/golang/tutorial/. **All credit goes to the Operator SDK team** for 
 a great tutorial.
 
 ## Flow
 
 ![Flow](images/architecture.png)
 
-1. Create a new operator project using the SDK Command Line Interface(CLI)
+1. Create a new operator project using the Operator SDK Command Line Interface(CLI)
 2. Define new resource APIs by adding Custom Resource Definitions(CRD)
 3. Define Controllers to watch and reconcile resources
 4. Write the reconciling logic for your Controller using the SDK and controller-runtime APIs
 5. Use the SDK CLI to build and generate the operator deployment manifests
-6. Use the SDK CLI to build operator docker image, push and deploy to OpenShift
+6. Use the SDK CLI to build the operator image, push to image registry and then deploy to OpenShift
 7. Operator docker image is deployed to OpenShift cluster creating manager and application replicas.
 8. Reconcile loop watches and heals the resources as needed.
 
@@ -75,10 +76,12 @@ $ operator-sdk init --domain=example.com --repo=github.com/example/memcached-ope
 ```
 
 * The `--domain` flag is used to uniquely identify the operator resources that are created by
-this project. When we use the command `oc api-resources` later, the `example.com` domain 
+this project. The `example.com` domain will be used as part of the Kubernetes [API group](https://kubernetes.io/docs/reference/using-api/#api-groups).
+
+When we use the command `oc api-resources` later, the `example.com` domain 
 will be listed there by our `memcached` in the `APIGROUP` category. 
 
-* Let's discuss [Go Modules](https://blog.golang.org/using-go-modules). This is very important since if this is not setup properly, you will not be able to develop and run your operator. By using the `--repo` flag you are setting the name to use for your go module, which is specified at the top of your `go.mod` file:
+* Let's discuss [Go Modules](https://blog.golang.org/using-go-modules). This is very important since if this is not setup properly, you will not be able to develop and run your operator. By using the `--repo` flag you are setting the name to use for your Go module, which is specified at the top of your `go.mod` file:
 
 ```go
 module github.com/example/memcached-operator
@@ -122,6 +125,19 @@ api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
 ```
 
+* The `--group` flag defines an `API Group` in Kubernetes. It is a collection of related functionality.
+* Each group has one or more `versions`, which allows us to change how an API works over time. This is what the `--version` flag represents.
+* Each API group-version contains one or more API types, called `Kinds`. This is the name of the API type that we are creating as part of this operator. 
+  * There are more nuances when it comes to versioning which we will not cover. Read more about Groups, Versions, Kinds, and Resources from this [KubeBuilder reference](https://book.kubebuilder.io/cronjob-tutorial/gvks.html).
+* The `--controller` flag signifies that we want the sdk to scaffold a controller file.
+* The `--resource` flag signifies that we want the sdk to scaffold the schema for a resource.
+
+
+Once you deploy this operator, you can use the `kubectl api-resources` to see the name
+`cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
+later after we've deployed the operator.
+
+
 ### (Optional) Troubleshooting the create api command
 
 If you get an error during the create api command, that means you will likely have to install the modules manually. 
@@ -140,26 +156,14 @@ $ go get github.com/onsi/ginkgo@v1.14.1
 $ go get github.com/onsi/gomega@v1.10.2
 ```
 
-* The `--group` flag defines an `API Group` in Kubernetes. It is a collection of related functionality.
-* Each group has one or more `versions`, which allows us to change how an API works over time. This is what the `--version` flag represents.
-* Each API group-verison contains one or more API types, called `Kinds`. This is the name of the API type that we are creating as part of this operator. 
-  * There are more nuances when it comes to versioning which we will not cover. Read more about Groups, Versions, Kinds, and Resources from this [Kubebuilder reference](https://book.kubebuilder.io/cronjob-tutorial/gvks.html).
-* The `--controller` flag signifies that we want the sdk to scaffold a controller file.
-* The `--resource` flag signifies that we want the sdk to scaffold the schema for a resource.
-
-
-Now, once you deploy this operator, you can use the `kubectl api-resources` to see the name
-`cache.example.com` as the api-group, and `Memcached` as the `Kind`. We can try this command 
-later after we've deployed the operator.
-
 ## 3. Update API
 
 One of the two main parts of the operator pattern is defining an API, which will be used to create our Custom Resource Definition(CRD).
 We will do that in the `api/v1alpha1/memcached_types.go` file.
 
 First, we need to understand the struct which defines our schema. Note that it 
-implements the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object) (which means it is a kubernetes object), and also,
-it has the `Spec` and `Status` fields. More on those soon.
+implements the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/client#Object) (which means it is a kubernetes object), and also,
+it has the `Spec` and `Status` fields. More on these soon.
 
 ```go 
 type Memcached struct {
@@ -171,33 +175,25 @@ type Memcached struct {
 }
 ```
 
-The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
-
 ### What is the Spec?
 
-A good way to think about `Spec` is that any inputs (values tweaked by the user) to our controller go in the spec section. 
-
-```go
-type MemcachedSpec struct {}
-```
-
-The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
+The `MemcachedSpec` struct, or the `Spec` defines the desired state of the resource. 
+A good way to think about `Spec` is that any inputs (values tweaked by the user) to our controller go in the spec section.
+You'll see the `Spec` section being referenced in the [controller code](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go#L104) to determine how many replicas to deploy.
 
 ### What is the Status? 
 
-The status contains information that we want users or other controllers to be able to easily obtain.
-
-```go
-type MemcachedStatus struct {}
-```
+The `MemcachedStatus` struct, or the `Status` defines the current, observed state of the resource.
+The status contains information that we want users or other controllers to be able to easily obtain. You'll 
+see the status being updated in the [controller code](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go#L132), and that is for updating the current state of the cluster. 
 
 Each of those structs, the `MemcachedStatus struct` and the `MemcachedSpec struct` will each
 have their own fields to describe the observed state and the desired state respectively.
 
-First, add a `Size int32` field to your `MemcachedSpec` struct, along with their json 
-encoded string representation of the field name, in lowercase. See [golangs json encoding page](https://golang.org/pkg/encoding/json/) for more details.
+First, add a `Size int32` field to your `MemcachedSpec` struct, along with their JSON 
+encoded string representation of the field name, in lowercase. See [Golangs JSON encoding page](https://golang.org/pkg/encoding/json/) for more details.
 
-In our example, since `Size` is the field name, and the json encoding must be lowercase, it 
+In our example, since `Size` is the field name, and the JSON encoding must be lowercase, it 
 would just look like `json:"size"`. 
 
 Add the following to your struct: 
@@ -303,7 +299,7 @@ This one:
 // +kubebuilder:subresource:status
 ```
 
-Will enable the status subresource in the Custom Resource Definition. If you run `make manifests` it will generate YAML under `config/crds/<kind_types.yaml`. It will add a `subresources`
+Will add the status subresource in the Custom Resource Definition. If you run `make manifests` it will generate YAML under `config/crds/<kind_types.yaml`. It will add a `subresources`
 section like so: 
 
 ```yaml
@@ -315,7 +311,7 @@ We will see how to get and update the status subresource in the controller code 
 
 Just know that
 each of these markers, starting with `// +kubebuilder` will generate utility code (such as role based access control) and Kubernetes YAML. When you run `make generate` and `make manifests` 
-your KubeBuilder Markers will be read in order to create RBAC roles, CRDs, and code, such as runtime.Object/DeepCopy implementations. Read more about KubeBuilder markers [here](https://book.kubebuilder.io/reference/markers.html?highlight=markers#marker-syntax).
+your KubeBuilder Markers will be read in order to create RBAC roles, CRDs, and code. Read more about KubeBuilder markers [here](https://book.kubebuilder.io/reference/markers.html?highlight=markers#marker-syntax).
 
 
 ## 4. Implement controller logic
@@ -538,15 +534,7 @@ At this point, we are ready to compile, build the image of our operator, and pus
 image repository. You can use the image registry of your choice, but here we will use Docker Hub. If we 
 plan on deploying to an OpenShift cluster, we need to login to our cluster now.
 
-### Prepare your OpenShift Cluster
-
-(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` tile. From there, you can select the flavor of your OpenShift cluster. 
-
-<b> It is highly recommended to use an OpenShift cluster of version 4.6 or higher.</b>
-
-![OpenShift](images/openshift-1.png)
-
-Once you provisioned the cluster, select the cluster and go to `OpenShift web console` by clicking the button from top right corner of the page.
+From your provisioned cluster which we set up in the `installation.md` file, select the cluster and go to `OpenShift web console` by clicking the button from top right corner of the page.
 
 ![OpenShift](images/openshift-2.png)
 
@@ -579,11 +567,11 @@ $ oc new-project <new-project-name>
 Once you've created a new project, you will be automatically switched to that project, as shown in the output below:
 
 ```bash
-$ oc new-project horea-demo-project
-Now using project "horea-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
+$ oc new-project memcache-demo-project
+Now using project "memcache-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
-Now, for the rest of the tutorial, you will use `horea-demo-project` or whatever you named your project, as your namespace. More on this in the following steps. Just know that your project is the same as your namespace in terms of OpenShift. 
+Now, for the rest of the tutorial, you will use `memcache-demo-project` or whatever you named your project, as your namespace. More on this in the following steps. Just know that your project is the same as your namespace in terms of OpenShift. 
 
 ### Edit the manager.yaml file
 
@@ -657,8 +645,9 @@ spec:
 
 ### Create CRD and RBAC
 
-Now that we have our controller code and API implemented, and our security context updated, run the following command to create the CRD from
-our API defined in our `_types.go` file:
+The generated code from the `operator-sdk` creates a `Makefile` which allows you to use `make` command to compile your `go` operator code.
+
+Now that we have our controller code and API implemented, run the following command to implement the required Go type interfaces:
 
 ```bash
 $ make generate
@@ -678,15 +667,14 @@ your KubeBuilder markers.
 
 Don't worry about [KubeBuilder Markers](https://book.kubebuilder.io/reference/markers.html) for now, we will cover them in the deep-dive article.
 
-
-### Create Operator Image
-
-The generated code from the `operator-sdk` creates a `Makefile` which allows you to use `make` command to compile your `go` operator code. The same make command also allows you to build and push the docker image.
+### Compile your Operator
 
 To compile the code run the following command in the terminal from your project root:
 ```bash
 $ make install
 ```
+
+### Set the Operator Namespace
 
 Next, we need to make sure to update our config to tell our operator to run in our own project namespace. Do this by issuing the following Kustomize 
 commands:
@@ -708,14 +696,16 @@ $ cd ../../
 `<username>` is your Docker Hub (or Quay.io) username, and `<version>` is the 
 version of the operator image you will deploy. Note that each time you 
 make a change to your operator code, it is good practice to increment the 
-version. `NAMESPACE` is your oc project name in which you plan to deploy your operator. For me, this would be `horea-demo-project`.
+version. `NAMESPACE` is your oc project name in which you plan to deploy your operator. For me, this would be `memcache-demo-project`.
 
 For example, my export statements would look like the following:
 
 ```bash
 $ export IMG=docker.io/horeaporutiu/memcached-operator:latest
-$ export NAMESPACE=horea-demo-project
+$ export NAMESPACE=memcache-demo-project
 ```
+
+### Build and Push your Image
 
 **Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
 operator image. Use `Docker login` to login.
@@ -831,7 +821,7 @@ $ ./build-and-deploy.sh
 
 ## 8. Test and verify
 
-Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase the application pods from 3 to 5.
+Update `config/samples/<group>_<version>_memcached.yaml` to change the `spec.size` field in the Memcached CR. This will increase the application pods from 3 to 5. It can also be patched directly in the cluster as follows:
 
 ```bash
 $ oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
@@ -856,7 +846,7 @@ which explains the controller logic from step 4 in more depth.
 
 ## Cleanup
 
-The `Makefile` part of generated project has a target called `undeploy` which deletes all the resource. You can run following to cleanup all the resources:
+The `Makefile` part of generated project has a target called `undeploy` which deletes all the resources associated with your project. It can be run as follows:
 
 ```bash
 make undeploy

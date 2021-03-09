@@ -34,6 +34,7 @@ version is the easiest, but is only available for macOS.
 
 1. [Install Operator SDK](#1-install-operator-sdk)
 1. [Install oc or kubectl cli](#2-install-oc-or-kubectl-cli)
+1. [(Optional) Provision OpenShift Cluster](#3-(Optional)-Provision-OpenShift-Cluster)
 
 ## 1. Install Operator SDK
 
@@ -207,6 +208,19 @@ system:controller:operator-lifecycle-manager                 ClusterRole        
 ```
 
 Once everything says installed, <b>congratulations</b> you are ready to start developing!
+
+## 3. (Optional) Provision OpenShift Cluster
+
+(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` tile. From there, you can select the flavor of your OpenShift cluster. 
+
+<b> It is highly recommended to use an OpenShift cluster of version 4.6 or higher.</b>
+
+![OpenShift](images/openshift-1.png)
+
+Once the cluster has finished provisioning, it should say that the Worker nodes are 100% normal, and the Master status is `ready`,
+as shown in the picture below.
+
+![OpenShift](images/openshift-ready.png)
 
 
 ## Conclusion
