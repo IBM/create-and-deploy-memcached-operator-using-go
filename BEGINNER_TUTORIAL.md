@@ -584,7 +584,7 @@ runAsUser: 65532
 ```
 
 This will enable OpenShift to run its default security constraint. Once you've saved the file after you've removed the `runAsUser`
-line, your file should look like the following, and the same as the one in the artifacts directory: 
+line, your file should look like the following, and the same as the one in the [artifacts directory](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/manager.yaml): 
 
 ```yaml
 apiVersion: v1
@@ -665,7 +665,7 @@ This command will invoke controller-gen to generate the CRD manifests at `config
 your KubeBuilder markers.
 
 
-Don't worry about [KubeBuilder Markers](https://book.kubebuilder.io/reference/markers.html) for now, we will cover them in the deep-dive article.
+Don't worry about [KubeBuilder Markers](https://book.kubebuilder.io/reference/markers.html) for now, we will cover them in the [deep-dive article](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md#6-understanding-kubebuilder-markers).
 
 ### Compile your Operator
 
@@ -730,7 +730,7 @@ $ make docker-push IMG=$IMG
 To Deploy the operator run the following command from your terminal:
 
 ```bash
-make deploy IMG=$IMG
+$ make deploy IMG=$IMG
 ```
 
 The output of the deployment should look like the following:
@@ -756,7 +756,7 @@ deployment.apps/memcached-operator-controller-manager created
 To make sure everything is working correctly, use the `oc get pods` command.
 
 ```bash
-oc get pods
+$ oc get pods
 
 NAME                                                     READY   STATUS    RESTARTS   AGE
 memcached-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
