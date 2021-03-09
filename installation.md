@@ -34,7 +34,7 @@ version is the easiest, but is only available for macOS.
 
 1. [Install Operator SDK](#1-install-operator-sdk)
 1. [Install oc or kubectl cli](#2-install-oc-or-kubectl-cli)
-1. [(Optional) Provision OpenShift Cluster](#3-(Optional)-Provision-OpenShift-Cluster)
+1. [(Optional) Provision OpenShift Cluster](#3-optional-provision-openshift-cluster)
 
 ## 1. Install Operator SDK
 
