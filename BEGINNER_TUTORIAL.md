@@ -586,15 +586,17 @@ Now using project "horea-demo-project" on server "https://c116-e.us-south.contai
 Now, for the rest of the tutorial, you will use `horea-demo-project` or whatever you named your project, as your namespace. More on this in the following steps. Just know that your project is the same as your namespace in terms of OpenShift. 
 
 ### Edit the manager.yaml file
-OpenShift is built with the best security practices in mind. For that reason, we need to defer the security context 
-to OpenShift. To do this, we can modify the `config/manager/manager.yaml` file to remove the following line:
+
+The `manager.yaml` file defines a Deployment manifest used to deploy the operator. That manifest includes a security context that tells Kubernetes to run the pods as a specific user (uid=65532). OpenShift already manages the users employed to run pods which is behavior the manifest should not override, so we will remove that from the manifest.
+
+To do this, we can modify the `config/manager/manager.yaml` file to remove the following line:
 
 ```
 runAsUser: 65532
 ```
 
 This will enable OpenShift to run its default security constraint. Once you've saved the file after you've removed the `runAsUser`
-line, your file should look like the following: 
+line, your file should look like the following, and the same as the one in the artifacts directory: 
 
 ```yaml
 apiVersion: v1
