@@ -793,7 +793,7 @@ $ kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
 From the terminal run `kubectl get all` or `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
 
 ```bash
-kubectl get all 
+$ kubectl get all 
 ```
 
 Output:
@@ -805,7 +805,7 @@ Also from your cluster you can see the logs by going to your project in `OpenShi
 
 You can also now run `oc api-resources` to view the memcache resource we have created:
 ```bash
-oc api-resources
+$ oc api-resources
 NAME                APIGROUP                  NAMESPACED   KIND
 memcacheds         cache.example.com          true         Memcached
 ```
@@ -849,7 +849,7 @@ which explains the controller logic from step 4 in more depth.
 The `Makefile` part of generated project has a target called `undeploy` which deletes all the resources associated with your project. It can be run as follows:
 
 ```bash
-make undeploy
+$ make undeploy
 ```
 
 # License
