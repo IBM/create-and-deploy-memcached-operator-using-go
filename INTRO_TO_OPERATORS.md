@@ -55,13 +55,13 @@ Read more about operators from this [Red Hat blog](https://www.redhat.com/en/top
 
 ## 2. What do operators do
 
-![Alt text](./images/operator-interactions.png)
+![Alt text](./images/operator-reconciliation.png)
 
-Operators extend the control plane by adding another controller to the control plane. Operators enable a developer to write an API and custom controller logic to help manage 
-a particular service, such as a database. Instead of the admin using `kubectl` commands 
-in order to change the desired state, an operator does this for you, automatically, using 
-its custom controller. This is illustrated in the `How an operator deploys a workload` section
-from the image above.
+In this image, you can see that the when we create a custom controller for our operator, it is treated as a workload (more on this later), and it is added to the 
+worker node. Much like many of the Kubernetes native controllers, each of which watch for a specific resource (such as Deployments, or Jobs), the 
+custom controllers we will develop in this series will watch for custom resources (i.e. the resources which our operators manages). Instead of an admin using 
+`kubectl` commands to change the desired state, we will instead specify our desired state in the custom resource's `Spec` section and the operator will take care 
+of ensuring the current state of the cluster reaches the desired state.
 
 ### Operators vs. Operands
 An operator is the combination of CRs and a custom controller that extends Kubernetes functionality
