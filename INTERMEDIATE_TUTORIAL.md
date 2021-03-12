@@ -5,17 +5,17 @@ article will discuss the Memcached custom controller code in depth.
 
 ## Expectations (What you have)
 * You have some experience developing operators.
-* You've finished the beginner tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md)
+* You've finished the beginner tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md).
 * You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types.
 
 ## Expectations (What you want)
 * You want deep technical knowledge of the code which enables operators to run.
-* You want to understand how the reconcile loop works, and how you can use it to manage Kubernetes resources
+* You want to understand how the reconcile loop works, and how you can use it to manage Kubernetes resources.
 * You want to learn more about the basic Get, Update, and Create functions used to save resources to your Kubernetes cluster.
 * You want to learn more about KubeBuilder markers and how to use them to set role based access control.
 
 ## Outline
-1. [Reconcile function overview](#1-reconcile-function-overivew)
+1. [Reconcile function overview](#1-reconcile-function-overview)
 1. [Understanding the Get function](#2-Understanding-the-get-function)
 1. [Understanding the Reconcile function return types](#3-Understanding-the-reconcile-function-return-types)
 1. [Create Deployment](#4-Create-deployment)
@@ -305,7 +305,7 @@ Now, let's understand the object that we pass into the `Get` function. The objec
 via `Kubectl create`. All of this means that the object will be treated like a Kubernetes native object. You will see that in the later 
 parts of the code we will pass in a different type of resource (a Deployment) to the `Get` function. Since the `Get` function is accepting any Kubernetes 
 object that implements the Object interface, it doesn't matter if our object is a custom resource we created (Memcached) or a native 
-Kubernetes resource, like a [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
+Kubernetes resource like a [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
 
 The Reconcile function gives you two things, the context i.e. `ctx` and request i.e. `req`. 
 The request parameter has all of the information we need to reconcile a Kubernetes object i.e. a
@@ -327,11 +327,12 @@ return ctrl.Result{}, err
 Now, let's talk a bit about what the [reconcile function](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) returns. This can be a bit 
 tricky since there are various return types. 
 
-The function definition is the following: <b>Reconcile(ctx context.Context, req ctrl.Request) (Result, error)</b>
+The function definition is the following: <b>Reconcile(ctx context.Context, req ctrl.Request) (Result, error)</b>.
 
-The reconcile function returns a (Result, err). Now, more specifically, 
-the [Result struct](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Result) has two fields, the `Requeue` bool, which tells the reconcile 
-function to requeue again. This bool defaults to false. The other field is 
+The reconcile function returns a `(Result, err)`.
+
+The first field is the [`Result` struct](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Result) which has two fields, `Requeue` and `RequeueAfter`. `Requeue` is a bool which tells 
+the reconcile function to requeue again. This bool defaults to false. The other field is 
 `RequeueAfter` which expects a `time.Duration`. This tell the reconciler to requeue after a specific amount of time. 
 
 For example the following code would requeue after 30 seconds.
@@ -339,8 +340,7 @@ For example the following code would requeue after 30 seconds.
 return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 ```
 
-Furthermore, the controller will requeue the request to be processed again if an error
-is non-nil or `Result.Requeue` is true.
+Furthermore, the controller will requeue the request to be processed again if the error is not `nil` or `Result.Requeue` is true.
 
 ### Most common return types
 
@@ -461,7 +461,7 @@ return ctrl.Result{Requeue: true}, nil
 ```
 
 To summarize: using the [Create](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function is an important step in changing the current state of the 
-cluster. The difference between Create and Update is that Create is used the first time when a user wants to create an object while [`Update`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) is used after the first time to update an object.
+cluster. The difference between [`Create`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) and [`Update`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) is that `Create` is used the first time when a user wants to create an object while `Update` is used after the first time to update an object.
 
 
 ## 5. Understanding the Update Function
@@ -539,7 +539,8 @@ The filters we set in the previous `ListOpts` variable are passed into the List 
 see which pods are currently in our namespace and also match the same labels as our custom resource. 
 
 The [List](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.List) function
-will update the list which you pass into it, which in our case is the `podList` which we pass in.
+takes in a context, a list, and the list options. For us, we will pass in the `podList` and `listOpts` objects 
+which will return the list of Pods in our namespace that have the same labels as our Memcached resource. 
 
 ```go
 if err = r.List(ctx, podList, listOpts...); err != nil {
@@ -548,10 +549,11 @@ if err = r.List(ctx, podList, listOpts...); err != nil {
 }
 ```
 
-The List function will also give the `podList` variable a `.Items` field, which we will pass into getPodNames below.
+After the `List` function returns, it will create a `.Items` field in our `podList` object. We will pass that field
+into our `getPodNames` function, as shown below.
 
-GetPodNames converts the PodList returned from our List function into a string array, since that 
-is what our `MemcachedStatus` struct is expecting, as we have defined it in our `memcached_types.go` file.
+`getPodNames` converts the `podList` returned from our `List` function into a string array, since that 
+is how we defined the `MemcachedStatus` struct in the `memcached_types.go` file.
 
 ```go
 podNames := getPodNames(podList.Items)
@@ -565,7 +567,7 @@ func getPodNames(pods []corev1.Pod) []string {
 }
 ```
 
-Lastly, we will check if the podnames that we've just listed from `r.List` are the same 
+Lastly, we will check if the `podNames` that we've just listed from `r.List` are the same 
 as the `memcached.Status.Nodes`. If they are not the same, we will use [`Update(ctx context.Context, obj Object)` function](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) to update the `MemcachedStatus` struct:
 
 ```go
@@ -580,7 +582,7 @@ if !reflect.DeepEqual(podNames, memcached.Status.Nodes) {
 }
 ```
 
-By updating the status, we are updating the current state of the cluster. Again, when we update the Spec, we update desired state, and when we update the status, we update the current state of the cluster. 
+By updating the status, we are updating the current state of the cluster. Just to reiterate -  when we update the Spec, we update desired state. When we update the status, we update the current state of the cluster. 
 
 If all goes well, we return without an error. This means that the current state of the cluster is the same as the desired state. 
 This means we do not have to reconcile until the desired state has changed. 
@@ -594,7 +596,7 @@ To summarize: the [Update](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.
 
 ## 6. Understanding KubeBuilder Markers
 
-Now, one more thing to understand before we deploy our operator. Let's discuss the [Kubebuilder markers](https://book.kubebuilder.io/reference/markers.html) which you can see at the top of the file:
+Now, one more thing to understand before we deploy our operator. Let's discuss the [KubeBuilder markers](https://book.kubebuilder.io/reference/markers.html) which you can see at the top of the file:
 
 ```go
 // generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
@@ -613,11 +615,11 @@ Now, one more thing to understand before we deploy our operator. Let's discuss t
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 ```
 
-**Kubebuilder markers are tricky since they are written in comments.**
+**KubeBuilder markers are tricky since they are written in comments.**
 
 KubeBuilder markers, i.e. single-line comments which start with a plus, followed by a marker name enable config and code generation.
 They are extremely important, especially when used for RBAC (role-based access control). The `controller-gen` utility, listed in 
-your `bin` directory, is what actually code and YAML files from these markers. 
+your `bin` directory, is what actually generates code and YAML files from these markers. 
 
 ```go
 // generate rbac to get, list, watch, create, update and patch the memcached status the nencached resource
@@ -628,8 +630,8 @@ For example, the marker above tells us the following - for any `memcacheds` reso
 the operator is able to get, list, watch, create, update, path, and delete these resources. Once we run `make manifests`, the `controller-gen` utility will see that we have a new KubeBuilder marker, and will update the rbac yaml files in our `config/rbac` directory to change our 
 RBAC configuration.
 
-For example, if our memcached resource didn't have the `List` verb listed in the kubebuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our kubebuilder commands into our `config/rbac` yaml files. To 
-learn more about KubeBuilder markers, see the docs [here](https://book.kubebuilder.io/reference/markers/rbac.html).
+For example, if our memcached resource didn't have the `List` verb listed in the KubeBuilder marker, we would not be able to use r.List() on our memcached resource - we would get a permissions error such as `Failed to list *v1.Pod`. Once we change these markers and add the `list` command, we have to run `make generate` and `make manifests` and that will in turn apply the changes from our KubeBuilder commands into our `config/rbac` yaml files. To 
+learn more about KubeBuilder markers, see the docs [here](https://book.kubebuilder.io/reference/markers.html).
 
 ## Conclusion
 
