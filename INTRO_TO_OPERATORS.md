@@ -37,9 +37,9 @@ database, that is when operators are very useful. An operator can also automate 
 upgrades, failure recovery, and scaling. 
 
 Operators extend the Kubernetes control plane with specialized functionality to manage a workload on behalf of a Kubernetes admin. An operator includes these components:
-- A [Custom Resource Definition](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) (CRD) that defines a schema of settings available for configuring the workload
+- A [custom resource definition](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) (CRD) that defines a schema of settings available for configuring the workload
 - A [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) (CR) that specifies values for the settings defined by the CRD, values that describe the configuration of a workload instance
-- A [controller](https://kubernetes.io/docs/concepts/architecture/controller/) customized for the workload that configures the actual state of the workload to match the desired state represented by the values in the CR
+- A [controller](https://kubernetes.io/docs/concepts/architecture/controller/) customized for the workload that configures the current state of the workload to match the desired state represented by the values in the CR
 
 Operators have the following features:
 
@@ -48,26 +48,24 @@ using the operator's custom controller logic to implement the translation.
 * An operator introduces new object types through its custom resource definition. These objects can be handled by the Kubernetes API just like
 native Kubernetes objects, including interaction via Kubernetes client tools and inclusion in role-based access control policies (RBAC).
 
-This [What is a Kubernetes operator?](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator) by Red Hat explains more details about operators.
+The article [What is a Kubernetes operator?](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator) by Red Hat explains more details about operators.
 
 
 ## 2. What do operators do
-
-![Control Loops with Operators](./images/operator-reconciliation.png)
 
 In Kubernetes, controllers in the
 [control plane](https://kubernetes.io/docs/concepts/overview/components/) run in a control loop that repeatedly compares the desired state of the cluster to its current state. If the states don't match,
 then the controller takes action to adjust the current state to more closely match the desired state. Similarly, the controller in an operator watches a specific CR type and takes application-specific actions to make the workload's current state match the desired state expressed in the CR.
 
+This diagram illustrates how the control plane runs the controllers in a loop, where some controllers are built into Kubernetes and some are part of operators:
+
+![Control Loops with Operators](./images/operator-reconciliation.png)
+
 The controllers in the control plane are optimized for stateless workloads and one set of controllers works for all stateless workloads because they're all very similar. The controller in an operator is customized for one particular stateful workload. Each stateful workload has its own operator with its own controller that knows how to manage this workload.
 
 ## Why does Kubernetes need operators?
 
-Kubernetes needs operators in order to automate tasks which are normally done manually by 
-IT operations personnel. Instead of an administrator having to set up multiple deployments, config maps, secrets, and services, 
-an end user can just deploy an operator instead. the operator will take care of everything
-needed to make sure the service is up and running. The approach of using an operator is 
-inherently easier, and scales better, than creating all of the deployments, config maps, secrets, and services manually. 
+Kubernetes needs operators in order to automate tasks that are normally performed manually by IT operations personnel. Statefulness changes how a workload needs to be installed, upgrades to a new version, recovers from failures, needs to be monitored, and scales out and back in again. The operator will take care of everything needed to make sure the service is up and running. A workload with an operator manages itself better, making it easier for application teams to use it with less effort from the operations team.
 
 ## 3. Operator SDK
 
@@ -81,11 +79,11 @@ The [Operator SDK](https://sdk.operatorframework.io/) is an open source toolkit 
 * `make deploy` -- deploys all of the operator's resources to the cluster
 * `make undeploy` -- deletes all of the operator's deployed resources from the cluster
 
-These make commands in the SDK greatly simplify implementing an operator.
+These commands in the SDK greatly simplify implementing an operator.
 
 ### Operator Lifecycle Manager
 
-The SDK also enables you to install the [Operator Lifecycle Manager](https://olm.operatorframework.io/) (OLM) using the `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, which verifies whether the SDK can successfully communicate with the OLM components in the cluster.
+The SDK also enables you to install the [Operator Lifecycle Manager](https://olm.operatorframework.io/) (OLM) using the `operator-sdk olm install` command. The OLM is a set of cluster resources that manage the lifecycle of an operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, which verifies whether the SDK can successfully communicate with the OLM components in the cluster.
 
 ### Terminology
 
