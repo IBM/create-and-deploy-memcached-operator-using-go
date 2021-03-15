@@ -53,6 +53,8 @@ This [What is a Kubernetes operator?](https://www.redhat.com/en/topics/container
 
 ## 2. What do operators do
 
+![Control Loops with Operators](./images/operator-reconciliation.png)
+
 In Kubernetes, controllers in the
 [control plane](https://kubernetes.io/docs/concepts/overview/components/) run in a control loop that repeatedly compares the desired state of the cluster to its current state. If the states don't match,
 then the controller takes action to adjust the current state to more closely match the desired state. Similarly, the controller in an operator watches a specific CR type and takes application-specific actions to make the workload's current state match the desired state expressed in the CR.
