@@ -29,11 +29,11 @@ A basic operator consists of the components depicted in this diagram:
 
 These components form the three main parts of an operator:
 - API -- The data that describes the operand's configuration, comprised of three parts:
-  - Custom Resource Definition (CRD) -- The schema for yaml data that describes the operand
-  - Programmatic API -- The same data schema as the CRD, implemented using the operator's programming language, such as Go
-  - Custom Resource (CR) -- An instance of the CRD that describes an operand instance using the schema defined in the CRD
+  - Custom resource definition (CRD) -- Defines a schema of settings available for configuring the operand
+  - Programmatic API -- Defines the same data schema as the CRD, implemented using the operator's programming language, such as Go
+  - Custom resource (CR) -- An instance of the CRD that specifies values for the settings defined by the CRD, values that describe the configuration of an operand
 - Controller -- The brains of the operator, creates managed resources based on the description in the CR, implemented using the operator's programming language, such as Go
-- RBAC Role and Service Account -- Kubernetes permissions that allow the controller to create the managed resources
+- Role and service account -- Kubernetes RBAC resources with permissions that allow the controller to create the managed resources
 
 A particular operator can be much more complex, but it will still contain this basic structure.
 
@@ -71,7 +71,7 @@ An operator deploys a workload in very much the same way that a human administra
 
 ![deploying workloads](../images/operator-interactions.png)
 
-An administrator uses client tools such as the `kubectl` CLI and YAML files to tell the cluster what to do, such as to deploy a workload. When an admin runs a command like `kubectl apply -f my-manifest.yaml`, what actually happens?
+An administrator uses client tools such as the `kubectl` CLI and YAML files to tell the cluster what resources to create, such as those to deploy a workload. When an admin runs a command like `kubectl apply -f my-manifest.yaml`, what actually happens?
 - The client tool talks to the Kube API, the interface for the control plane
 - The API performs its commands by changing the cluster's desired state, such as adding a new resource described by `my-manifest.yaml`
 - The controllers in the control plane make changes to the cluster's current state to make it match the desired state
@@ -99,7 +99,7 @@ Each operator extends the reconciliation loop by adding its custom controller to
 
 ![Reconciliation loop with operators](../images/operator-reconciliation.png)
 
-When the controller manager runs the reconciliation loop, it not only tells each controller in the control plane to reconcile itself, it also tells each operator's custom controller to reconcile itself. As for a standard controller, reconcile is the custom controller's opportunity to react to any changes since the last time it reconciled itself.
+When the controller manager runs the reconciliation loop, it not only tells each controller in the control plane to reconcile itself, it also tells each operator's custom controller to reconcile itself. Just like for a standard controller, reconcile is the custom controller's opportunity to react to any changes since the last time it reconciled itself.
 
 Operators are said to extend Kubernetes, and the diagram illustrates this concept. In a cluster without operators, the reconciliation loop runs controllers in the control plane. Operators add more controllers to the reconciliation loop, thereby extending Kubernetes.
 
