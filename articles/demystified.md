@@ -25,7 +25,7 @@ Kubernetes out-of-the-box is pretty good at managing stateless workloads because
 
 A basic operator consists of the components depicted in this diagram:
 
-![operator structure](../images/memcached-operator.png)
+![operator structure](../images/MemcachedOperator.png)
 
 These components form the three main parts of an operator:
 - API -- The data that describes the operand's configuration, comprised of three parts:
