@@ -3,19 +3,19 @@
 This article will be the first in a series of articles and tutorials on learning how to build and deploy 
 a Kubernetes Operator. 
 
-This article will assume you have no knowledge on Kubernetes Operators, and will 
-give you all of the basic knowledge needed to develop a
-Golang based operator. If you are already familiar with operators, you can either skim this article or 
+This article assumes you are familiar with how Kubernetes works but that you have no knowledge on Kubernetes Operators, and will 
+give you all of the basic knowledge needed to develop an
+operator implemented using Golang. If you are already familiar with operators, you can either skim this article or 
 simply skip ahead to the [develop and deploy a Memcached Operator on OpenShift](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) which shows how to develop and deploy your first operator to 
 an OpenShift cluster, or go back to one of the other articles in the [learning path](https://github.ibm.com/TT-ISV-org/operator#kubernetes-operators-learning-path).
 
 ## Expectations (What you have)
-* You have little to no experience developing operators
+* You have a basic understanding of Kubernetes concepts and how to install a workload
 * You have little to no knowledge on Kubernetes Operators concepts
-* You have a basic understanding of Kubernetes concepts
+* You have little to no experience developing operators
 
 ## Expectations (What you want)
-* You want to learn the basic concepts and steps needed to develop a Golang based operator to manage Kubernetes resources
+* You want to learn the basic concepts and steps needed to develop a Golang-based operator to manage Kubernetes resources
 
 ## Estimated time
 * This article should take roughly 15-30 minutes to complete, depending on how long you spend reading through 
@@ -31,116 +31,122 @@ documentation.
 ## 1. What are operators
 [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) are extensions to Kubernetes that make use of custom resources 
 to manage Kubernetes applications and their components. Operators are used to automate software configuration and maintenance activities 
-that are typically done by human operators. That's why they are called operators. Kubernetes is great at managing 
+that are typically performed by human operators. That's why they are called operators! Kubernetes is great at managing 
 stateless applications, but when you need more complex configuration details for a stateful application, such as a 
-database, that is when operators are very useful. Other more complex lifecycle management tasks such as patches and minor
-upgrades can be automated using an operator. 
+database, that is when operators are very useful. An operator can also automate other more complex lifecycle management tasks such as version
+upgrades, failure recovery, and scaling. 
 
-Operators are application-specific controllers which extend the functionality of the Kubernetes API to manage instances of complex applications, on behalf of a Kubernetes admin. The [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)(CR) is the mechanism through which the Kubernetes API is extended. 
-A Custom Resource Definition (CRD) lists out all of the configuration available to users of the operator. 
-
-In Kubernetes, controllers of the
-[control plane](https://kubernetes.io/docs/reference/glossary/?all=true#term-control-plane) implement control loops that repeatedly compare the desired state of the cluster to its actual state. If the states don't match,
-then the controller takes action to fix the problem. Similarly, a Kubernetes operator watches a specific CR type and takes application-specific actions to make the current state match the desired state in that resource.
+Operators extend the Kubernetes control plane with specialized functionality to manage a workload on behalf of a Kubernetes admin. An operator includes these components:
+- A [Custom Resource Definition](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) (CRD) that defines a schema of settings available for configuring the workload
+- A [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) (CR) that specifies values for the settings defined by the CRD, values that describe the configuration of a workload instance
+- A [controller](https://kubernetes.io/docs/concepts/architecture/controller/) customized for the workload that configures the actual state of the workload to match the desired state represented by the values in the CR
 
 Operators have the following features:
 
-* The user provides configuration and settings within a CR, and then the operator translates the configuration into low-level actions,
-based on the logic defined in the operator's custom controller logic.
-* Operator introduce new object types through its custom resource definition. These objects can be handled by the Kubernetes API just like
-native Kubernetes objects, including interaction via `kubectl` and inclusion in role-based access control policies.
+* The user provides configuration settings within a CR, and then the operator translates the configuration into low-level actions,
+using the operator's custom controller logic to implement the translation.
+* An operator introduces new object types through its custom resource definition. These objects can be handled by the Kubernetes API just like
+native Kubernetes objects, including interaction via Kubernetes client tools and inclusion in role-based access control policies (RBAC).
 
+This [What is a Kubernetes operator?](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator) by Red Hat explains more details about operators.
 
-Read more about operators from this [Red Hat blog](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator).
 
 ## 2. What do operators do
 
-![Alt text](./images/operator-reconciliation.png)
+In Kubernetes, controllers in the
+[control plane](https://kubernetes.io/docs/concepts/overview/components/) run in a control loop that repeatedly compares the desired state of the cluster to its current state. If the states don't match,
+then the controller takes action to adjust the current state to more closely match the desired state. Similarly, the controller in an operator watches a specific CR type and takes application-specific actions to make the workload's current state match the desired state expressed in the CR.
 
-In this image, you can see that the when we create a custom controller for our operator, it is treated as a workload (more on this later), and it is added to the 
-worker node. Much like many of the Kubernetes native controllers, each of which watch for a specific resource (such as Deployments, or Jobs), the 
-custom controllers we will develop in this series will watch for custom resources (i.e. the resources which our operators manages). Instead of an admin using 
-`kubectl` commands to change the desired state, we will instead specify our desired state in the custom resource's `Spec` section and the operator will take care 
-of ensuring the current state of the cluster reaches the desired state.
+The controllers in the control plane are optimized for stateless workloads and one set of controllers works for all stateless workloads because they're all very similar. The controller in an operator is customized for one particular stateful workload. Each stateful workload has its own operator with its own controller that knows how to manage this workload.
 
-### Operators vs. Operands
-An operator is the combination of CRs and a custom controller that extends Kubernetes functionality
-to enable the starting, scaling, and recovering of a specific application or service. <b>The `operand`, on the 
-other hand, is what we call the resources an operator manages, i.e. the workload. </b>
- 
 ## Why does Kubernetes need operators?
 
-Kubernetes needs operators in order to automate tasks which are normally done manually by a 
-SRE. Instead of having to set up multiple deployments, configmaps, secrets, and services, as 
-an end user, you can just deploy your operator instead. Your operator will take care of everything
-needed to make sure your service is up and running. The approach of using an operator is 
-inherently easier, and scales better, than creating all of the deployments, configmaps, secrets, and services manually. 
+Kubernetes needs operators in order to automate tasks which are normally done manually by 
+IT operations personnel. Instead of an administrator having to set up multiple deployments, config maps, secrets, and services, 
+an end user can just deploy an operator instead. the operator will take care of everything
+needed to make sure the service is up and running. The approach of using an operator is 
+inherently easier, and scales better, than creating all of the deployments, config maps, secrets, and services manually. 
 
 ## 3. Operator SDK
 
-Operator SDK is an open source toolkit that provides tools to build, test and package operators. The SDK cli allows you to scaffold a project and also provides commands to generate code. Also operator SDK makes use of `make`, a build automation tool, to build, test, package and deploy your operator through series of `make` commands that is provided in generated `Makefile`. The `Makefile` comes with pre-built commands like below which we will be using in our project.
+The [Operator SDK](https://sdk.operatorframework.io/) is an open source toolkit that provides tools to build, test, and package operators. The SDK CLI enables you to scaffold a project and also provides commands to generate code. The SDK uses [make](https://en.wikipedia.org/wiki/Make_(software)), a build automation tool that runs commands configured in a Makefile to generate executable code and libraries from source code. The SDK includes pre-built make commands that we will use to develop our operator, such as:
 
-* `make manifests` generates manifests `yaml` definitions based on `kubebuilder` markers.
-* `make install` compiles your code and create executables.
-* `make generate` updates the generated code based on your operator API schema.
-* `make docker-build` builds the operator docker image.
-* `make docker-push` pushes the operator docker image.
-* `make deploy` deploys all the resources to the cluster.
-* `make undeploy` deletes all the deployed resources from the cluster.
+* `make manifests` -- generates yaml manifests based on `kubebuilder` markers
+* `make install` -- compiles source code into executables
+* `make generate` -- updates the generated code based on an operator's API schema
+* `make docker-build` -- builds the operator's Docker container image
+* `make docker-push` -- pushes the Docker image
+* `make deploy` -- deploys all of the operator's resources to the cluster
+* `make undeploy` -- deletes all of the operator's deployed resources from the cluster
 
-Operator SDK also allows you to install OLM (operator lifecycle manager) using `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an Operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, to make sure all the resources in the cluster are in `installed` status.
+These make commands in the SDK greatly simplify implementing an operator.
+
+### Operator Lifecycle Manager
+
+The SDK also enables you to install the [Operator Lifecycle Manager](https://olm.operatorframework.io/) (OLM) using the `operator-sdk olm install` command. OLM is a set of cluster resources that manage the lifecycle of an operator. Once installed, you can get the status of the OLM using `operator-sdk olm status`, which verifies whether the SDK can successfully communicate with the OLM components in the cluster.
+
+### Terminology
+
+In addition to operator, custom resource, and custom resource definition, the Operator SDK adds the following [terminology](https://operatorframework.io/operator-capabilities/), _operand_ and _managed resource_:
+- Operand - the managed workload provided by the Operator as a service
+- Managed resources - the Kubernetes objects or off-cluster services the Operator uses to constitute an Operand (also known as secondary resources)
+
 
 ## 4. Operator Capability Levels
 
-![Alt text](./images/operator-capability-level.png)
+Some operators are more sophisticated at managing their operand's lifecycle than others. The Operator Capability Levels model defines five levels of sophistication, as illustrated here:
 
-Operators come in different maturity levels in regards to their lifecycle management capabilities. This model aims to provide 
-guidance in terms of what features users can expect from a particular operator. As you can see from the picture above, only
-Ansible and Go can be used to achieve all five capability levels. Helm can only be used to achieve seamless upgrades and basic install. <b>Capability levels build on top of one another. That means if you have level 3 capabilities, then you should have all capabilities required from Level 1 and Level 2.</b>
+![Operator Capability Levels](./images/operator-capability-level.png)
 
-Let's take a look at level one in more detail:
+This model aims to provide 
+guidance for the features that users can expect from a particular operator. As the picture shows, only
+Ansible and Go can be used to achieve all five capability levels. Helm can only be used to achieve the first two levels. <b>Capability levels build on top of one another. That means that if an operator has level 3 capabilities, then it should also have all of the capabilities required from level 1 and level 2.</b>
 
-### Operator Capability Level 1 - Basic Install 
+Before an operator can even achieve level 1, first you must install the operator itself. The operator is a Kubernetes workload and so can be installed the way any workload is installed, such as by using the Kubernetes CLI or by using a Helm chart. It can also be installed by an operator repository such as the Operator Hub or through the Operator Lifecycle Manager.
 
-In level 1, your operator can provision an application through a custom resource. All of the configuration
-details are specified in the CR. You should also be able to install your operator in multiple ways (`kubectl`, Operator Hub, 
-or through the Operator Lifecycle Manager). Avoid the practice of making the user create / manage configuration files outside
-of Kubernetes.
+Let's examine the capabilities of a level 1 operator in more detail.
 
-### Level 1 Example - Installing the Workload
+### Operator Capability Level 1 - Basic Install
 
-The operator enables the deployment of a database by ensuring that `Deployment`, `ServiceAccount`, `RoleBinding`, `ConfigMap`, `PersistentVolumeClaim`,
-and `Secret` resources are created. These resources are specified in the custom resource's `spec` section (more on this soon). Once the custom resource is 
-created, the custom resource will install the workload (or operand). If the custom resource is deleted, then the workload (or operand) is 
-removed. 
+In level 1, your operator can provision an application as described by a custom resource. The CR specifies all of the configuration
+details. Avoid making the user create and manage configuration files outside
+of Kubernetes, that's what the CR is for.
 
-Once the custom resource installs the workload, it then initializes an empty database schema, and alerts the user when the database is ready to accept requests by updating the `status` section of the custom resource.
+### Level 1 Example - Installing the Operand
 
+When a custom resource is created, that triggers the operator, which responds by creating and installing the operand. If the custom resource is deleted, then the operator removes the operand.
 
-### Level 1 Example - Managing the Workload 
+To install an operand, the controller creates the managed resources for that operand and installs them, which causes the cluster to install the operand. These managed resources are typical Kubernetes workload kinds such as a `Deployment` and a `Service`, as well as other kinds like a `ConfigMap`, a `Secret`, and a `PersistentVolumeClaim`.
 
-Now, let's say that you want to increase the capacity of your underlying database. How would you do this using operators?
-This should be done by resizing the `PersistentVolumeClaim` resources within the `Spec` section of the Custom Resource. When we update the `Spec` section of the custom resource, we are configuring the workload (or operand). Once 
-these changes are applied, the custom resource will take care of scaling the underlying `PersistentVolumeClaim` resource to match 
-what was declared in the `Spec` section of the Custom Resource.
+The configuration of these managed resources is specified in the custom resource's specification (i.e. the `spec` section of its yaml (more on this soon)). A simple controller may simply copy values out of the CR's specification and into the appropriate fields of the managed resources, maybe transforming the values as needed. Once the cluster has installed the operand, the controller gathers the status of those managed resources and updates the custom resource's status (i.e. the `status` section of its yaml (more on this soon)). Status is how the CR remembers the managed resources that were created for its operand.
 
-To read more about the other capability levels, read this article from the [Operator SDK documentation](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/).
+### Level 1 Example - Managing the Operand 
+
+Now, let's say that you want to increase the capacity of the operand. How would you do this using the operator?
+
+This should be done by updating the custom resource's specification--perhaps it has a `size` setting and you increase it. When we update the custom resource's specification, we are specifying a different configuration for the operand. The controller notices the changes in the custom resource and responds by changing the configuration of the managed resources--perhaps to increase the number of pods or create new persistent volume claims.
+
+Once the controller applies these changes to the managed resources, the cluster responds by applying them the operand, thereby scaling the operand.
+
+[Operator Capability Levels](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/) in the Operator SDK documentation also describes the behavior of the other capability levels.
 
 ## 5. Operator Hub
 
-![Alt text](./images/operatorHub.png)
+[OperatorHub.io](https://operatorhub.io/) is a repository for operators, a public website where you can find and share operators. Its homepage looks like this:
 
-[OperatorHub.io](https://operatorhub.io/) is where you can find and share Operators. As you can see in the picture above, there
+![Operator Hub](./images/operatorHub.png)
+
+There
 are more than 180 different operators to choose from on OperatorHub.io. OperatorHub.io is very important since this is where 
-you can use other operators to automate the configuration of your Kubernetes applications, and submit your own operator to be published online. All of the details of how to package, test, preview, and submit your operator can be found in [this article](https://operatorhub.io/contribute). 
+you can use other operators to automate the configuration of your Kubernetes applications, and submit your own operator to be published online. All of the details of how to package, test, preview, and submit your operator for addition to the Hub can be found in [How to contribute an Operator](https://operatorhub.io/contribute). 
 
 ## Conclusion
 In this article, we learned about how operators can extend the base Kubernetes functionality 
-by the use of custom controllers and custom resources. We've also learned that the Operator SDK offers code scaffolding 
-tools to enable you to write your operator faster, and offers guidelines for the capability levels of an operator. Lastly,
-we learned that we can view operators and submit our own on OperatorHub.io.
+using custom controllers and custom resources. We've also learned that the Operator SDK offers code scaffolding 
+tools to enable you to write your operator more easily, and offers guidelines for the capability levels of an operator. Lastly,
+we learned that we can browse existing operators and submit our own on OperatorHub.io.
 
 In the [next article](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/demystified.md), we will dive deeper 
 into the Kubernetes architecture that enables operators to work. 
 
-If you would rather go straight to developing an operator, you can go to the intermediate level tutorial [develop and deploy and operator to OpenShift](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial instead.
+If you would rather go straight to developing an operator, go to the intermediate level tutorial [Develop and deploy and operator to OpenShift](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md).
