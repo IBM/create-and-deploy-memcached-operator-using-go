@@ -65,7 +65,7 @@ The controllers in the control plane are optimized for stateless workloads and o
 
 ## Why does Kubernetes need operators?
 
-Kubernetes needs operators in order to automate tasks that are normally performed manually by IT operations personnel. Statefulness changes how a workload needs to be installed, upgrades to a new version, recovers from failures, needs to be monitored, and scales out and back in again. The operator will take care of everything needed to make sure the service is up and running. A workload with an operator manages itself better, making it easier for application teams to use it with less effort from the operations team.
+Kubernetes needs operators in order to automate tasks that are normally performed manually by IT operations personnel. A stateful workload is more difficult to manage than a stateless workload. The state in a workload changes how a workload: needs to be installed, upgrades to a new version, recovers from failures, needs to be monitored, and scales out and back in again. The operator will take care of everything needed to make sure the service keeps running successfully. An operator makes its service more self-managing, enabling an application team to spend less effort managing the service so that it can spend more effort using the service.
 
 ## 3. Operator SDK
 
