@@ -52,8 +52,14 @@ The controllers in the control plane are optimized for stateless workloads and o
 
 ### Why does Kubernetes need operators?
 
-Kubernetes needs operators to automate tasks that are normally performed manually by IT operations personnel. A stateful workload is more difficult to manage than a stateless workload. The state in a workload changes how a workload: needs to be installed, upgrades to a new version, recovers from failures, needs to be monitored, and scales out and back in again. The operator will take care of everything needed to make sure the service keeps running successfully. An operator makes its service more self-managing, enabling an application team to spend less effort managing the service so that it can spend more effort using the service.
+Kubernetes needs operators to automate tasks that are normally performed manually by IT operations personnel. A stateful workload is more difficult to manage than a stateless workload. The state in a workload changes how a workload: needs to be installed, upgrades to a new version, recovers from failures, needs to be monitored, and scales out and back in again. The operator will take care of everything needed to make sure the service keeps running successfully. An operator makes its service more self-managing, enabling an application team to spend less effort managing the service so that it can spend more effort using the service. 
 
+### How do I use an operator?
+
+To use an operator, you must first deploy the operator as a workload in your cluster. You can deploy it like 
+any other workload, via the Kubernetes CLI or using a Helm chart. Additionally, you can make use of Operator Hub 
+or deploy your operator through the Operator Lifecycle Manager.
+ 
 ## Operator SDK
 
 The [Operator SDK](https://sdk.operatorframework.io/) is a set of open source tools to build, test, and package operators. The SDK CLI enables you to scaffold a project and also provides commands to generate code. The SDK uses [make](https://en.wikipedia.org/wiki/Make_(software)), a build automation tool that runs commands configured in a Makefile to generate executable code and libraries from source code. 
@@ -90,8 +96,6 @@ Some operators are more sophisticated at managing their operand's lifecycle than
 This model aims to provide guidance for the features that users can expect from a particular operator. As the picture shows, you can only use Ansible and Go to achieve all five capability levels. Helm can only be used to achieve the first two levels. 
 
 <b>Capability levels build on top of one another. That means that if an operator has level 3 capabilities, then it should also have all of the capabilities required from level 1 and level 2.</b>
-
-Before an operator can even achieve level 1, you must install the operator itself. The operator is a Kubernetes workload, so you can install it as you would any other workload, via the Kubernetes CLI, using a Helm chart, through an operator repository such as the Operator Hub, or through the Operator Lifecycle Manager.
 
 Let's examine the capabilities of a level 1 operator in more detail.
 
