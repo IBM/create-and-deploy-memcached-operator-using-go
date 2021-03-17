@@ -19,7 +19,7 @@ an OpenShift cluster, or go back to one of the other articles in the [learning p
 
 ## Estimated time
 * This article should take roughly 15-30 minutes to complete, depending on how long you spend reading through 
-documentation.
+documentation
 
 ## Outline
 1. [What are operators](#1-What-are-operators)
@@ -45,9 +45,9 @@ Operators extend the Kubernetes control plane with specialized functionality to 
 Operators have the following features:
 
 * The user provides configuration settings within a CR, and then the operator translates the configuration into low-level actions,
-using the operator's custom controller logic to implement the translation.
+using the operator's custom controller logic to implement the translation
 * An operator introduces new object types through its custom resource definition. These objects can be handled by the Kubernetes API just like
-native Kubernetes objects, including interaction via Kubernetes client tools and inclusion in role-based access control policies (RBAC).
+native Kubernetes objects, including interaction via Kubernetes client tools and inclusion in role-based access control policies (RBAC)
 
 The article [What is a Kubernetes operator?](https://www.redhat.com/en/topics/containers/what-is-a-kubernetes-operator) by Red Hat explains more details about operators.
 
