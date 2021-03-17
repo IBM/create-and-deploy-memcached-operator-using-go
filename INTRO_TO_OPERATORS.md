@@ -38,8 +38,8 @@ upgrades, failure recovery, and scaling.
 
 Operators extend the Kubernetes control plane with specialized functionality to manage a workload on behalf of a Kubernetes admin. An operator includes these components:
 - A [custom resource definition](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) (CRD) that defines a schema of settings available for configuring the workload
-- A [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) (CR) is the Kubernetes API extension created by a CRD.
-    - A custom resource instance sets specific values for the settings defined by the CRD to describe the configuration of an workload.
+- A [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) (CR) is the Kubernetes API extension created by a CRD
+    - A custom resource instance sets specific values for the settings defined by the CRD to describe the configuration of an workload
 - A [controller](https://kubernetes.io/docs/concepts/architecture/controller/) customized for the workload that configures the current state of the workload to match the desired state represented by the values in the CR
 
 Operators have the following features:
