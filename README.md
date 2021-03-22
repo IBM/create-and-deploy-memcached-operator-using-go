@@ -5,7 +5,7 @@ deploy a Golang based operator. You will also learn all of the foundational Kube
 a Golang based operator from scratch. 
 
 ## Beginner level
-1. [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md): This article explains what operators 
+1. [Intro to Kubernetes Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md): This article explains what operators 
 are and why they are useful.
 
 2. [Anatomy of an operator, demystified](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/demystified.md): In this article we will build upon the [Intro to Operators](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTRO_TO_OPERATORS.md) article and explore Kubernetes concepts such as workloads, controllers, custom resources, and the control loop. This article will explain how operators extend
