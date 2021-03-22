@@ -6,3 +6,4 @@
 - [Red Hat OpenShift Operator Certification Data Sheet](https://connect.redhat.com/sites/default/files/2020-07/RH-OpenShift-Operator-Cert-Datasheet-US_062020F4.pdf)
 - [Partner Guide for OpenShift Operator and Container Certification](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/)
 - [Red Hat Ecosystem Catalog: Certified OpenShift Operators](https://catalog.redhat.com/software/operators/explore)
+- [RedHat OpenShift Certification Badges] 
