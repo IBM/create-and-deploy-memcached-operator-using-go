@@ -1,4 +1,4 @@
-# Intro to Operators
+# Intro to Kubernetes Operators
 
 This article is the first in a series of articles and tutorials that show you how to build and deploy a Kubernetes Operator. In this article, learn what Kubernetes Operators are, what they do, and key features including the Operator SDK, Operator capability levels and Operator Hub. You will learn all of the basic knowledge needed to develop an operator implemented using Golang. 
 
@@ -121,18 +121,16 @@ You can do this by updating the custom resource's specification &mdash; perhaps 
 
 Once the controller applies these changes to the managed resources, the cluster responds by applying them the Operand, thereby scaling the Operand.
 
-[Operator Capability Levels](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/) in the Operator SDK documentation also describes the behavior of the other capability levels.
+We will only cover the first level of the capability levels in this article, but you can read more about the other four levels at 
+[Operator Capability Levels](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/) in the Operator SDK documentation.
 
-## 5. Operator Hub
+## Operator Hub
 
-[OperatorHub.io](https://operatorhub.io/) is a repository for operators, a public website where you can find over 180 different operators and share the operators you create. OperatorHub.io is very important since this is where you can use other operators to automate the configuration of your Kubernetes applications, and submit your own operator to be published in the hub. 
-
-Check out [How to contribute an Operator](https://operatorhub.io/contribute) for details of how to package, test, preview, and submit your operator for addition to the Hub. 
-
-Its homepage looks like this:
+[OperatorHub.io](https://operatorhub.io/) is a web-based application that enables finding, installing, and publishing operators. It is a one stop shop for Kubernetes operators, as shown below:
 
 ![Operator Hub](./images/operatorHub.png)
 
+Check out [How to contribute an Operator](https://operatorhub.io/contribute) for details of how to package, test, preview, and submit your operator for addition to the Hub. 
 
 ## Conclusion
 
@@ -140,4 +138,4 @@ In this article, you learned how operators can extend the base Kubernetes functi
 
 The next article, [Anatomy of an Operator, demystified](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/demystified.md), takes a closer look at the Kubernetes architecture that enables Operators to work. 
 
-If you would rather go straight to developing an Operator, go to the intermediate level tutorial [Develop and deploy and operator to OpenShift](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md).
+If you would rather go straight to developing an Operator, go to the [Develop and deploy a Memcached Operator](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial.
