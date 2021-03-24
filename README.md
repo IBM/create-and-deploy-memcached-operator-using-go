@@ -18,3 +18,12 @@ In this tutorial we will start by ensuring we have our [environment setup](https
 
 2. [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md): In this article we will build upon the [Memcached Operator tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md). We will deep-dive into the reconcile function, the KubeBuilder markers, and the low-level APIs that enable an operator to update Kubernetes resources.
 
+## Advanced level
+
+1. [Develop and Deploy a Level 1 Janusgraph Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/level-1-operator.md): 
+In this article, we will discuss how to develop and deploy a Level 1 operator on the OpenShift Container Platform. We will use the 
+[Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/) as our guidelines for what is considered a 
+level 1 operator.
+
+
+
