@@ -3,26 +3,17 @@ In this article, we will discuss how to develop and deploy a Level 1 operator on
 [Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/) as our guidelines for what is considered a 
 level 1 operator.
 
-, based on the guidelines from the [Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/)
-
-the low-level functions needed to write your own operator. This article builds off of the 
-previous [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial, so if you want the complete steps to develop and deploy the Memcached operator, view that tutorial. This 
-article will discuss the Memcached custom controller code in depth.
-
 ## Expectations (What you have)
 * You have some experience developing operators.
 * You've finished the beginner and intermediate tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md).
 * You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types.
 
 ## Expectations (What you want)
-* You want deep technical knowledge of the code which enables operators to run.
-* You want to understand how the reconcile loop works, and how you can use it to manage Kubernetes resources.
-* You want to learn more about the basic Get, Update, and Create functions used to save resources to your Kubernetes cluster.
-* You want to learn more about KubeBuilder markers and how to use them to set role based access control.
+* You want deep technical knowledge of how to implement a Level 1 operator.
 
 ## Outline
 1. [What is a Level 1 Operator](#1-What-is-a-Level-1-Operator?)
-1. [Understanding the Get function](#2-Understanding-the-get-function)
+1. [How should my operator deploy the operand?](#2-How-should-my-operator-deploy-the-operand?)
 
 ## What is a Level 1 Operator? 
 
@@ -63,4 +54,100 @@ to implement the below changes in the controller code which will run each time a
 
 ## Create the JanusGraph project and API  
 
-Let's dive into each a bit more deeply. At this point, we are familiar with using the Operator SDK to create  
+Let's dive into each a bit more deeply. At this point, we are familiar with using the Operator SDK to scaffold an operator for us. 
+
+First, let's create our project directory: 
+
+```bash
+mkdir $HOME/projects/memcached-operator
+cd $HOME/projects/memcached-operator
+```
+
+
+First, let's create our project:
+
+```bash
+operator-sdk init --domain=example.com --repo=github.com/example/janusgraph-operator
+```
+
+For Go Modules to work properly, make sure you activate GO module support by running the following command:
+
+```bash
+export GO111MODULE=on
+```
+
+Now, create the api, with the `kind` being `Janusgraph`:
+
+```bash
+operator-sdk create api --group=graph --version=v1alpha1 --kind=Janusgraph --controller --resource
+
+..
+..
+Writing scaffold for you to edit...
+api/v1alpha1/memcached_types.go
+controllers/memcached_controller.go
+```
+
+## Update the JanusGraph API
+
+Next, let's update the API. Your `janusgraph_types.go` file should look like the following:
+
+```go
+package v1alpha1
+
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// JanusgraphSpec defines the desired state of Janusgraph
+type JanusgraphSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	// Foo is an example field of Janusgraph. Edit Janusgraph_types.go to remove/update
+	Size    int32  `json:"size"`
+	Version string `json:"version"`
+}
+
+// JanusgraphStatus defines the observed state of Janusgraph
+type JanusgraphStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+}
+
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
+// Janusgraph is the Schema for the janusgraphs API
+type Janusgraph struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   JanusgraphSpec   `json:"spec,omitempty"`
+	Status JanusgraphStatus `json:"status,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+
+// JanusgraphList contains a list of Janusgraph
+type JanusgraphList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Janusgraph `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&Janusgraph{}, &JanusgraphList{})
+}
+```
+
+All we've done is add the Size and Version fields to the `Spec`. We've also added the spec and status fields to the `Janusgraph` struct. This 
+should be familiar to you if you've completed the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial. If you have not, that tutorial will offer more details about using the Operator SDK.
+
+## Controller logic - creating a service
+
+Now, let's take a look at the heart of the Level 1 operator - the controller code.
+
