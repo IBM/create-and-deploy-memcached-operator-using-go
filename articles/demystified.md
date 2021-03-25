@@ -13,7 +13,7 @@ This article is an in-depth look at operators. We review the operator structure 
 To a Kubernetes cluster, an operator is an application deployed as a workload. This specialized application manages another resource, such as another application hosted in Kubernetes. An operator manages an *operand* using a set of *managed resources*:
 
 * Operand: the managed resource that the operator provides as a service
-* Managed resource: the Kubernetes objects that an operator uses to create the operand
+* Managed resources: the Kubernetes objects that an operator uses to create the operand
 
 Out-of-the-box Kubernetes is good at managing [stateless workloads](https://12factor.net/processes) and these workloads are similar enough that Kubernetes uses the same logic to manage all of them. Stateful workloads are more complex and each one is different, requiring custom management. Operators provide this custom management for stateful workloads. 
 
@@ -106,13 +106,15 @@ Operators are said to extend Kubernetes, and the diagram illustrates this concep
 
 ## Reconcile states
 
-Thus far, we've talked about the relationship between a cluster's desired state and its current state, and how a controller reconciles between those two states for the part of the cluster it manages. The way Kube controllers and operators' custom controllers reconcile is analogous:
+Thus far, we've talked about the relationship between a cluster's desired state and its current state, and how a controller reconciles between those two states for the resources it manages. The way Kube controllers and operators' custom controllers reconcile is analogous:
 
 ![reconcile states](../images/operator-controller-reconciliation.png)
 
 Operator controllers work one level of abstraction higher than the Kube controllers. The Kube controllers reconcile built-in kinds like `Deployment` and `Job` into lower-level built-in kinds like `Pod`s. Custom controllers reconcile CRDs like `Memcached` and `Etcd` into workload kinds like `Deployment` and `Service`. So, a custom controller's current state becomes a Kube controller's desired state. 
 
-Both kinds of controllers reconcile between desired and current state, <b>operators adjust between three states</b>: operators' custom resources reconcile to the cluster's desired state which reconciles to the cluster's current state.
+Both kinds of controllers reconcile between desired and current state, but it takes two rounds of transformation to deploy a workload for a custom resource:
+- The operator's controller transforms the custom resource into a set of managed resources (a.k.a. the workload) that are the operator's current state but are also the control plane's desired state
+- The Kubernetes controllers transform the managed resources into running pods (a.k.a. the operand) in the control plane's current state
 
 ## Conclusion
 
