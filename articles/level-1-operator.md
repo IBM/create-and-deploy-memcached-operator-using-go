@@ -149,5 +149,114 @@ should be familiar to you if you've completed the [Develop and Deploy a Memcache
 
 ## Controller logic - creating a service
 
-Now, let's take a look at the heart of the Level 1 operator - the controller code.
+Now, let's take a look at the heart of the Level 1 operator - the controller code. The first thing we will do 
+in the controller code is to fetch the `Janusgraph` instance from our cluster.
+
+```go
+janusgraph := &graphv1alpha1.Janusgraph{}
+err := r.Get(ctx, req.NamespacedName, janusgraph)
+```
+
+If we get any errors back from the `Get` request, such as errors reading the object, or a resource not found error, we will return (and requeue if we get errors reading the object). Otherwise, we will keep going and check for a service:
+
+```go
+serviceFound := &corev1.Service{}
+err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name + "-service", Namespace: janusgraph.Namespace}, serviceFound)
+```
+
+We will use the [`errors.IsNotFound(err)`](https://pkg.go.dev/k8s.io/apimachinery@v0.19.2/pkg/api/errors#IsNotFound) function
+to see if the service resource exists. If it does not, we will create one using the `serviceForJanusgraph(janusgraph)` function.
+
+```go
+if err != nil && errors.IsNotFound(err) {
+    srv := r.serviceForJanusgraph(janusgraph)
+    ...
+}
+```
+
+### Service for JanusGraph
+
+Let's look at the `serviceForJanusgraph(janusgraph)` function in more detail. The function signature is the following:
+
+`func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service` which means that 
+we will pass in a JanusGraph object, and return a `corev1.Service`. 
+
+Below, you can see the full `serviceForJanusgraph` function:
+
+```go
+func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
+	ls := labelsForJanusgraph(m.Name)
+	srv := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name + "-service",
+			Namespace: m.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeLoadBalancer,
+			Ports: []corev1.ServicePort{
+				{
+					Port: 8182,
+					TargetPort: intstr.IntOrString{
+						IntVal: 8182,
+					},
+					NodePort: 30184,
+				},
+			},
+			Selector: ls,
+		},
+	}
+	ctrl.SetControllerReference(m, srv, r.Scheme)
+	return srv
+}
+```
+
+Let's take it step by step. First, we create labels by calling the `labelsForJanusgraph` function:
+
+```go
+func labelsForJanusgraph(name string) map[string]string {
+	return map[string]string{"app": "Janusgraph", "janusgraph_cr": name}
+}
+```
+This function returns a map which looks like this:
+
+```json
+{
+"app": "Janusgraph",
+"janusgraph_cr": "<name>"
+}
+```
+The way that a service works is that it will target any Pod with the "app": "Janusgraph" and "janusgraph_cr": "<name>" label, that is on the port 8182 (as shown in the code above).
+
+Once we've created our labels, we will create the service using the [corev1.Service](https://pkg.go.dev/k8s.io/api/core/v1#Service) package. 
+
+The service looks like the following: 
+
+```go
+srv := &corev1.Service{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      m.Name + "-service",
+		Namespace: m.Namespace,
+	},
+	Spec: corev1.ServiceSpec{
+		Type: corev1.ServiceTypeLoadBalancer,
+		Ports: []corev1.ServicePort{
+			{
+				Port: 8182,
+				TargetPort: intstr.IntOrString{
+					IntVal: 8182,
+				},
+				NodePort: 30184,
+			},
+		},
+		Selector: ls,
+	},
+}
+```
+
+Notice that at the top, we've filled out the `ObjectMeta` field with the name and namespace of our custom resource. The `ObjectMeta` field is the metadata that we 
+want to create with our service. Next, we fill out the heart of the service, which is the `Spec` field. In the `Spec` field, the package is expecting a [`corev1.ServiceSpec`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceSpec), which contains the reqired fields of `Ports` and the optional `Selector` and `Type` fields 
+which we both use in this case. For the `Selector` field, we use the map returned from our `labelsForJanusgraph` function, and then for our `Type` we 
+create a [`ServiceTypeLoadBalancer`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceType).
+
+Since we created a load balancer, 
 
