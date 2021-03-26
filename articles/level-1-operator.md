@@ -3,6 +3,16 @@ In this article, we will discuss how to develop and deploy a Level 1 operator on
 [Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/) as our guidelines for what is considered a 
 level 1 operator.
 
+### Develop and Deploy a Level 1 JanusGraph Operator - Part 1
+In part 1 of the tutorial, we will deploy JanusGraph using the default backend storage (BerkeleyDB). 
+This is much more simple to deploy, since it will only use one Pod, and doesn't use any persistent volumes to our cluster. This approach is really only recommended for 
+testing purposes, as noted in the [JanusGraph docs](https://docs.janusgraph.org/storage-backend/bdb/).
+This approach will be much easier and quicker to get up and running, so we will start with this approach. Once we've gotten this approach working, we will move on to a more advanced approach (Part 2), using Cassandra as the backend storage.
+
+### Develop and Deploy a Level 1 JanusGraph Operator using Cassandra - Part 2
+In part 2 of the tutorial, we will update our operator to use Cassandra as the backend storage. 
+This will enable use to replicate our data across multiple Pods, and give us high availability.  
+
 ## Expectations (What you have)
 * You have some experience developing operators.
 * You've finished the beginner and intermediate tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md).
@@ -43,14 +53,16 @@ operator for. Currently, there is no JanusGraph operator on OperatorHub (as of M
 
 **Important: JanusGraph is just an example. The main ideas learned from JanusGraph are meant to be applied to any application or service you want to create an operator for.** 
 
-## JanusGraph operator  
+## JanusGraph operator - Part 1
 
 With that aside, let's understand what the JanusGraph operator must to do to successfully run JanusGraph on OpenShift. More specifically, we will show how 
 to implement the below changes in the controller code which will run each time a change to the custom resource is observed. 
 
-1. Create a service if one does not exist.
-2. Create a deployment (or statefulset) if ones does not exist.
-3. Create persistent volume and or persistent volume claims if it does not exist 
+1. Create a Service if one does not exist.
+2. Create a StatefulSet if ones does not exist.
+
+These are the only two resources that our operator must create in order to get the default 
+JanusGraph configuration (using BerkeleyDB) up and running.
 
 ## Create the JanusGraph project and API  
 
@@ -262,7 +274,7 @@ want to create with our service. Next, we fill out the heart of the service, whi
 package is expecting a [`corev1.ServiceSpec`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceSpec), which contains the required 
 fields of `Ports` and the optional `Selector` and `Type` fields. 
 
-For the `Selector` field, we want to make sure to target only Pods that are part of our Janusgraph deployment, so we do so by using the map returned from our `labelsForJanusgraph` function.
+For the `Selector` field, we want to make sure to target only Pods that are part of our Janusgraph StatefulSet, so we do so by using the map returned from our `labelsForJanusgraph` function.
 
 For our `Type` we 
 create a [`ServiceTypeLoadBalancer`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceType). Load balancers have an extra `NodePort`
@@ -297,15 +309,15 @@ if err != nil {
 Otherwise, we return and requeue. 
 
 ```go
-// Deployment created successfully - return and requeue
+// Service created successfully - return and requeue
 log.Info("Janusgraph service created, requeuing")
 return ctrl.Result{Requeue: true}, nil
 ```
 
-### Deployment for JanusGraph
+### StatefulSet for JanusGraph
 
-Next, we will create a deployment for JanusGraph. You will see that the code is very similar to that 
-of creating a service for JanusGraph, other than some minor details with creating the deployment object itself.
+Next, we will create a [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) for JanusGraph. You will see that the code is very similar to that 
+of creating a service for JanusGraph, other than some minor details with creating the StatefulSet object itself.
 Note that instead of a deployment, we will use a StatefulSet, but this same logic can be applied to the deployment 
 object.
 
@@ -400,4 +412,13 @@ ObjectMeta: metav1.ObjectMeta{
 	Namespace: m.Namespace,
 },
 ```
+
+Next, in the `Spec` section of our StatefulSet, we use the `replicas` which
+we set earlier. The replicas are coming from the user-entered values from the custom resource. We also use the labels which we've generated from our 
+`labelsForJanusgraph` function and pass those into our `Selector` field. 
+The `Selector` field defines how the StatefulSet finds which Pods to manage.
+
+
+
+
 
