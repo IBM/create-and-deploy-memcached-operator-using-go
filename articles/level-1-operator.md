@@ -209,6 +209,7 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 	return srv
 }
 ```
+### Labels for JanusGraph
 
 Let's take it step by step. First, we create labels by calling the `labelsForJanusgraph` function:
 
@@ -225,7 +226,9 @@ This function returns a map which looks like this:
 "janusgraph_cr": "<name>"
 }
 ```
-The way that a service works is that it will target any Pod with the "app": "Janusgraph" and "janusgraph_cr": "<name>" label, that is on the port 8182 (as shown in the code above).
+The way that a service works is that it will target any Pod with the `"app": "Janusgraph"` and `"janusgraph_cr": "<name>"` label, that is on the port 8182 (as shown in the code above).
+
+### Configuring the service
 
 Once we've created our labels, we will create the service using the [corev1.Service](https://pkg.go.dev/k8s.io/api/core/v1#Service) package. 
 
@@ -253,10 +256,148 @@ srv := &corev1.Service{
 }
 ```
 
-Notice that at the top, we've filled out the `ObjectMeta` field with the name and namespace of our custom resource. The `ObjectMeta` field is the metadata that we 
-want to create with our service. Next, we fill out the heart of the service, which is the `Spec` field. In the `Spec` field, the package is expecting a [`corev1.ServiceSpec`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceSpec), which contains the reqired fields of `Ports` and the optional `Selector` and `Type` fields 
-which we both use in this case. For the `Selector` field, we use the map returned from our `labelsForJanusgraph` function, and then for our `Type` we 
-create a [`ServiceTypeLoadBalancer`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceType).
+Notice that at the top, we've filled out the [`ObjectMeta`](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta) 
+field with the name and namespace of our custom resource. The `ObjectMeta` field is the metadata that we 
+want to create with our service. Next, we fill out the heart of the service, which is the `Spec` field. In the `Spec` field, the 
+package is expecting a [`corev1.ServiceSpec`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceSpec), which contains the required 
+fields of `Ports` and the optional `Selector` and `Type` fields. 
 
-Since we created a load balancer, 
+For the `Selector` field, we want to make sure to target only Pods that are part of our Janusgraph deployment, so we do so by using the map returned from our `labelsForJanusgraph` function.
+
+For our `Type` we 
+create a [`ServiceTypeLoadBalancer`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceType). Load balancers have an extra `NodePort`
+field, which is set to `30184` in our case. 
+
+Once we've finished configuring the service, we will return it the service, i.e. we will return a `corev1.Service` object.  
+
+```go 
+ctrl.SetControllerReference(m, srv, r.Scheme)
+return srv
+```
+
+### Updating the cluster state
+
+Once we've successfully created our service, we will use the `Create` function to save the `service` resources to our cluster. 
+
+```go
+srv := r.serviceForJanusgraph(janusgraph)
+log.Info("Creating a new headless service", "Service.Namespace", srv.Namespace, "Service.Name", srv.Name)
+err = r.Create(ctx, srv)
+```
+
+If we failed to create a service, we return an error. 
+
+```go
+if err != nil {
+	log.Error(err, "Failed to create new service", "service.Namespace", srv.Namespace, "service.Name", srv.Name)
+	return ctrl.Result{}, err
+}
+```
+
+Otherwise, we return and requeue. 
+
+```go
+// Deployment created successfully - return and requeue
+log.Info("Janusgraph service created, requeuing")
+return ctrl.Result{Requeue: true}, nil
+```
+
+### Deployment for JanusGraph
+
+Next, we will create a deployment for JanusGraph. You will see that the code is very similar to that 
+of creating a service for JanusGraph, other than some minor details with creating the deployment object itself.
+Note that instead of a deployment, we will use a StatefulSet, but this same logic can be applied to the deployment 
+object.
+
+First, we check to see if there are any StatefulSets in our cluster by using the `Get` function:
+
+```go
+found := &appsv1.StatefulSet{}
+err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name, Namespace: janusgraph.Namespace}, found)
+```
+
+Next, we check for errors, as before. We want to make sure that no other StatefulSet resources exist in the 
+cluster. If they do, then we do not need to create any, so we can just return: 
+
+```go
+return ctrl.Result{}, nil
+```
+
+If there are no StatefulSet resources in the cluster, then we can go ahead and create one. We will call the 
+`deploymentForJanusgraph(janusgraph)` function to create our deployment. 
+
+### Understanding the deploymentForJanusgraph function
+
+Let's dive into the `deploymentForJanusgraph(janusgraph)` function. It looks like the following:
+
+```go
+func (r *JanusgraphReconciler) deploymentForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+	ls := labelsForJanusgraph(m.Name)
+	replicas := m.Spec.Size
+	version := m.Spec.Version
+
+	dep := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: ls,
+			},
+			ServiceName: m.Name + "-service",
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: ls,
+					Name:   "janusgraph",
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Image: "horeaporutiu/janusgraph:" + version,
+							Name:  "janusgraph",
+							Ports: []corev1.ContainerPort{
+								{
+									ContainerPort: 8182,
+									Name:          "janusgraph",
+								},
+							},
+							Env: []corev1.EnvVar{},
+						}},
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+			},
+		},
+	}
+	ctrl.SetControllerReference(m, dep, r.Scheme)
+	return dep
+}
+```
+
+First, we get the labels as we did before with our service:
+
+```go
+ls := labelsForJanusgraph(m.Name)
+```
+
+Next, we grab the values from the `Spec`. These will determine how many pods to create, and which version of JanusGraph to deploy.
+
+```go
+replicas := m.Spec.Size
+version := m.Spec.Version
+```
+
+Next, we have the heart of the function. This is when we will use the `appsv1` package to create our StatefulSet:
+
+`dep := &appsv1.StatefulSet{`
+
+We will create the metadata for the object as we did for the service:
+
+```go
+ObjectMeta: metav1.ObjectMeta{
+	Name:      m.Name,
+	Namespace: m.Namespace,
+},
+```
 
