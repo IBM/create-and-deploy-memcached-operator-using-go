@@ -21,9 +21,9 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 ## Expectations (What you want)
 * You want deep technical knowledge of how to implement a Level 1 operator.
 
-## Outline
-1. [What is a Level 1 Operator](#1-What-is-a-Level-1-Operator?)
-1. [How should my operator deploy the operand?](#2-How-should-my-operator-deploy-the-operand?)
+## Outline 
+<!-- 1. [What is a Level 1 Operator](#1-What-is-a-Level-1-Operator?)
+1. [How should my operator deploy the operand?](#2-How-should-my-operator-deploy-the-operand?) -->
 
 ## What is a Level 1 Operator? 
 
@@ -62,9 +62,10 @@ to implement the below changes in the controller code which will run each time a
 2. Create a StatefulSet if ones does not exist.
 
 These are the only two resources that our operator must create in order to get the default 
-JanusGraph configuration (using BerkeleyDB) up and running.
+JanusGraph configuration (using BerkeleyDB) up and running. The reason that we create a 
+headless service first is that our [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
 
-## Create the JanusGraph project and API  
+### Create the JanusGraph project and API  
 
 Let's dive into each a bit more deeply. At this point, we are familiar with using the Operator SDK to scaffold an operator for us. 
 
@@ -100,7 +101,7 @@ api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
 ```
 
-## Update the JanusGraph API
+### Update the JanusGraph API
 
 Next, let's update the API. Your `janusgraph_types.go` file should look like the following:
 
@@ -156,12 +157,15 @@ func init() {
 }
 ```
 
-All we've done is add the Size and Version fields to the `Spec`. We've also added the spec and status fields to the `Janusgraph` struct. This 
+As shown above, we've added the `Size` and `Version` fields to the `Spec`. We've also added the `Spec` and `Status` fields to the `Janusgraph` struct. This 
 should be familiar to you if you've completed the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial. If you have not, that tutorial will offer more details about using the Operator SDK.
 
-## Controller logic - creating a service
+### Controller logic - creating a service
 
-Now, let's take a look at the heart of the Level 1 operator - the controller code. The first thing we will do 
+Now, let's take a look at the heart of the Level 1 operator - the controller code. The first thing we must do at
+a high-level to create an operator for JanusGraph, is to create a service. This 
+
+The first thing we will do 
 in the controller code is to fetch the `Janusgraph` instance from our cluster.
 
 ```go
