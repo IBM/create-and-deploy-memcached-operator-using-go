@@ -20,12 +20,13 @@ In this tutorial we will start by ensuring we have our [environment setup](https
 
 ## Advanced level
 
-1. [Develop and Deploy a Level 1 Janusgraph Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/level-1-operator.md): 
+1. [Develop and Deploy a Level 1 JanusGraph Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/level-1-operator.md): 
 In this tutorial, we will discuss how to develop and deploy a Level 1 operator on the OpenShift Container Platform. We will use the 
 [Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/) as our guidelines for what is considered a 
-level 1 operator. In part 1 of the tutorial we will deploy JanusGraph using the default (BerkeleyDB) 
-backend storage. This will be a simple approach, and only recommended for testing purposes. Once we've gotten the default configuration working, we will move on to part 2 which will feature 
-Cassandra as the backend storage for JanusGraph.
+level 1 operator. 
+* Part 1 of the tutorial we will deploy JanusGraph using the default (BerkeleyDB) 
+backend storage. This will be a simple approach, and only recommended for testing purposes.
+* Part 2 will feature Cassandra as the backend storage for JanusGraph, which is more suitable for for production use cases. 
 
 
 
