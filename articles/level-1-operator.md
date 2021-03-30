@@ -3,7 +3,7 @@ In this article, we will discuss how to develop and deploy a Level 1 operator on
 [Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/) as our guidelines for what is considered a 
 level 1 operator.
 
-### Develop and Deploy a Level 1 JanusGraph Operator - Part 1
+### Develop and Deploy a Level 1 JanusGraph Operator using BerkeleyDB - Part 1
 In part 1 of the tutorial, we will deploy JanusGraph using the default backend storage (BerkeleyDB). 
 This is much more simple to deploy, since it will only use one Pod, and doesn't use any persistent volumes to our cluster. This approach is really only recommended for 
 testing purposes, as noted in the [JanusGraph docs](https://docs.janusgraph.org/storage-backend/bdb/).
@@ -65,9 +65,15 @@ These are the only two resources that our operator must create in order to get t
 JanusGraph configuration (using BerkeleyDB) up and running. The reason that we create a 
 headless service first is that our [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
 
+### What is a StatefulSet
+A [StateFulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) is the object that is used to manage stateful applications. Similar to a Deployment, a 
+StatefulSet manages pods that are based on an identical container spec. The difference is that in a 
+Deployment, pods are interchangeable. But in a StatefulSet, they are not - each has a unique identifier that
+is maintained across any rescheduling. We will get into why this is important in part 2 of the tutorial. 
+
 ### Create the JanusGraph project and API  
 
-Let's dive into each a bit more deeply. At this point, we are familiar with using the Operator SDK to scaffold an operator for us. 
+At this point, we are familiar with using the Operator SDK to scaffold an operator for us. 
 
 First, let's create our project directory: 
 
@@ -76,8 +82,7 @@ mkdir $HOME/projects/memcached-operator
 cd $HOME/projects/memcached-operator
 ```
 
-
-First, let's create our project:
+Next, let's create our project:
 
 ```bash
 operator-sdk init --domain=example.com --repo=github.com/example/janusgraph-operator
@@ -160,10 +165,11 @@ func init() {
 As shown above, we've added the `Size` and `Version` fields to the `Spec`. We've also added the `Spec` and `Status` fields to the `Janusgraph` struct. This 
 should be familiar to you if you've completed the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial. If you have not, that tutorial will offer more details about using the Operator SDK.
 
-### Controller logic - creating a service
+### Controller Logic - Creating a Service
 
 Now, let's take a look at the heart of the Level 1 operator - the controller code. The first thing we must do at
-a high-level to create an operator for JanusGraph, is to create a service. This 
+a high-level to create an operator for JanusGraph, is to create a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services). A headless service is a service in which 
+you do not specify the cluster IP. The service is used to control the network domain.
 
 The first thing we will do 
 in the controller code is to fetch the `Janusgraph` instance from our cluster.
