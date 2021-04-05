@@ -14,18 +14,26 @@ In part 2 of the tutorial, we will update our operator to use Cassandra as the b
 This will enable use to replicate our data across multiple Pods, and give us high availability.  
 
 ## Expectations (What you have)
-* You have some experience developing operators.
-* You've finished the beginner and intermediate tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md).
-* You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types.
+* You have some experience developing operators
+* You've finished the beginner and intermediate tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md)
+* You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types
 
 ## Expectations (What you want)
-* You want deep technical knowledge of how to implement a Level 1 operator.
+* You want deep technical knowledge of how to implement a Level 1 operator
 
-## Outline 
-<!-- 1. [What is a Level 1 Operator](#1-What-is-a-Level-1-Operator?)
-1. [How should my operator deploy the operand?](#2-How-should-my-operator-deploy-the-operand?) -->
+## Steps
+0. [Overview](#0-overview)
+1. [Create the JanusGraph project and API ](#1-Create-the-JanusGraph-project-and-API )
+1. [Update the JanusGraph API](#2-Update-the-janusgraph-API)
+1. [Controller Logic: Creating a Service](#3-controller-logic:-creating-a-service)
+1. [Controller Logic: Creating a StatefulSet](#4-controller-logic:-creating-a-statefulset)
+1. [Compile, build and push](#5-compile-build-and-push)
+1. [Deploy the operator](#6-deploy-the-operator)
+1. [Verify operator](#7-verify-operator)
 
-## What is a Level 1 Operator? 
+## 0. Overview
+
+### What is a Level 1 Operator? 
 
 According to the Operator Capability Levels, a Level 1 Operator is one which has ["automated application provisioning and configuration management"](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/#level-1---basic-install). 
 
@@ -35,14 +43,14 @@ Your operator should have the following features to be qualified as a Level 1 Op
 * Should be possible to install the operator in multiple ways (kubectl, OLM, OperatorHub)
 * All configuration files should be able to be created within Kubernetes 
 
-## How should my operator deploy the operand? 
+### How should my operator deploy the operand? 
 
 Your operator should have the following features when deploying an operand:
 
 * The operator must wait for the operand to reach a healthy state
-* The operator must use the `status` subresource of the custom resource to communicate with the user when the operand or application has reconciled.
+* The operator must use the `status` subresource of the custom resource to communicate with the user when the operand or application has reconciled
 
-## JanusGraph example 
+### JanusGraph example 
 
 Now that we understand at a high-level what an operator must do to be considered level 1, 
 let's dive into our example. 
@@ -53,7 +61,7 @@ operator for. Currently, there is no JanusGraph operator on OperatorHub (as of M
 
 **Important: JanusGraph is an example. The main ideas learned from JanusGraph are meant to be applied to any application or service you want to create an operator for.** 
 
-## JanusGraph operator - Part 1
+### JanusGraph operator - Part 1
 
 With that aside, let's understand what the JanusGraph operator must to do to successfully run JanusGraph on OpenShift. More specifically, we will show how 
 to implement the below changes in the controller code which will run each time a change to the custom resource is observed. 
@@ -66,20 +74,20 @@ JanusGraph configuration (using BerkeleyDB) up and running. The reason that we c
 headless service first is that our [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
 
 ### What is a StatefulSet
-A [StateFulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) is the object that is used to manage stateful applications. Similar to a Deployment, a 
-StatefulSet manages pods that are based on an identical container spec. The difference is that in a 
+A [StateFulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) is the object that is used to manage stateful applications. 
+Similar to a [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), a StatefulSet manages pods that are based on an identical container spec. The difference is that in a 
 Deployment, pods are interchangeable. But in a StatefulSet, they are not - each has a unique identifier that
 is maintained across any rescheduling. We will get into why this is important in part 2 of the tutorial. 
 
-### Create the JanusGraph project and API  
+## 1. Create the JanusGraph project and API  
 
 At this point, we are familiar with using the Operator SDK to scaffold an operator for us. 
 
 First, let's create our project directory: 
 
 ```bash
-mkdir $HOME/projects/memcached-operator
-cd $HOME/projects/memcached-operator
+mkdir $HOME/projects/janusgraph-operator
+cd $HOME/projects/janusgraph-operator
 ```
 
 Next, let's create our project:
@@ -94,7 +102,7 @@ For Go Modules to work properly, make sure you activate GO module support by run
 export GO111MODULE=on
 ```
 
-Now, create the api, with the `kind` being `Janusgraph`:
+Now, create the API, with the `kind` being `Janusgraph`:
 
 ```bash
 operator-sdk create api --group=graph --version=v1alpha1 --kind=Janusgraph --controller --resource
@@ -106,7 +114,7 @@ api/v1alpha1/memcached_types.go
 controllers/memcached_controller.go
 ```
 
-### Update the JanusGraph API
+## 2. Update the JanusGraph API
 
 Next, let's update the API. Your `janusgraph_types.go` file should look like the following:
 
@@ -134,6 +142,7 @@ type JanusgraphSpec struct {
 type JanusgraphStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
 }
 
 // +kubebuilder:object:root=true
@@ -165,7 +174,7 @@ func init() {
 As shown above, we've added the `Size` and `Version` fields to the `Spec`. We've also added the `Spec` and `Status` fields to the `Janusgraph` struct. This 
 should be familiar to you if you've completed the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial. If you have not, that tutorial will offer more details about using the Operator SDK.
 
-### Controller Logic - Creating a Service
+## 3. Controller Logic: Creating a Service
 
 Now, let's take a look at the heart of the Level 1 operator - the controller code. The first thing we must do at
 a high-level to create an operator for JanusGraph, is to create a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services). A headless service is a service in which 
@@ -324,7 +333,7 @@ log.Info("Janusgraph service created, requeuing")
 return ctrl.Result{Requeue: true}, nil
 ```
 
-### StatefulSet for JanusGraph
+## 4. Controller Logic: Creating a StatefulSet
 
 Next, we will create a [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) for JanusGraph. You will see that the code is very similar to that 
 of creating a service for JanusGraph, other than some minor details with creating the StatefulSet object itself.
@@ -512,7 +521,7 @@ return and requeue:
 return ctrl.Result{}, nil
 ```
 
-## Compile, Build and Push
+## 5. Compile, Build and Push
 
 Now, we will go ahead and login to our OpenShift cluster. 
 You can follow the steps described in the previous 
@@ -590,7 +599,7 @@ and push the docker image to your registry using following from your terminal:
 $ make docker-push IMG=$IMG
 ```
 
-### Deploy the operator to OpenShift cluster
+## 6. Deploy the operator
 
 To Deploy the operator run the following command from your terminal:
 
@@ -638,7 +647,7 @@ And finally create the custom resources using the following command:
 $ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 ```
 
-#### Verify that resources are Running
+## 7. Verify operator
 
 From the terminal run `kubectl get all` or `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
 
