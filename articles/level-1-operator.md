@@ -25,8 +25,8 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 0. [Overview](#0-overview)
 1. [Create the JanusGraph project and API ](#1-Create-the-JanusGraph-project-and-API )
 1. [Update the JanusGraph API](#2-Update-the-janusgraph-API)
-1. [Controller Logic: Creating a Service](#3-controller-logic:-creating-a-service)
-1. [Controller Logic: Creating a StatefulSet](#4-controller-logic:-creating-a-statefulset)
+1. [Controller Logic: Creating a Service](#3-controller-logic-creating-a-service)
+1. [Controller Logic: Creating a StatefulSet](#4-controller-logic-creating-a-statefulset)
 1. [Compile, build and push](#5-compile-build-and-push)
 1. [Deploy the operator](#6-deploy-the-operator)
 1. [Verify operator](#7-verify-operator)
@@ -181,14 +181,16 @@ a high-level to create an operator for JanusGraph, is to create a [headless serv
 you do not specify the cluster IP. The service is used to control the network domain.
 
 The first thing we will do 
-in the controller code is to fetch the `Janusgraph` instance from our cluster.
+in the controller code is to fetch the `Janusgraph` resource from our cluster.
 
 ```go
 janusgraph := &graphv1alpha1.Janusgraph{}
 err := r.Get(ctx, req.NamespacedName, janusgraph)
 ```
 
-If we get any errors back from the `Get` request, such as errors reading the object, or a resource not found error, we will return (and requeue if we get errors reading the object). Otherwise, we will keep going and check for a service:
+If we get any errors back from the `Get` request, such as errors reading the object, or a resource not found error, we will return (and requeue if we get errors reading the object). 
+
+Otherwise, we will keep going and check for a service:
 
 ```go
 serviceFound := &corev1.Service{}
