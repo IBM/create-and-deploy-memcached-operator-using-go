@@ -361,15 +361,20 @@ If there are no StatefulSet resources in the cluster, then we can go ahead and c
 
 ### Understanding the deploymentForJanusgraph function
 
-Let's dive into the `deploymentForJanusgraph(janusgraph)` function. It looks like the following:
+Let's dive into the `statefulSetForJanusgraph(janusgraph)` function. It looks like the following:
 
 ```go
-func (r *JanusgraphReconciler) deploymentForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+
+	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
+	//fetch the size of the JanusGraph object from the custom resource
 	replicas := m.Spec.Size
+	//fetch the version of JanusGraph to install from the custom resource
 	version := m.Spec.Version
 
-	dep := &appsv1.StatefulSet{
+	//create StatefulSet
+	statefulSet := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
@@ -388,7 +393,7 @@ func (r *JanusgraphReconciler) deploymentForJanusgraph(m *v1alpha1.Janusgraph) *
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "horeaporutiu/janusgraph:" + version,
+							Image: "sanjeevghimire/janusgraph:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
@@ -403,8 +408,8 @@ func (r *JanusgraphReconciler) deploymentForJanusgraph(m *v1alpha1.Janusgraph) *
 			},
 		},
 	}
-	ctrl.SetControllerReference(m, dep, r.Scheme)
-	return dep
+	ctrl.SetControllerReference(m, statefulSet, r.Scheme)
+	return statefulSet
 }
 ```
 
@@ -496,8 +501,8 @@ return dep
 Once we've successfully created our StatefulSet, we will use the `Create` function to save the `StatefulSet` resources to our cluster. 
 
 ```go
-dep := r.deploymentForJanusgraph(janusgraph)
-err = r.Create(ctx, dep)
+statefulSet := r.statefulSetForJanusgraph(janusgraph)
+err = r.Create(ctx, statefulSet)
 ```
 
 If we failed to create a service, we return an error. 
@@ -522,6 +527,10 @@ return and requeue:
 ```go
 return ctrl.Result{}, nil
 ```
+
+### Updating the status
+
+
 
 ## 5. Compile, Build and Push
 

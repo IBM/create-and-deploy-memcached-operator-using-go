@@ -1,9 +1,12 @@
 /*
 Copyright 2021.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -73,8 +76,10 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	// fetch Service resource
 	serviceFound := &corev1.Service{}
 	log.Info("Checking for service")
+	//check for Service resources in our namespace, and with a "JanusGraph" name prefix
 	err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name + "-service", Namespace: janusgraph.Namespace}, serviceFound)
 	if err != nil && errors.IsNotFound(err) {
 		srv := r.serviceForJanusgraph(janusgraph)
@@ -84,7 +89,7 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			log.Error(err, "Failed to create new service", "service.Namespace", srv.Namespace, "service.Name", srv.Name)
 			return ctrl.Result{}, err
 		}
-		// Deployment created successfully - return and requeue
+		// Service created successfully - return and requeue
 		log.Info("Janusgraph service created, requeuing")
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
@@ -92,40 +97,43 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	// deployment
+	// look for a resource of type StatefulSet
 	found := &appsv1.StatefulSet{}
-	// Check if the deployment already exists, if not create a new one
+	// Check if the StatefulSet already exists in our namespace, if not create a new one
 	err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name, Namespace: janusgraph.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		// Define a new deployment
-		dep := r.deploymentForJanusgraph(janusgraph)
-		log.Info("Creating a new Statefulset", "StatefulSet.Namespace", dep.Namespace, "StatefulSet.Name", dep.Name)
-		err = r.Create(ctx, dep)
+		// Define a new StatefulSet
+		statefulSet := r.statefulSetForJanusgraph(janusgraph)
+		log.Info("Creating a new Statefulset", "StatefulSet.Namespace", statefulSet.Namespace, "StatefulSet.Name", statefulSet.Name)
+		err = r.Create(ctx, statefulSet)
 		if err != nil {
-			log.Error(err, "Failed to create new StatefulSet", "StatefulSet.Namespace", dep.Namespace, "StatefulSet.Name", dep.Name)
+			log.Error(err, "Failed to create new StatefulSet", "StatefulSet.Namespace", statefulSet.Namespace, "StatefulSet.Name", statefulSet.Name)
 			return ctrl.Result{}, err
 		}
-		// Deployment created successfully - return and requeue
-		log.Info("Deployment created, requeuing")
+		// StatefulSet created successfully - return and requeue
+		log.Info("StatefulSet created, requeuing")
 		return ctrl.Result{}, nil
 	} else if err != nil {
-		log.Error(err, "Failed to get Deployment")
+		log.Error(err, "Failed to get StatefulSet")
 		return ctrl.Result{}, err
 	}
 
-	// Status check
+	// look for resource of type PodList
 	podList := &corev1.PodList{}
+	//create filter to check for Pods only in our Namespace with the correct matching labels
 	listOpts := []client.ListOption{
 		client.InNamespace(janusgraph.Namespace),
 		client.MatchingLabels(labelsForJanusgraph(janusgraph.Name)),
 	}
+	//List all Pods that match our filter (same Namespace and matching labels)
 	if err = r.List(ctx, podList, listOpts...); err != nil {
 		log.Error(err, "Failed to list pods", "Janusgraph.Namespace", janusgraph.Namespace, "Janusgraph.Name", janusgraph.Name)
 		return ctrl.Result{}, err
 	}
+	//return an array of pod names
 	podNames := getPodNames(podList.Items)
 
-	// Update status.Nodes if needed
+	// Update the status of our JanusGraph object to show Pods which were returned from getPodNames
 	if !reflect.DeepEqual(podNames, janusgraph.Status.Nodes) {
 		janusgraph.Status.Nodes = podNames
 		err := r.Status().Update(ctx, janusgraph)
@@ -138,6 +146,7 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
+// getPodNames returns a string array of Pod Names
 func getPodNames(pods []corev1.Pod) []string {
 	var podNames []string
 	for _, pod := range pods {
@@ -153,12 +162,17 @@ func (r *JanusgraphReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// labelsForJanusgraph returns a map of string keys and string values
 func labelsForJanusgraph(name string) map[string]string {
 	return map[string]string{"app": "Janusgraph", "janusgraph_cr": name}
 }
 
+// serviceForJanusgraph returns a Load Balancer service for our JanusGraph object
 func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
+
+	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
+	//create Service
 	srv := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name + "-service",
@@ -182,12 +196,18 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 	return srv
 }
 
-func (r *JanusgraphReconciler) deploymentForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+// statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+
+	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
+	//fetch the size of the JanusGraph object from the custom resource
 	replicas := m.Spec.Size
+	//fetch the version of JanusGraph to install from the custom resource
 	version := m.Spec.Version
 
-	dep := &appsv1.StatefulSet{
+	//create StatefulSet
+	statefulSet := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
@@ -221,6 +241,6 @@ func (r *JanusgraphReconciler) deploymentForJanusgraph(m *v1alpha1.Janusgraph) *
 			},
 		},
 	}
-	ctrl.SetControllerReference(m, dep, r.Scheme)
-	return dep
+	ctrl.SetControllerReference(m, statefulSet, r.Scheme)
+	return statefulSet
 }
