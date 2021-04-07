@@ -21,6 +21,9 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 ## Expectations (What you want)
 * You want deep technical knowledge of how to implement a Level 1 operator
 
+## Prerequisites
+* You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)
+
 ## Steps
 0. [Overview](#0-overview)
 1. [Create the JanusGraph project and API ](#1-Create-the-JanusGraph-project-and-API )
@@ -74,7 +77,7 @@ JanusGraph configuration (using BerkeleyDB) up and running. The reason that we c
 headless service first is that our [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
 
 ### What is a StatefulSet
-A [StateFulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) is the object that is used to manage stateful applications. 
+A [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) is the object that is used to manage stateful applications. 
 Similar to a [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), a StatefulSet manages pods that are based on an identical container spec. The difference is that in a 
 Deployment, pods are interchangeable. But in a StatefulSet, they are not - each has a unique identifier that
 is maintained across any rescheduling. We will get into why this is important in part 2 of the tutorial. 
@@ -106,12 +109,16 @@ Now, create the API, with the `kind` being `Janusgraph`:
 
 ```bash
 operator-sdk create api --group=graph --version=v1alpha1 --kind=Janusgraph --controller --resource
+```
 
-..
-..
+You should see output like: 
+
+```
 Writing scaffold for you to edit...
-api/v1alpha1/memcached_types.go
-controllers/memcached_controller.go
+api/v1alpha1/janusgraph_types.go
+controllers/janusgraph_controller.go
+Running make:
+...
 ```
 
 ## 2. Update the JanusGraph API
@@ -176,7 +183,249 @@ should be familiar to you if you've completed the [Develop and Deploy a Memcache
 
 ## 3. Controller Logic: Creating a Service
 
-Now, let's take a look at the heart of the Level 1 operator - the controller code. The first thing we must do at
+<b>Note: If you want to learn more in depth about the controller logic that is written here,
+please view our [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md) article.</b>
+
+Now that we have our API updated, our next step is to implement our controller logic in `controllers/janusgraph_controller.go`. First, go ahead and copy the code from the 
+[artifacts/janusgraph_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/janusgraph_controller.go) file, and replace your current controller code.
+
+Once this is complete, your controller should look like the following:
+
+```go
+
+package controllers
+
+import (
+	"context"
+	"reflect"
+
+	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
+	graphv1alpha1 "github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
+)
+
+// JanusgraphReconciler reconciles a Janusgraph object
+type JanusgraphReconciler struct {
+	client.Client
+	Log    logr.Logger
+	Scheme *runtime.Scheme
+}
+
+// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/finalizers,verbs=update
+// +kubebuilder:rbac:groups=apps,resources=pods;deployments;statefulsets;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=pods;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;create;update;watch
+
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
+// TODO(user): Modify the Reconcile function to compare the state specified by
+// the Janusgraph object against the actual cluster state, and then
+// perform operations to make the cluster state reflect the state specified by
+// the user.
+//
+// For more details, check Reconcile and its Result here:
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/reconcile
+func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	log := r.Log.WithValues("janusgraph", req.NamespacedName)
+
+	// Fetch the Janusgraph instance
+	janusgraph := &graphv1alpha1.Janusgraph{}
+	err := r.Get(ctx, req.NamespacedName, janusgraph)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			log.Info("Janusgraph resource not found. Ignoring since object must be deleted")
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		log.Error(err, "Failed to get Janusgraph")
+		return ctrl.Result{}, err
+	}
+
+	// fetch Service resource
+	serviceFound := &corev1.Service{}
+	log.Info("Checking for service")
+	//check for Service resources in our namespace, and with a "JanusGraph" name prefix
+	err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name + "-service", Namespace: janusgraph.Namespace}, serviceFound)
+	if err != nil && errors.IsNotFound(err) {
+		srv := r.serviceForJanusgraph(janusgraph)
+		log.Info("Creating a new headless service", "Service.Namespace", srv.Namespace, "Service.Name", srv.Name)
+		err = r.Create(ctx, srv)
+		if err != nil {
+			log.Error(err, "Failed to create new service", "service.Namespace", srv.Namespace, "service.Name", srv.Name)
+			return ctrl.Result{}, err
+		}
+		// Service created successfully - return and requeue
+		log.Info("Janusgraph service created, requeuing")
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		log.Error(err, "Failed to get service")
+		return ctrl.Result{}, err
+	}
+
+	// look for a resource of type StatefulSet
+	found := &appsv1.StatefulSet{}
+	// Check if the StatefulSet already exists in our namespace, if not create a new one
+	err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name, Namespace: janusgraph.Namespace}, found)
+	if err != nil && errors.IsNotFound(err) {
+		// Define a new StatefulSet
+		statefulSet := r.statefulSetForJanusgraph(janusgraph)
+		log.Info("Creating a new Statefulset", "StatefulSet.Namespace", statefulSet.Namespace, "StatefulSet.Name", statefulSet.Name)
+		err = r.Create(ctx, statefulSet)
+		if err != nil {
+			log.Error(err, "Failed to create new StatefulSet", "StatefulSet.Namespace", statefulSet.Namespace, "StatefulSet.Name", statefulSet.Name)
+			return ctrl.Result{}, err
+		}
+		// StatefulSet created successfully - return and requeue
+		log.Info("StatefulSet created, requeuing")
+		return ctrl.Result{}, nil
+	} else if err != nil {
+		log.Error(err, "Failed to get StatefulSet")
+		return ctrl.Result{}, err
+	}
+
+	// look for resource of type PodList
+	podList := &corev1.PodList{}
+	//create filter to check for Pods only in our Namespace with the correct matching labels
+	listOpts := []client.ListOption{
+		client.InNamespace(janusgraph.Namespace),
+		client.MatchingLabels(labelsForJanusgraph(janusgraph.Name)),
+	}
+	//List all Pods that match our filter (same Namespace and matching labels)
+	if err = r.List(ctx, podList, listOpts...); err != nil {
+		log.Error(err, "Failed to list pods", "Janusgraph.Namespace", janusgraph.Namespace, "Janusgraph.Name", janusgraph.Name)
+		return ctrl.Result{}, err
+	}
+	//return an array of pod names
+	podNames := getPodNames(podList.Items)
+
+	// Update the status of our JanusGraph object to show Pods which were returned from getPodNames
+	if !reflect.DeepEqual(podNames, janusgraph.Status.Nodes) {
+		janusgraph.Status.Nodes = podNames
+		err := r.Status().Update(ctx, janusgraph)
+		if err != nil {
+			log.Error(err, "Failed to update Janusgraph status")
+			return ctrl.Result{}, err
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+
+// getPodNames returns a string array of Pod Names
+func getPodNames(pods []corev1.Pod) []string {
+	var podNames []string
+	for _, pod := range pods {
+		podNames = append(podNames, pod.Name)
+	}
+	return podNames
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *JanusgraphReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&graphv1alpha1.Janusgraph{}).
+		Complete(r)
+}
+
+// labelsForJanusgraph returns a map of string keys and string values
+func labelsForJanusgraph(name string) map[string]string {
+	return map[string]string{"app": "Janusgraph", "janusgraph_cr": name}
+}
+
+// serviceForJanusgraph returns a Load Balancer service for our JanusGraph object
+func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
+
+	//fetch labels
+	ls := labelsForJanusgraph(m.Name)
+	//create Service
+	srv := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name + "-service",
+			Namespace: m.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeLoadBalancer,
+			Ports: []corev1.ServicePort{
+				{
+					Port: 8182,
+					TargetPort: intstr.IntOrString{
+						IntVal: 8182,
+					},
+					NodePort: 30184,
+				},
+			},
+			Selector: ls,
+		},
+	}
+	ctrl.SetControllerReference(m, srv, r.Scheme)
+	return srv
+}
+
+// statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+
+	//fetch labels
+	ls := labelsForJanusgraph(m.Name)
+	//fetch the size of the JanusGraph object from the custom resource
+	replicas := m.Spec.Size
+	//fetch the version of JanusGraph to install from the custom resource
+	version := m.Spec.Version
+
+	//create StatefulSet
+	statefulSet := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: ls,
+			},
+			ServiceName: m.Name + "-service",
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: ls,
+					Name:   "janusgraph",
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Image: "sanjeevghimire/janusgraph:" + version,
+							Name:  "janusgraph",
+							Ports: []corev1.ContainerPort{
+								{
+									ContainerPort: 8182,
+									Name:          "janusgraph",
+								},
+							},
+							Env: []corev1.EnvVar{},
+						}},
+					RestartPolicy: corev1.RestartPolicyAlways,
+				},
+			},
+		},
+	}
+	ctrl.SetControllerReference(m, statefulSet, r.Scheme)
+	return statefulSet
+}
+```
+
+Now, let's take a closer look at the controller code from above and understand it. The first thing we must do at
 a high-level to create an operator for JanusGraph, is to create a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services). A headless service is a service in which 
 you do not specify the cluster IP. The service is used to control the network domain.
 
@@ -540,8 +789,8 @@ tutorial. After you've logged in, go ahead and
 create a new project:
 
 ```bash
-$ oc new-project JanusGraph-demo-project
-Now using project "JanusGraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
+oc new-project janusraph-demo-project
+Now using project "janusraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
 ### Edit the manager.yaml file
@@ -559,20 +808,20 @@ runAsUser: 65532
 Now that we have our controller code and API implemented, run the following command to implement the required Go type interfaces:
 
 ```bash
-$ make generate
+make generate
 ```
 
 Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests and RBAC from KubeBuilder Markers:
 
 ```bash
-$ make manifests
+make manifests
 ```
 
 ### Compile your Operator
 
 To compile the code run the following command in the terminal from your project root:
 ```bash
-$ make install
+make install
 ```
 
 ### Set the Operator Namespace
@@ -581,17 +830,17 @@ Next, we need to make sure to update our config to tell our operator to run in o
 commands:
 
 ```bash
-$ export IMG=docker.io/<username>/janusgraph-operator:<version>
-$ export NAMESPACE=<oc-project-name>
+export IMG=docker.io/<username>/janusgraph-operator:<version>
+export NAMESPACE=<oc-project-name>
 
-$ cd config/manager
-$ kustomize edit set image controller=${IMG}
-$ kustomize edit set namespace "${NAMESPACE}"
-$ cd ../../
+cd config/manager
+kustomize edit set image controller=${IMG}
+kustomize edit set namespace "${NAMESPACE}"
+cd ../../
 
-$ cd config/default
-$ kustomize edit set namespace "${NAMESPACE}"
-$ cd ../../
+cd config/default
+kustomize edit set namespace "${NAMESPACE}"
+cd ../../
 ```
 
 ### Build and Push your Image
@@ -602,12 +851,12 @@ operator image. Use `Docker login` to login.
 To build the Docker image run the following command:
 
 ```bash
-$ make docker-build IMG=$IMG
+make docker-build IMG=$IMG
 ```
 and push the docker image to your registry using following from your terminal:
 
 ```bash
-$ make docker-push IMG=$IMG
+make docker-push IMG=$IMG
 ```
 
 ## 6. Deploy the operator
@@ -615,13 +864,13 @@ $ make docker-push IMG=$IMG
 To Deploy the operator run the following command from your terminal:
 
 ```bash
-$ make deploy IMG=$IMG
+make deploy IMG=$IMG
 ```
 
 To make sure everything is working correctly, use the `oc get pods` command.
 
 ```bash
-$ oc get pods
+oc get pods
 
 NAME                                                     READY   STATUS    RESTARTS   AGE
 janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
@@ -655,7 +904,7 @@ in a later part of the tutorial.
 And finally create the custom resources using the following command:
 
 ```bash
-$ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
+kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 ```
 
 ## 7. Verify operator
@@ -663,7 +912,7 @@ $ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 From the terminal run `kubectl get all` or `oc get all` to make sure that controllers, managers and pods have been successfully created and is in `Running` state with the right number of pods as defined in the spec.
 
 ```bash
-$ kubectl get all 
+kubectl get all 
 ```
 
 You should see one `janusgraph-sample` pod running.
