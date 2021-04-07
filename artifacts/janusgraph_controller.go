@@ -1,19 +1,3 @@
-/*
-Copyright 2021.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package controllers
 
 import (
@@ -27,12 +11,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
-	graphv1alpha1 "github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
+	graphv1alpha1 "github.com/example/janusgraph-operator/api/v1alpha1"
 )
 
 // JanusgraphReconciler reconciles a Janusgraph object
@@ -42,9 +24,9 @@ type JanusgraphReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/finalizers,verbs=update
+// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs/finalizers,verbs=update
 // +kubebuilder:rbac:groups=apps,resources=pods;deployments;statefulsets;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;create;update;watch
 
@@ -168,7 +150,7 @@ func labelsForJanusgraph(name string) map[string]string {
 }
 
 // serviceForJanusgraph returns a Load Balancer service for our JanusGraph object
-func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
+func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph) *corev1.Service {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -179,15 +161,11 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 			Namespace: m.Namespace,
 		},
 		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceTypeLoadBalancer,
-			Ports: []corev1.ServicePort{
-				{
-					Port: 8182,
-					TargetPort: intstr.IntOrString{
-						IntVal: 8182,
-					},
-					NodePort: 30184,
-				},
+			ClusterIP: corev1.ClusterIPNone, //"None",
+			Ports: []corev1.ServicePort{{
+				Port: 8182,
+				Name: "janusgraph",
+			},
 			},
 			Selector: ls,
 		},
@@ -197,7 +175,7 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 }
 
 // statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
-func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgraph) *appsv1.StatefulSet {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -226,7 +204,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "sanjeevghimire/janusgraph:" + version,
+							Image: "horeaporutiu/janusgraph-operator:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
