@@ -921,7 +921,7 @@ You should see one `janusgraph-sample` pod running.
 
 ### Part 1 Conclusion
 
-**Congratulations!!**. You've just created a level 1 
+**Congratulations!!** You've just created a level 1 
 operator for JanusGraph, using the default 
 BerkeleyDB configuration. Great job! In the next 
 section of the tutorial, we will show how to create a 
