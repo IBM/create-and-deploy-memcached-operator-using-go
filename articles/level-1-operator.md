@@ -191,6 +191,10 @@ Now that we have our API updated, our next step is to implement our controller l
 
 Once this is complete, your controller should look like the following:
 
+<b>Note: The rest of this step, and step 4 will walk through the controller code shown below. If you do not want a detailed explanation of the code, 
+skip down to [step 5](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/level-1-operator.md#5-update-the-user-and-the-custom-resource).</b>
+
+
 ```go
 
 package controllers
@@ -772,7 +776,7 @@ return ctrl.Result{}, nil
 ```
 
 ### Updating the status
-
+The last thing we will do is to update the status. This logic is explained in the [intermediate level memcached tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md#update-the-status-to-save-the-current-state-of-the-cluster).
 
 
 ## 5. Update the user and the custom resource
