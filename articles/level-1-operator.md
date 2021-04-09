@@ -787,8 +787,8 @@ tutorial. After you've logged in, go ahead and
 create a new project:
 
 ```bash
-oc new-project janusraph-demo-project
-Now using project "janusraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
+oc new-project janusgraph-demo-project
+Now using project "janusgraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
 ### Edit the user in the manager.yaml file
