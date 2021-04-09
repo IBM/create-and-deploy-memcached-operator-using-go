@@ -30,8 +30,8 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 1. [Update the JanusGraph API](#2-Update-the-janusgraph-API)
 1. [Controller Logic: Creating a Service](#3-controller-logic-creating-a-service)
 1. [Controller Logic: Creating a StatefulSet](#4-controller-logic-creating-a-statefulset)
-1. [Compile, build and push](#5-compile-build-and-push)
-1. [Deploy the operator](#6-deploy-the-operator)
+1. [Update the user and the custom resource](#5-update-the-user-and-the-custom-resource)
+1. [Build, push, and deploy your operator](#6-build-push-and-deploy-your-operator)
 1. [Verify operator](#7-verify-operator)
 
 ## 0. Overview
@@ -775,7 +775,7 @@ return ctrl.Result{}, nil
 
 
 
-## 5. Compile, Build and Push
+## 5. Update the user and the custom resource
 
 Now, we will go ahead and login to our OpenShift cluster. 
 You can follow the steps described in the previous 
@@ -787,7 +787,7 @@ oc new-project janusraph-demo-project
 Now using project "janusraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
-### Edit the manager.yaml file
+### Edit the user in the manager.yaml file
 
 The `manager.yaml` file defines a Deployment manifest used to deploy the operator. That manifest includes a security context that tells Kubernetes to run the pods as a specific user (uid=65532). OpenShift already manages the users employed to run pods which is behavior the manifest should not override, so we will remove that from the manifest.
 
@@ -797,83 +797,9 @@ To do this, we can modify the `config/manager/manager.yaml` file to remove the f
 runAsUser: 65532
 ```
 
-### Create CRD and RBAC
+Once we've saved the changes to the `config/manager/manager.yaml` file, we are ready to use the build and deploy script.
 
-Now that we have our controller code and API implemented, run the following command to implement the required Go type interfaces:
-
-```bash
-make generate
-```
-
-Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests and RBAC from KubeBuilder Markers:
-
-```bash
-make manifests
-```
-
-### Compile your Operator
-
-To compile the code run the following command in the terminal from your project root:
-```bash
-make install
-```
-
-### Set the Operator Namespace
-
-Next, we need to make sure to update our config to tell our operator to run in our own project namespace. Do this by issuing the following Kustomize 
-commands:
-
-```bash
-export IMG=docker.io/<username>/janusgraph-operator:<version>
-export NAMESPACE=<oc-project-name>
-
-cd config/manager
-kustomize edit set image controller=${IMG}
-kustomize edit set namespace "${NAMESPACE}"
-cd ../../
-
-cd config/default
-kustomize edit set namespace "${NAMESPACE}"
-cd ../../
-```
-
-### Build and Push your Image
-
-**Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
-operator image. Use `Docker login` to login.
-
-To build the Docker image run the following command:
-
-```bash
-make docker-build IMG=$IMG
-```
-and push the docker image to your registry using following from your terminal:
-
-```bash
-make docker-push IMG=$IMG
-```
-
-## 6. Deploy the operator
-
-To Deploy the operator run the following command from your terminal:
-
-```bash
-make deploy IMG=$IMG
-```
-
-To make sure everything is working correctly, use the `oc get pods` command.
-
-```bash
-oc get pods
-
-NAME                                                     READY   STATUS    RESTARTS   AGE
-janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
-```
-
-This means your operator is up and running. Great job!
-
-
-### Create the Custom Resource
+### Edit the Custom Resource
 
 Next, let's create the custom resource.
 
@@ -891,15 +817,97 @@ spec:
   version: latest 
 ``` 
 In the above code, we set the replicas to 1, and the 
-version to `latest`. We aren't using the version
-parameter currently in the controller code, but we will
-in a later part of the tutorial.
+version to `latest`. We will use `kubectl` to create this custom resource as part of a the [`build-and-deploy-janus.sh`](https://github.ibm.com/TT-ISV-org/operator/blob/main/scripts/build-and-deploy-janus.sh) script.
 
-And finally create the custom resources using the following command:
+Let's quickly take a look at the script:
 
 ```bash
+set -x
+set -e
+
+make generate
+make manifests
+make install
+
+export namespace=<add-namespace-here>
+
+export img=docker.io/<username-goes-here>/janusgraph-operator:latest
+
+cd config/manager
+kustomize edit set namespace $namespace
+kustomize edit set image controller=$img
+cd ../../
+cd config/default
+kustomize edit set namespace $namespace
+cd ../../
+
+make docker-build IMG=$img
+make docker-push IMG=$img
+make deploy IMG=$img
+
 kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 ```
+
+Note that you will have to edit the two export statements. 
+
+1. Add in your namespace. This is the name of your OpenShift project where you plan to deploy
+your operator.
+2. Add in your Docker Hub (or another repository where you will push your images to) username.
+
+Once you save the file after editing the export statements, it should look something like this:
+
+```bash
+set -x
+set -e
+
+img="horeaporutiu/janusgraph-operator:latest"
+namespace="janusgraph-demo-project"
+
+cd config/manager
+kustomize edit set namespace $namespace
+kustomize edit set image controller=$img
+cd ../../
+cd config/default
+kustomize edit set namespace $namespace
+cd ../../
+
+make docker-build IMG=$img
+make docker-push IMG=$img
+make deploy IMG=$img
+
+kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
+
+```
+
+Now we can run the script. To make sure that the script has the correct access control, you can 
+run `chmod 777 scripts/build-and-deploy-janus.sh`.
+
+## 6. Compile, build, and deploy your operator
+It's time to finally build and deploy our operator! Let's do so by running the following script:
+
+```bash
+./scripts/build-and-deploy-janus.sh
+```
+
+Once the script has finished running successfully, you will see something like this:
+
+```bash
+deployment.apps/janusgraph-operator-controller-manager created
++ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
+janusgraph.graph.example.com/janusgraph-sample created
+```
+
+To make sure everything is working correctly, use the `oc get pods` command.
+
+```bash
+oc get pods
+
+NAME                                                     READY   STATUS    RESTARTS   AGE
+janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
+janusgraph-sample-0                                       1/1     Running   0          5s
+```
+
+This means your operator is up and running. Great job!
 
 ## 7. Verify operator
 
