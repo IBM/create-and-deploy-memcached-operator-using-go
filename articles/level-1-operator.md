@@ -882,7 +882,7 @@ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 Now we can run the script. To make sure that the script has the correct access control, you can 
 run `chmod 777 scripts/build-and-deploy-janus.sh`.
 
-## 6. Compile, build, and deploy your operator
+## 6. Build, push, and deploy your operator
 It's time to finally build and deploy our operator! Let's do so by running the following script:
 
 ```bash
