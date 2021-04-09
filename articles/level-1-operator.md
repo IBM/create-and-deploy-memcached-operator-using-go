@@ -782,8 +782,8 @@ The last thing we will do is to update the status. This logic is explained in th
 ## 5. Update the user and the custom resource
 
 Now, we will go ahead and login to our OpenShift cluster. 
-You can follow the steps described in the previous 
-tutorial. After you've logged in, go ahead and 
+You can follow the steps described in the [previous 
+tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#5-compile-build-and-push). After you've logged in, go ahead and 
 create a new project:
 
 ```bash
