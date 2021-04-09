@@ -204,7 +204,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgr
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "horeaporutiu/janusgraph-operator:" + version,
+							Image: "horeaporutiu/janusgraph:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
