@@ -1,3 +1,4 @@
+
 set -x
 set -e
 
@@ -18,7 +19,7 @@ export namespace=<add-namespace-here>
 # for example...
 # export namespace=docker.io/horeaporutiu/memcached-operator:latest
 
-export img=docker.io/<username-goes-here>/memcached-operator:latest
+export img=docker.io/<username-goes-here>/janusgraph-operator:latest
 
 cd config/manager
 kustomize edit set namespace $namespace
@@ -32,4 +33,4 @@ make docker-build IMG=$img
 make docker-push IMG=$img
 make deploy IMG=$img
 
-kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
+kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
