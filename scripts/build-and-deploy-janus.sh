@@ -1,9 +1,5 @@
-
 set -x
 set -e
-
-# read -p 'Enter your namespace: ' namespace
-# read -p 'Enter your IMG: ' img
 
 make generate
 make manifests
@@ -17,7 +13,7 @@ export namespace=<add-namespace-here>
 
 # img is where you plan to push your image 
 # for example...
-# export namespace=docker.io/horeaporutiu/memcached-operator:latest
+# export namespace=docker.io/horeaporutiu/janusgraph-operator:latest
 
 export img=docker.io/<username-goes-here>/janusgraph-operator:latest
 
