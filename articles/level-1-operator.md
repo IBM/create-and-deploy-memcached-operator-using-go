@@ -71,6 +71,7 @@ to implement the below changes in the controller code which will run each time a
 
 1. Create a Service if one does not exist.
 2. Create a StatefulSet if ones does not exist.
+3. Update the status
 
 These are the only two resources that our operator must create in order to get the default 
 JanusGraph configuration (using BerkeleyDB) up and running. More specifically, a [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
@@ -536,14 +537,16 @@ srv := &corev1.Service{
 }
 ```
 
+In the `Spec` field, 
+we use type load balancer, since we will want to be able to connect to the service later on via an external IP. 
+
 **Note: we got port 8182 from the official JanusGraph Docker image.** This means that when configuring your own service, you should read 
 the documentation to learn which port the image should run on.
 
 <!-- Notice that at the top, we've filled out the [`ObjectMeta`](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta) 
 field with the name and namespace of our custom resource. This will be the metadata associated with this resource.  -->
 
-In the `Spec` field, 
-we use type load balancer, since we will want to be able to connect to the service later on via an external IP. 
+
 <!-- 
  the 
 package is expecting a [`corev1.ServiceSpec`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceSpec), which contains the required 
