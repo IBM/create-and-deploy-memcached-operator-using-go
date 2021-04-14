@@ -73,14 +73,13 @@ to implement the below changes in the controller code which will run each time a
 2. Create a StatefulSet if ones does not exist.
 
 These are the only two resources that our operator must create in order to get the default 
-JanusGraph configuration (using BerkeleyDB) up and running. The reason that we create a 
-headless service first is that our [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
+JanusGraph configuration (using BerkeleyDB) up and running. More specifically, a [StatefulSet needs to have a headless service](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations) to be responsible for the network identity of the Pods. 
 
 ### What is a StatefulSet
 A [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) is the object that is used to manage stateful applications. 
 Similar to a [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), a StatefulSet manages pods that are based on an identical container spec. The difference is that in a 
 Deployment, pods are interchangeable. But in a StatefulSet, they are not - each has a unique identifier that
-is maintained across any rescheduling. We will get into why this is important in part 2 of the tutorial. 
+is maintained across any rescheduling. 
 
 ## 1. Create the JanusGraph project and API  
 
@@ -463,8 +462,12 @@ we will pass in a JanusGraph object, and return a `corev1.Service`.
 Below, you can see the full `serviceForJanusgraph` function:
 
 ```go
-func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
+// serviceForJanusgraph returns a Load Balancer service for our JanusGraph object
+func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph) *corev1.Service {
+
+	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
+	//create Service
 	srv := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name + "-service",
@@ -478,7 +481,6 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 					TargetPort: intstr.IntOrString{
 						IntVal: 8182,
 					},
-					NodePort: 30184,
 				},
 			},
 			Selector: ls,
@@ -488,7 +490,7 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 	return srv
 }
 ```
-### Labels for JanusGraph
+<!-- ### Labels for JanusGraph
 
 Let's take it step by step. First, we create labels by calling the `labelsForJanusgraph` function:
 
@@ -505,7 +507,7 @@ This function returns a map which looks like this:
 	"janusgraph_cr": "<name>"
 }
 ```
-The way that a service works is that it will target any Pod with the `"app": "Janusgraph"` and `"janusgraph_cr": "<name>"` label, that is on the port 8182 (as shown in the code above).
+The way that a service works is that it will target any Pod with the `"app": "Janusgraph"` and `"janusgraph_cr": "<name>"` label, that is on the port 8182 (as shown in the code above). -->
 
 ### Configuring the service
 
@@ -527,7 +529,6 @@ srv := &corev1.Service{
 				TargetPort: intstr.IntOrString{
 					IntVal: 8182,
 				},
-				NodePort: 30184,
 			},
 		},
 		Selector: ls,
@@ -535,17 +536,22 @@ srv := &corev1.Service{
 }
 ```
 
+**Note: we got port 8182 from the official JanusGraph Docker image.** This means that when configuring your own service, you should read 
+the documentation to learn which port the image should run on.
+
 Notice that at the top, we've filled out the [`ObjectMeta`](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta) 
-field with the name and namespace of our custom resource. The `ObjectMeta` field is the metadata that we 
-want to create with our service. Next, we fill out the heart of the service, which is the `Spec` field. In the `Spec` field, the 
+field with the name and namespace of our custom resource. This will be the metadata associated with this resource. In the `Spec` field, 
+we use type load balancer, since we will want to be able to connect to the service later on via an external IP. 
+<!-- 
+ the 
 package is expecting a [`corev1.ServiceSpec`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceSpec), which contains the required 
 fields of `Ports` and the optional `Selector` and `Type` fields. 
 
-For the `Selector` field, we want to make sure to target only Pods that are part of our Janusgraph StatefulSet, so we do so by using the map returned from our `labelsForJanusgraph` function.
+For the `Selector` field, we want to make sure to target only Pods that are part of our Janusgraph StatefulSet, so we do so by using the map returned from our `labelsForJanusgraph` function. -->
 
-For our `Type` we 
+<!-- For our `Type` we 
 create a [`ServiceTypeLoadBalancer`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceType). Load balancers have an extra `NodePort`
-field, which is set to `30184` in our case. 
+field, which is set to `30184` in our case.  -->
 
 Once we've finished configuring the service, we will return it the service, i.e. we will return a `corev1.Service` object.  
 
@@ -553,7 +559,7 @@ Once we've finished configuring the service, we will return it the service, i.e.
 ctrl.SetControllerReference(m, srv, r.Scheme)
 return srv
 ```
-
+<!-- 
 ### Updating the cluster state
 
 Once we've successfully created our service, we will use the `Create` function to save the `service` resources to our cluster. 
@@ -579,7 +585,7 @@ Otherwise, we return and requeue.
 // Service created successfully - return and requeue
 log.Info("Janusgraph service created, requeuing")
 return ctrl.Result{Requeue: true}, nil
-```
+``` -->
 
 ## 4. Controller Logic: Creating a StatefulSet
 
@@ -587,7 +593,7 @@ Next, we will create a [StatefulSet](https://kubernetes.io/docs/concepts/workloa
 of creating a service for JanusGraph, other than some minor details with creating the StatefulSet object itself.
 Note that instead of a deployment, we will use a StatefulSet, but this same logic can be applied to the deployment 
 object.
-
+<!-- 
 First, we check to see if there are any StatefulSets in our cluster by using the `Get` function:
 
 ```go
@@ -603,7 +609,7 @@ return ctrl.Result{}, nil
 ```
 
 If there are no StatefulSet resources in the cluster, then we can go ahead and create one. We will call the 
-`deploymentForJanusgraph(janusgraph)` function to create our deployment. 
+`deploymentForJanusgraph(janusgraph)` function to create our deployment.  -->
 
 ### Understanding the deploymentForJanusgraph function
 
@@ -659,13 +665,12 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 }
 ```
 
-First, we get the labels as we did before with our service:
+<!-- First, we get the labels as we did before with our service:
 
 ```go
 ls := labelsForJanusgraph(m.Name)
-```
-
-Next, we grab the values from the `Spec`. These will determine how many pods to create, and which version of JanusGraph to deploy.
+``` -->
+Note that we we grab the values from the `Spec` section of our custom resource here. These will determine how many pods to create, and which version of JanusGraph to deploy.
 
 ```go
 replicas := m.Spec.Size
@@ -686,8 +691,8 @@ ObjectMeta: metav1.ObjectMeta{
 ```
 
 Next, in the `Spec` section of our StatefulSet, we use the `replicas` which
-we set earlier. The replicas are coming from the user-entered values from the custom resource. We also use the labels which we've generated from our 
-`labelsForJanusgraph` function and pass those into our `Selector` field. 
+we set earlier. 
+
 The `Selector` field defines how the StatefulSet finds which Pods to manage:
 
 ```go
@@ -722,6 +727,8 @@ Spec: corev1.PodSpec{
 	}	
 ```
 
+**Note: this image has been adapted to work on OpenShift. It is highly recommended that you use this image since the official JanusGraph Docker image will not work out of the box with OpenShift.**
+
 Then, we specify the container port, which is `8182` in this case. We found this from the JanusGraph documentation.
 
 ```go
@@ -742,7 +749,7 @@ return dep
 ```
 
 
-### Updating the cluster state with our StatefulSet
+<!-- ### Updating the cluster state with our StatefulSet
 
 Once we've successfully created our StatefulSet, we will use the `Create` function to save the `StatefulSet` resources to our cluster. 
 
@@ -774,23 +781,22 @@ return and requeue:
 return ctrl.Result{}, nil
 ```
 
-### Updating the status
+### Updating the status -->
 
 
-
-## 5. Compile, Build and Push
+## 5. Update the user and the custom resource
 
 Now, we will go ahead and login to our OpenShift cluster. 
-You can follow the steps described in the previous 
-tutorial. After you've logged in, go ahead and 
+You can follow the steps described in the [previous 
+tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#5-compile-build-and-push). After you've logged in, go ahead and 
 create a new project:
 
 ```bash
-oc new-project janusraph-demo-project
-Now using project "janusraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
+oc new-project janusgraph-demo-project
+Now using project "janusgraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
-### Edit the manager.yaml file
+### Edit the user in the manager.yaml file
 
 The `manager.yaml` file defines a Deployment manifest used to deploy the operator. That manifest includes a security context that tells Kubernetes to run the pods as a specific user (uid=65532). OpenShift already manages the users employed to run pods which is behavior the manifest should not override, so we will remove that from the manifest.
 
@@ -800,83 +806,9 @@ To do this, we can modify the `config/manager/manager.yaml` file to remove the f
 runAsUser: 65532
 ```
 
-### Create CRD and RBAC
+Once we've saved the changes to the `config/manager/manager.yaml` file, we are ready to use the build and deploy script.
 
-Now that we have our controller code and API implemented, run the following command to implement the required Go type interfaces:
-
-```bash
-make generate
-```
-
-Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests and RBAC from KubeBuilder Markers:
-
-```bash
-make manifests
-```
-
-### Compile your Operator
-
-To compile the code run the following command in the terminal from your project root:
-```bash
-make install
-```
-
-### Set the Operator Namespace
-
-Next, we need to make sure to update our config to tell our operator to run in our own project namespace. Do this by issuing the following Kustomize 
-commands:
-
-```bash
-export IMG=docker.io/<username>/janusgraph-operator:<version>
-export NAMESPACE=<oc-project-name>
-
-cd config/manager
-kustomize edit set image controller=${IMG}
-kustomize edit set namespace "${NAMESPACE}"
-cd ../../
-
-cd config/default
-kustomize edit set namespace "${NAMESPACE}"
-cd ../../
-```
-
-### Build and Push your Image
-
-**Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
-operator image. Use `Docker login` to login.
-
-To build the Docker image run the following command:
-
-```bash
-make docker-build IMG=$IMG
-```
-and push the docker image to your registry using following from your terminal:
-
-```bash
-make docker-push IMG=$IMG
-```
-
-## 6. Deploy the operator
-
-To Deploy the operator run the following command from your terminal:
-
-```bash
-make deploy IMG=$IMG
-```
-
-To make sure everything is working correctly, use the `oc get pods` command.
-
-```bash
-oc get pods
-
-NAME                                                     READY   STATUS    RESTARTS   AGE
-janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
-```
-
-This means your operator is up and running. Great job!
-
-
-### Create the Custom Resource
+### Edit the Custom Resource
 
 Next, let's create the custom resource.
 
@@ -891,18 +823,100 @@ metadata:
 spec:
   # Add fields here
   size: 1
-  version: latest
+  version: latest 
 ``` 
 In the above code, we set the replicas to 1, and the 
-version to `latest`. We aren't using the version
-parameter currently in the controller code, but we will
-in a later part of the tutorial.
+version to `latest`. We will use `kubectl` to create this custom resource as part of a the [`build-and-deploy-janus.sh`](https://github.ibm.com/TT-ISV-org/operator/blob/main/scripts/build-and-deploy-janus.sh) script.
 
-And finally create the custom resources using the following command:
+Let's quickly take a look at the script:
 
 ```bash
+set -x
+set -e
+
+make generate
+make manifests
+make install
+
+export namespace=<add-namespace-here>
+
+export img=docker.io/<username-goes-here>/janusgraph-operator:latest
+
+cd config/manager
+kustomize edit set namespace $namespace
+kustomize edit set image controller=$img
+cd ../../
+cd config/default
+kustomize edit set namespace $namespace
+cd ../../
+
+make docker-build IMG=$img
+make docker-push IMG=$img
+make deploy IMG=$img
+
 kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 ```
+
+Note that you will have to edit the two export statements. 
+
+1. Add in your namespace. This is the name of your OpenShift project where you plan to deploy
+your operator.
+2. Add in your Docker Hub (or another repository where you will push your images to) username.
+
+Once you save the file after editing the export statements, it should look something like this:
+
+```bash
+set -x
+set -e
+
+img="horeaporutiu/janusgraph-operator:latest"
+namespace="janusgraph-demo-project"
+
+cd config/manager
+kustomize edit set namespace $namespace
+kustomize edit set image controller=$img
+cd ../../
+cd config/default
+kustomize edit set namespace $namespace
+cd ../../
+
+make docker-build IMG=$img
+make docker-push IMG=$img
+make deploy IMG=$img
+
+kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
+
+```
+
+Now we can run the script. To make sure that the script has the correct access control, you can 
+run `chmod 777 scripts/build-and-deploy-janus.sh`.
+
+## 6. Build, push, and deploy your operator
+It's time to finally build and deploy our operator! Let's do so by running the following script:
+
+```bash
+./scripts/build-and-deploy-janus.sh
+```
+
+Once the script has finished running successfully, you will see something like this:
+
+```bash
+deployment.apps/janusgraph-operator-controller-manager created
++ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
+janusgraph.graph.example.com/janusgraph-sample created
+```
+
+To make sure everything is working correctly, use the `oc get pods` command.
+
+```bash
+oc get pods
+
+NAME                                                     READY   STATUS    RESTARTS   AGE
+janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
+janusgraph-sample-0                                       1/1     Running   0          5s
+```
+
+This means your operator is up and running. Great job!
 
 ## 7. Verify operator
 
