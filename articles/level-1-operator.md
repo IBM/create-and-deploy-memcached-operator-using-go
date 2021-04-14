@@ -22,7 +22,7 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 * You want deep technical knowledge of how to implement a Level 1 operator
 
 ## Prerequisites
-* You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)
+* You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)git stat
 
 ## Steps
 0. [Overview](#0-overview)
@@ -30,8 +30,8 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 1. [Update the JanusGraph API](#2-Update-the-janusgraph-API)
 1. [Controller Logic: Creating a Service](#3-controller-logic-creating-a-service)
 1. [Controller Logic: Creating a StatefulSet](#4-controller-logic-creating-a-statefulset)
-1. [Update the user and the custom resource](#5-update-the-user-and-the-custom-resource)
-1. [Build, push, and deploy your operator](#6-build-push-and-deploy-your-operator)
+1. [Compile, build and push](#5-compile-build-and-push)
+1. [Deploy the operator](#6-deploy-the-operator)
 1. [Verify operator](#7-verify-operator)
 
 ## 0. Overview
@@ -191,10 +191,6 @@ Now that we have our API updated, our next step is to implement our controller l
 
 Once this is complete, your controller should look like the following:
 
-<b>Note: The rest of this step, and step 4 will walk through the controller code shown below. If you do not want a detailed explanation of the code, 
-skip down to [step 5](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/level-1-operator.md#5-update-the-user-and-the-custom-resource).</b>
-
-
 ```go
 
 package controllers
@@ -210,10 +206,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	graphv1alpha1 "github.com/example/janusgraph-operator/api/v1alpha1"
+	"github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
+	graphv1alpha1 "github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
 )
 
 // JanusgraphReconciler reconciles a Janusgraph object
@@ -223,9 +221,9 @@ type JanusgraphReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs/finalizers,verbs=update
+// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/finalizers,verbs=update
 // +kubebuilder:rbac:groups=apps,resources=pods;deployments;statefulsets;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;create;update;watch
 
@@ -349,7 +347,7 @@ func labelsForJanusgraph(name string) map[string]string {
 }
 
 // serviceForJanusgraph returns a Load Balancer service for our JanusGraph object
-func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph) *corev1.Service {
+func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -360,11 +358,15 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph)
 			Namespace: m.Namespace,
 		},
 		Spec: corev1.ServiceSpec{
-			ClusterIP: corev1.ClusterIPNone, //"None",
-			Ports: []corev1.ServicePort{{
-				Port: 8182,
-				Name: "janusgraph",
-			},
+			Type: corev1.ServiceTypeLoadBalancer,
+			Ports: []corev1.ServicePort{
+				{
+					Port: 8182,
+					TargetPort: intstr.IntOrString{
+						IntVal: 8182,
+					},
+					// NodePort: 30184,
+				},
 			},
 			Selector: ls,
 		},
@@ -374,7 +376,7 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph)
 }
 
 // statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
-func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgraph) *appsv1.StatefulSet {
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -403,7 +405,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgr
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "horeaporutiu/janusgraph:" + version,
+							Image: "sanjeevghimire/janusgraph:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
@@ -776,22 +778,22 @@ return ctrl.Result{}, nil
 ```
 
 ### Updating the status
-The last thing we will do is to update the status. This logic is explained in the [intermediate level memcached tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md#update-the-status-to-save-the-current-state-of-the-cluster).
 
 
-## 5. Update the user and the custom resource
+
+## 5. Compile, Build and Push
 
 Now, we will go ahead and login to our OpenShift cluster. 
-You can follow the steps described in the [previous 
-tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#5-compile-build-and-push). After you've logged in, go ahead and 
+You can follow the steps described in the previous 
+tutorial. After you've logged in, go ahead and 
 create a new project:
 
 ```bash
-oc new-project janusgraph-demo-project
-Now using project "janusgraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
+oc new-project janusraph-demo-project
+Now using project "janusraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
-### Edit the user in the manager.yaml file
+### Edit the manager.yaml file
 
 The `manager.yaml` file defines a Deployment manifest used to deploy the operator. That manifest includes a security context that tells Kubernetes to run the pods as a specific user (uid=65532). OpenShift already manages the users employed to run pods which is behavior the manifest should not override, so we will remove that from the manifest.
 
@@ -801,9 +803,83 @@ To do this, we can modify the `config/manager/manager.yaml` file to remove the f
 runAsUser: 65532
 ```
 
-Once we've saved the changes to the `config/manager/manager.yaml` file, we are ready to use the build and deploy script.
+### Create CRD and RBAC
 
-### Edit the Custom Resource
+Now that we have our controller code and API implemented, run the following command to implement the required Go type interfaces:
+
+```bash
+make generate
+```
+
+Once we've generated the code for our custom resource, we can use the `make manifests` command to generate CRD manifests and RBAC from KubeBuilder Markers:
+
+```bash
+make manifests
+```
+
+### Compile your Operator
+
+To compile the code run the following command in the terminal from your project root:
+```bash
+make install
+```
+
+### Set the Operator Namespace
+
+Next, we need to make sure to update our config to tell our operator to run in our own project namespace. Do this by issuing the following Kustomize 
+commands:
+
+```bash
+export IMG=docker.io/<username>/janusgraph-operator:<version>
+export NAMESPACE=<oc-project-name>
+
+cd config/manager
+kustomize edit set image controller=${IMG}
+kustomize edit set namespace "${NAMESPACE}"
+cd ../../
+
+cd config/default
+kustomize edit set namespace "${NAMESPACE}"
+cd ../../
+```
+
+### Build and Push your Image
+
+**Note:** You will need to have an account to a image repository like Docker Hub to be able to push your 
+operator image. Use `Docker login` to login.
+
+To build the Docker image run the following command:
+
+```bash
+make docker-build IMG=$IMG
+```
+and push the docker image to your registry using following from your terminal:
+
+```bash
+make docker-push IMG=$IMG
+```
+
+## 6. Deploy the operator
+
+To Deploy the operator run the following command from your terminal:
+
+```bash
+make deploy IMG=$IMG
+```
+
+To make sure everything is working correctly, use the `oc get pods` command.
+
+```bash
+oc get pods
+
+NAME                                                     READY   STATUS    RESTARTS   AGE
+janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
+```
+
+This means your operator is up and running. Great job!
+
+
+### Create the Custom Resource
 
 Next, let's create the custom resource.
 
@@ -818,100 +894,18 @@ metadata:
 spec:
   # Add fields here
   size: 1
-  version: latest 
+  version: latest
 ``` 
 In the above code, we set the replicas to 1, and the 
-version to `latest`. We will use `kubectl` to create this custom resource as part of a the [`build-and-deploy-janus.sh`](https://github.ibm.com/TT-ISV-org/operator/blob/main/scripts/build-and-deploy-janus.sh) script.
+version to `latest`. We aren't using the version
+parameter currently in the controller code, but we will
+in a later part of the tutorial.
 
-Let's quickly take a look at the script:
+And finally create the custom resources using the following command:
 
 ```bash
-set -x
-set -e
-
-make generate
-make manifests
-make install
-
-export namespace=<add-namespace-here>
-
-export img=docker.io/<username-goes-here>/janusgraph-operator:latest
-
-cd config/manager
-kustomize edit set namespace $namespace
-kustomize edit set image controller=$img
-cd ../../
-cd config/default
-kustomize edit set namespace $namespace
-cd ../../
-
-make docker-build IMG=$img
-make docker-push IMG=$img
-make deploy IMG=$img
-
 kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
 ```
-
-Note that you will have to edit the two export statements. 
-
-1. Add in your namespace. This is the name of your OpenShift project where you plan to deploy
-your operator.
-2. Add in your Docker Hub (or another repository where you will push your images to) username.
-
-Once you save the file after editing the export statements, it should look something like this:
-
-```bash
-set -x
-set -e
-
-img="horeaporutiu/janusgraph-operator:latest"
-namespace="janusgraph-demo-project"
-
-cd config/manager
-kustomize edit set namespace $namespace
-kustomize edit set image controller=$img
-cd ../../
-cd config/default
-kustomize edit set namespace $namespace
-cd ../../
-
-make docker-build IMG=$img
-make docker-push IMG=$img
-make deploy IMG=$img
-
-kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
-
-```
-
-Now we can run the script. To make sure that the script has the correct access control, you can 
-run `chmod 777 scripts/build-and-deploy-janus.sh`.
-
-## 6. Build, push, and deploy your operator
-It's time to finally build and deploy our operator! Let's do so by running the following script:
-
-```bash
-./scripts/build-and-deploy-janus.sh
-```
-
-Once the script has finished running successfully, you will see something like this:
-
-```bash
-deployment.apps/janusgraph-operator-controller-manager created
-+ kubectl apply -f config/samples/graph_v1alpha1_janusgraph.yaml
-janusgraph.graph.example.com/janusgraph-sample created
-```
-
-To make sure everything is working correctly, use the `oc get pods` command.
-
-```bash
-oc get pods
-
-NAME                                                     READY   STATUS    RESTARTS   AGE
-janusgraph-operator-controller-manager-54c5864f7b-znwws   2/2     Running   0          14s
-janusgraph-sample-0                                       1/1     Running   0          5s
-```
-
-This means your operator is up and running. Great job!
 
 ## 7. Verify operator
 
@@ -923,9 +917,27 @@ kubectl get all
 
 You should see one `janusgraph-sample` pod running.
 
+### Load and retrieve data from JanusGraph using gremlin console
+
+Now that we have our JanusGraph application running in a Pod, let's test it to make sure it works as expected. Please go to 
+[the next JanusGraph tutorial](https://github.ibm.com/TT-ISV-org/janusgraph-operator/blob/main/articles/level-1-janusgraph.md#4-load-and-test-retrieve-of-data-using-gremlin-console) to see the steps which need to be taken to test your JanusGraph application. 
+
+You'll use the data file in the `data` directory from this repo, so you may first need to clone the repo. 
+
+Once you reach the bottom of [step 4 of the next tutorial](https://github.ibm.com/TT-ISV-org/janusgraph-operator/blob/main/articles/level-1-janusgraph.md#4-load-and-test-retrieve-of-data-using-gremlin-console) you should be able to list all of your data, and should get a response like the following:
+
+```groovy
+gremlin> g.V().has("object_type", "flight").limit(30000).values("airlines").dedup().toList()
+==>MilkyWay Airlines
+==>Spartan Airlines
+==>Phoenix Airlines
+```
+
+If you've gotten the result from above, then great job! You're done testing your JanusGraph application. 
+
 ### Part 1 Conclusion
 
-**Congratulations!!** You've just created a level 1 
+**Congratulations!!**. You've just created a level 1 
 operator for JanusGraph, using the default 
 BerkeleyDB configuration. Great job! In the next 
 section of the tutorial, we will show how to create a 
