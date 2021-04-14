@@ -424,7 +424,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgr
 Now, let's take a closer look at the controller code from above and understand it. The first thing we must do at
 a high-level to create an operator for JanusGraph, is to create a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services). A headless service is a service in which 
 you do not specify the cluster IP. The service is used to control the network domain.
-
+<!-- 
 The first thing we will do 
 in the controller code is to fetch the `Janusgraph` resource from our cluster.
 
@@ -450,7 +450,7 @@ if err != nil && errors.IsNotFound(err) {
     srv := r.serviceForJanusgraph(janusgraph)
     ...
 }
-```
+``` -->
 
 ### Service for JanusGraph
 
@@ -539,8 +539,10 @@ srv := &corev1.Service{
 **Note: we got port 8182 from the official JanusGraph Docker image.** This means that when configuring your own service, you should read 
 the documentation to learn which port the image should run on.
 
-Notice that at the top, we've filled out the [`ObjectMeta`](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta) 
-field with the name and namespace of our custom resource. This will be the metadata associated with this resource. In the `Spec` field, 
+<!-- Notice that at the top, we've filled out the [`ObjectMeta`](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta) 
+field with the name and namespace of our custom resource. This will be the metadata associated with this resource.  -->
+
+In the `Spec` field, 
 we use type load balancer, since we will want to be able to connect to the service later on via an external IP. 
 <!-- 
  the 
@@ -553,12 +555,12 @@ For the `Selector` field, we want to make sure to target only Pods that are part
 create a [`ServiceTypeLoadBalancer`](https://pkg.go.dev/k8s.io/api/core/v1#ServiceType). Load balancers have an extra `NodePort`
 field, which is set to `30184` in our case.  -->
 
-Once we've finished configuring the service, we will return it the service, i.e. we will return a `corev1.Service` object.  
+<!-- Once we've finished configuring the service, we will return it the service, i.e. we will return a `corev1.Service` object.  
 
 ```go 
 ctrl.SetControllerReference(m, srv, r.Scheme)
 return srv
-```
+``` -->
 <!-- 
 ### Updating the cluster state
 
@@ -681,14 +683,14 @@ Next, we have the heart of the function. This is when we will use the `appsv1` p
 
 `dep := &appsv1.StatefulSet{`
 
-We will create the metadata for the object as we did for the service:
+<!-- We will create the metadata for the object as we did for the service:
 
 ```go
 ObjectMeta: metav1.ObjectMeta{
 	Name:      m.Name,
 	Namespace: m.Namespace,
 },
-```
+``` -->
 
 Next, in the `Spec` section of our StatefulSet, we use the `replicas` which
 we set earlier. 
@@ -739,14 +741,14 @@ Ports: []corev1.ContainerPort{
 	},
 },
 ```
-
-After we've specified all of the details of the 
+Once the configuration is done, we return the StatefulSet object.
+<!-- After we've specified all of the details of the 
 StatefulSet, we return the object:
 
 ```go
 ctrl.SetControllerReference(m, dep, r.Scheme)
 return dep
-```
+``` -->
 
 
 <!-- ### Updating the cluster state with our StatefulSet
