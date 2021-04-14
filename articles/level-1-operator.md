@@ -953,10 +953,9 @@ If you've gotten the result from above, then great job! You're done testing your
 
 ### Part 1 Conclusion
 
-**Congratulations!!**. You've just created a level 1 
+**Congratulations!!** You've just created a level 1 
 operator for JanusGraph, using the default 
-BerkeleyDB configuration. Great job! In the next 
-section of the tutorial, we will show how to create a 
+BerkeleyDB configuration. Great job! In the [next section](https://github.ibm.com/TT-ISV-org/janusgraph-operator/blob/main/articles/level-1-janusgraph.md) of the tutorial, we will show how to create a 
 more complex level 1 operator for JanusGraph, using 
 Cassandra as the backend storage. We will also show
 how to scale the JanusGraph application up and down, 
