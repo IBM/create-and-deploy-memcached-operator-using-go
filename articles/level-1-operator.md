@@ -192,7 +192,6 @@ Now that we have our API updated, our next step is to implement our controller l
 Once this is complete, your controller should look like the following:
 
 ```go
-
 package controllers
 
 import (
@@ -210,8 +209,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
-	graphv1alpha1 "github.ibm.com/TT-ISV-org/janusgraph-operator/api/v1alpha1"
+	graphv1alpha1 "github.com/example/janusgraph-operator/api/v1alpha1"
 )
 
 // JanusgraphReconciler reconciles a Janusgraph object
@@ -221,9 +219,9 @@ type JanusgraphReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=graph.ibm.com,resources=janusgraphs/finalizers,verbs=update
+// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=graph.example.com,resources=janusgraphs/finalizers,verbs=update
 // +kubebuilder:rbac:groups=apps,resources=pods;deployments;statefulsets;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods;services;persistentvolumeclaims;persistentvolumes;,verbs=get;list;create;update;watch
 
@@ -347,7 +345,7 @@ func labelsForJanusgraph(name string) map[string]string {
 }
 
 // serviceForJanusgraph returns a Load Balancer service for our JanusGraph object
-func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *corev1.Service {
+func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph) *corev1.Service {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -365,7 +363,6 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 					TargetPort: intstr.IntOrString{
 						IntVal: 8182,
 					},
-					// NodePort: 30184,
 				},
 			},
 			Selector: ls,
@@ -376,7 +373,7 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *v1alpha1.Janusgraph) *cor
 }
 
 // statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
-func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgraph) *appsv1.StatefulSet {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -405,7 +402,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "sanjeevghimire/janusgraph:" + version,
+							Image: "horeaporutiu/janusgraph:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
