@@ -30,8 +30,8 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 1. [Update the JanusGraph API](#2-Update-the-janusgraph-API)
 1. [Controller Logic: Creating a Service](#3-controller-logic-creating-a-service)
 1. [Controller Logic: Creating a StatefulSet](#4-controller-logic-creating-a-statefulset)
-1. [Compile, build and push](#5-compile-build-and-push)
-1. [Deploy the operator](#6-deploy-the-operator)
+1. [Update the user and the custom resource](#5-Update-the-user-and-the-custom-resource)
+1. [Build, push, and deploy your operator](#6-Build-push-and-deploy-your-operator)
 1. [Verify operator](#7-verify-operator)
 
 ## 0. Overview
