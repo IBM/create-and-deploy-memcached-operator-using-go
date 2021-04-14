@@ -22,7 +22,7 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 * You want deep technical knowledge of how to implement a Level 1 operator
 
 ## Prerequisites
-* You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)git stat
+* You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)
 
 ## Steps
 0. [Overview](#0-overview)
