@@ -59,7 +59,21 @@ Kubernetes needs operators to automate tasks that are normally performed manuall
 To use an operator, you must first deploy the operator as a workload in your cluster. You can deploy it like 
 any other workload, via the Kubernetes CLI or using a Helm chart. Additionally, you can make use of Operator Hub 
 or deploy your operator through the Operator Lifecycle Manager.
- 
+
+## Operator technologies
+
+Operators are usually implemented in one of three main technologies: Go, Ansible, or Helm.
+
+* **Go**: Code written in Go is very powerful and can do almost anything Kubernetes can do. Kubernetes itself is implemented in Go, so operators implemented in Go are a good fit.
+* **Ansible**: Ansible is a good choice for infrastructure teams that have already written Ansible modules. Ansible is declarative and human-readable, and can express almost as much functionality as Go.
+* **Helm**: Simpler to implement, but functionality is limited to Helm features.
+
+For the rest of the learning path, we will use Go to
+implement a Kubernetes operator, as 71% of operators from OperatorHub.io are written in Go. Also, Kubernetes itself is written in Go, so this makes writing the
+operator which interacts with the Kubernetes API much easier.
+
+You can read more about the pros and cons of each approach in [Build Your Kubernetes Operator With the Right Tool](https://www.openshift.com/blog/build-your-kubernetes-operator-with-the-right-tool). The Operator SDK supports all three technologies.
+
 ## Operator SDK
 
 The [Operator SDK](https://sdk.operatorframework.io/) is a set of open source tools to build, test, and package operators. The SDK CLI enables you to scaffold a project and also provides commands to generate code. The SDK uses [make](https://en.wikipedia.org/wiki/Make_(software)), a build automation tool that runs commands configured in a Makefile to generate executable code and libraries from source code. 
@@ -131,19 +145,6 @@ We will only cover the first level of the capability levels in this article, but
 ![Operator Hub](./images/operatorHub.png)
 
 Check out [How to contribute an Operator](https://operatorhub.io/contribute) for details of how to package, test, preview, and submit your operator for addition to the Hub. 
-
-## How to implement an operator
-
-Operators are usually implemented in three main technologies: Go, Helm, and Ansible.
-
-* Go: Implementation is more complex, but there is no limit on on the functionality you want to implement.
-* Ansible: Implementation is human-readable, and can express almost as much functionality as Go. 
-* Helm: Simple implementation, but functionality is limited to Helm features. 
-
-You can read more about the pros and cons of each approach from
-this [Red Hat article](https://www.openshift.com/blog/build-your-kubernetes-operator-with-the-right-tool). For the rest of the learning path, we will use Go to 
-implement a Kubernetes operator, as 71% of operators from OperatorHub.io are written in Go. Also, Kubernetes itself is written in Go, so this makes writing the 
-operator which interacts with the Kubernetes API much easier. 
 
 ## Conclusion
 
