@@ -134,7 +134,13 @@ Check out [How to contribute an Operator](https://operatorhub.io/contribute) for
 
 ## How to implement an operator
 
-Operators are usually implemented in three main technologies: Go, Helm, and Ansible. You can read more about the pros and cons of each approach from
+Operators are usually implemented in three main technologies: Go, Helm, and Ansible.
+
+* Go: Implementation is more complex, but there is no limit on on the functionality you want to implement.
+* Ansible: Implementation is human-readable, and can express almost as much functionality as Go. 
+* Helm: Simple implementation, but functionality is limited to Helm features. 
+
+You can read more about the pros and cons of each approach from
 this [Red Hat article](https://www.openshift.com/blog/build-your-kubernetes-operator-with-the-right-tool). For the rest of the learning path, we will use Go to 
 implement a Kubernetes operator, as 71% of operators from OperatorHub.io are written in Go. Also, Kubernetes itself is written in Go, so this makes writing the 
 operator which interacts with the Kubernetes API much easier. 
