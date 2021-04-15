@@ -132,6 +132,13 @@ We will only cover the first level of the capability levels in this article, but
 
 Check out [How to contribute an Operator](https://operatorhub.io/contribute) for details of how to package, test, preview, and submit your operator for addition to the Hub. 
 
+## How to implement an operator
+
+Operators are usually implemented in three main technologies: Go, Helm, and Ansible. You can read more about the pros and cons of each approach from
+this [Red Hat article](https://www.openshift.com/blog/build-your-kubernetes-operator-with-the-right-tool). For the rest of the learning path, we will use Go to 
+implement a Kubernetes operator, as 71% of operators from OperatorHub.io are written in Go. Also, Kubernetes itself is written in Go, so this makes writing the 
+operator which interacts with the Kubernetes API much easier. 
+
 ## Conclusion
 
 In this article, you learned how operators can extend the base Kubernetes functionality using custom controllers and custom resources. You also learned that the Operator SDK offers code scaffolding tools to enable you to write your Operator more easily, and offers guidelines for the capability levels of an operator. Lastly, I introduced you to OperatorHub.io where you can browse existing operators and submit your own.
