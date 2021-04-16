@@ -23,6 +23,9 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 
 ## Prerequisites
 * You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)
+* You have some knowledge of Kubernetes Operators concepts
+* You've created [Memcached Operator](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md)
+* You've read [Deep Dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md)
 
 ## Steps
 0. [Overview](#0-overview)
@@ -40,16 +43,14 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 
 According to the Operator Capability Levels, a Level 1 Operator is one which has ["automated application provisioning and configuration management"](https://sdk.operatorframework.io/docs/advanced-topics/operator-capabilities/operator-capabilities/#level-1---basic-install). 
 
-Your operator should have the following features to be qualified as a Level 1 Operator
+### Requirements for Level 1 Operator
+
+Your operator should have the following features to be qualified as a Level 1 Operator:
+
 * Provision an application through a custom resource
 * Allow **all** installation configuration details to be specified in the `spec` section of the CR 
 * Should be possible to install the operator in multiple ways (kubectl, OLM, OperatorHub)
 * All configuration files should be able to be created within Kubernetes 
-
-### How should my operator deploy the operand? 
-
-Your operator should have the following features when deploying an operand:
-
 * The operator must wait for the operand to reach a healthy state
 * The operator must use the `status` subresource of the custom resource to communicate with the user when the operand or application has reconciled
 
@@ -64,7 +65,7 @@ operator for. Currently, there is no JanusGraph operator on OperatorHub (as of M
 
 **Important: JanusGraph is an example. The main ideas learned from JanusGraph are meant to be applied to any application or service you want to create an operator for.** 
 
-### JanusGraph operator - Part 1
+### JanusGraph operator w/ BerkeleyDB requirements
 
 With that aside, let's understand what the JanusGraph operator must to do to successfully run JanusGraph on OpenShift. More specifically, we will show how 
 to implement the below changes in the controller code which will run each time a change to the custom resource is observed. 
@@ -491,6 +492,13 @@ func (r *JanusgraphReconciler) serviceForJanusgraph(m *graphv1alpha1.Janusgraph)
 	return srv
 }
 ```
+
+Let's now compare this implementation to a similar yaml implementation by analyzing the picture below.
+
+![operator structure](../images/service-comparison.png)
+
+You can see that the yaml and Golang implementations of a Kubernetes service are very similar, with small syntax differences. 
+
 <!-- ### Labels for JanusGraph
 
 Let's take it step by step. First, we create labels by calling the `labelsForJanusgraph` function:
@@ -616,12 +624,13 @@ return ctrl.Result{}, nil
 If there are no StatefulSet resources in the cluster, then we can go ahead and create one. We will call the 
 `deploymentForJanusgraph(janusgraph)` function to create our deployment.  -->
 
-### Understanding the deploymentForJanusgraph function
+### Understanding the statefulSetForJanusgraph function
 
 Let's dive into the `statefulSetForJanusgraph(janusgraph)` function. It looks like the following:
 
 ```go
-func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) *appsv1.StatefulSet {
+// statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
+func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgraph) *appsv1.StatefulSet {
 
 	//fetch labels
 	ls := labelsForJanusgraph(m.Name)
@@ -650,7 +659,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "sanjeevghimire/janusgraph:" + version,
+							Image: "horeaporutiu/janusgraph:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
@@ -658,9 +667,8 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 									Name:          "janusgraph",
 								},
 							},
-							Env: []corev1.EnvVar{},
-						}},
-					RestartPolicy: corev1.RestartPolicyAlways,
+						},
+					},
 				},
 			},
 		},
@@ -669,6 +677,15 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 	return statefulSet
 }
 ```
+
+Now, let's compare this Golang implementation of a Kubernetes StatefulSet with a similar yaml implementation. Take some time to 
+analyze the picture below, since a lot of Kubernetes resources are written in yaml, so it's useful to be familiar with yaml syntax as well.
+
+![operator structure](../images/statefulset-comparison.png)
+
+From the image above, you can see that the yaml implementation of a StatefulSet is very similar to the Golang implementation. This should give you 
+confidence to write the same resource in both languages. 
+
 
 <!-- First, we get the labels as we did before with our service:
 

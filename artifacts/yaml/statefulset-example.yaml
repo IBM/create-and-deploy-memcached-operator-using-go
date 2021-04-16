@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: example-statefulset
+  namespace: janusgraph-demo-project4
+spec:
+  serviceName: example-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      labels:
+        app: example
+    spec:
+      containers:
+      - name: janusgraph
+        image: horeaporutiu/janusgraph:latest
+        ports:
+        - containerPort: 8182
+          name: janusgraph
