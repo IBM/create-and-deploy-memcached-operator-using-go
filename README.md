@@ -28,8 +28,8 @@ level 1 operator.
   backend storage. This will be a simple approach, and only recommended for testing purposes.
   * Part 2 will feature Cassandra as the backend storage for JanusGraph, which is more suitable for for production use cases. 
 
-2. [The Operator Cookbook: How to make an operator](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md): 
+2. [The Operator Cookbook: How to make an operator](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md): In this article, we will discuss common building blocks for level 1 operators, and what logic a service vendor would need to write themselves in order to build a level 1 operator.
 
-In this article, we will discuss common building blocks for level 1 operators, and what logic a service vendor would need to write themselves in order to build a level 1 operator.
+
 
 
