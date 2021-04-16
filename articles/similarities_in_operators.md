@@ -1,4 +1,5 @@
-# Understand the building blocks of level 1 operators
+# The Operator Cookbook: How to make an operator 
+
 In this article, we will discuss common building blocks for level 1 operators, and what logic a service vendor would need to write themselves in order
 to build a level 1 operator. We will use the 
 [Operator SDK Capability Levels](https://operatorframework.io/operator-capabilities/) as our guidelines for what is considered a 
@@ -26,7 +27,93 @@ Those are usually the main characteristics of an operator:
 
 # The API
 When building an operator, the easiest way to get started is by using the [Operator SDK](https://sdk.operatorframework.io/). Once you've 
-finished the first steps such as using the [`operator sdk init`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#1-create-a-new-project-using-operator-sdk) and [`operator sdk create api`]() commands, 
+finished the first steps such as using the [`operator sdk init`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#1-create-a-new-project-using-operator-sdk) and [`operator sdk create api`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#2-create-api-and-custom-controller) commands, you'll want to update the API.
+
+This is where we design the structure of our custom resource. For simple cases, you'll need a minimum of the `Size` and `Version` fields 
+in the `Spec` section of your custom resource. 
+
+The Operator SDK generates the following code for your API:
+
+```go
+package v1alpha1
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+type ExampleSpec struct {
+	Foo string `json:"foo,omitempty"`
+}
+type ExampleStatus struct {
+}
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+type Example struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MemcachedSpec   `json:"spec,omitempty"`
+	Status MemcachedStatus `json:"status,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+
+type ExampleList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Example `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&Example{}, &ExampleList{})
+}
+```
+
+First, we will update the `Spec` section, like so:
+
+```go
+// ExampleSpec defines the desired state of Example database
+type ExampleSpec struct {
+	Size    int32  `json:"size"`
+	Version string `json:"version"`
+}
+```
+
+Next, we will update the `Status` section like so: 
+
+```go
+// ExampleStatus defines the observed state of Example database
+type ExampleStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
+}
+```
+
+And then for the last part of specifying the fields of your `Example` custom resource:
+
+```go
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
+// Example is the Schema for the example API
+type Example struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   ExampleSpec   `json:"spec,omitempty"`
+	Status ExampleStatus `json:"status,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+
+// ExampleList contains a list of Example
+type ExampleList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Example `json:"items"`
+}
+```
+
+That's it for your API.
 
 # The main logic for your operator
 
