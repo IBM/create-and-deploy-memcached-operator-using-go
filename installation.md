@@ -38,15 +38,15 @@ version is the easiest, but is only available for macOS.
 
 ## 1. Install Operator SDK
 
-### Install operator-sdk (version 1.0+) for macOS
+### Install operator-sdk (version 1.5+) for macOS
 
 * Use the homebrew command `brew install operator-sdk`
 to install operator-sdk for macOS. Note that this guide 
-is tested for operator-sdk version 1.0+, since the commands have changed with the 1.0 release. 
+is tested for operator-sdk version 1.5+, since the commands have changed with the 1.0 release. 
  If you don't have homebrew 
 installed, install it from [here](https://docs.brew.sh/Installation).
 
-### Install operator-sdk (version 1.0+) for Linux or Windows
+### Install operator-sdk (version 1.5+) for Linux or Windows
 
 * For Linux or Windows, install the operator-sdk (version 1.0+) from the GitHub release [here](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that
 commands have changed with the 1.0 release.
@@ -62,7 +62,7 @@ $ operator-sdk version
 You should see output like this:
 
 ```bash 
-operator-sdk version: "v1.3.0", commit: "1abf57985b43bf6a59dcd18147b3c574fa57d3f6", kubernetes version: "v1.19.4", go version: "go1.15.5", GOOS: "darwin", GOARCH: "amd64"
+operator-sdk version: "v1.5.0", commit: "1abf57985b43bf6a59dcd18147b3c574fa57d3f6", kubernetes version: "v1.19.4", go version: "go1.15.5", GOOS: "darwin", GOARCH: "amd64"
 ```
 
 Now, let's ensure kustomize is installed.
