@@ -499,6 +499,11 @@ Let's now compare this implementation to a similar yaml implementation by analyz
 
 You can see that the yaml and Golang implementations of a Kubernetes service are very similar, with small syntax differences. 
 
+1. To create a specific Kubernetes resource you will use the `kind` keyword in yaml, versus `corev1.Service` in Golang.
+2. The syntax for metadata is slightly different - yaml is `metadata` while in Golang we use `ObjectMeta`.
+3. You can see that above the port statement, we specify type `LoadBalancer`. We Also set both `port` and `targetPort` to be 8182. **Note: we got port 8182 from the official JanusGraph Docker image.** This means that when configuring your own service, you should read 
+the documentation to learn which port the image should run on.
+4. We use a selector to make sure that only Pods that match our labels can be accessed via this service.  
 <!-- ### Labels for JanusGraph
 
 Let's take it step by step. First, we create labels by calling the `labelsForJanusgraph` function:
@@ -517,7 +522,7 @@ This function returns a map which looks like this:
 }
 ```
 The way that a service works is that it will target any Pod with the `"app": "Janusgraph"` and `"janusgraph_cr": "<name>"` label, that is on the port 8182 (as shown in the code above). -->
-
+<!-- 
 ### Configuring the service
 
 Once we've created our labels, we will create the service using the [corev1.Service](https://pkg.go.dev/k8s.io/api/core/v1#Service) package. 
@@ -543,13 +548,12 @@ srv := &corev1.Service{
 		Selector: ls,
 	},
 }
-```
+``` -->
 
-In the `Spec` field, 
-we use type load balancer, since we will want to be able to connect to the service later on via an external IP. 
+<!-- In the `Spec` field, 
+we use type load balancer, since we will want to be able to connect to the service later on via an external IP.  -->
 
-**Note: we got port 8182 from the official JanusGraph Docker image.** This means that when configuring your own service, you should read 
-the documentation to learn which port the image should run on.
+
 
 <!-- Notice that at the top, we've filled out the [`ObjectMeta`](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#ObjectMeta) 
 field with the name and namespace of our custom resource. This will be the metadata associated with this resource.  -->
@@ -678,13 +682,25 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgr
 }
 ```
 
+Note that we we grab the values from the `Spec` section of our custom resource here. These will determine how many pods to create, and which version of JanusGraph to deploy.
+
+```go
+replicas := m.Spec.Size
+version := m.Spec.Version
+```
+
 Now, let's compare this Golang implementation of a Kubernetes StatefulSet with a similar yaml implementation. Take some time to 
 analyze the picture below, since a lot of Kubernetes resources are written in yaml, so it's useful to be familiar with yaml syntax as well.
 
 ![operator structure](../images/statefulset-comparison.png)
 
-From the image above, you can see that the yaml implementation of a StatefulSet is very similar to the Golang implementation. This should give you 
-confidence to write the same resource in both languages. 
+1. We set the metadata, very similarly how we did when we created the service.
+2. We set the number of replicas we want, by using the value that is entered in the custom resource. We use another selector, this time [`MatchLabels`](https://pkg.go.dev/k8s.io/apimachinery@v0.19.2/pkg/apis/meta/v1#LabelSelector.MatchLabels). This works in a very similar fashion to the selector we used for the service. 
+3. Next we specify the Docker image we want to use for our container, and the name of the container.
+4. We set the containerPort which is the port which is exposed on the pod's IP address.
+
+<!-- From the image above, you can see that the yaml implementation of a StatefulSet is very similar to the Golang implementation. This should give you 
+confidence to write the same resource in both languages.  -->
 
 
 <!-- First, we get the labels as we did before with our service:
@@ -692,12 +708,7 @@ confidence to write the same resource in both languages.
 ```go
 ls := labelsForJanusgraph(m.Name)
 ``` -->
-Note that we we grab the values from the `Spec` section of our custom resource here. These will determine how many pods to create, and which version of JanusGraph to deploy.
 
-```go
-replicas := m.Spec.Size
-version := m.Spec.Version
-```
 
 Next, we have the heart of the function. This is when we will use the `appsv1` package to create our StatefulSet:
 
