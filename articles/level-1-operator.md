@@ -696,7 +696,8 @@ analyze the picture below, since a lot of Kubernetes resources are written in ya
 
 1. We set the metadata, very similarly how we did when we created the service.
 2. We set the number of replicas we want, by using the value that is entered in the custom resource. We use another selector, this time [`MatchLabels`](https://pkg.go.dev/k8s.io/apimachinery@v0.19.2/pkg/apis/meta/v1#LabelSelector.MatchLabels). This works in a very similar fashion to the selector we used for the service. 
-3. Next we specify the Docker image we want to use for our container, and the name of the container.
+3. Next we specify the Docker image we want to use for our container, and the name of the container. In this case, we are using a modified version of 
+the JanusGraph Docker image, called `horeaporutiu/jansugraph`. It's specifically modified to enable it to run on OpenShift.
 4. We set the containerPort which is the port which is exposed on the pod's IP address.
 
 <!-- From the image above, you can see that the yaml implementation of a StatefulSet is very similar to the Golang implementation. This should give you 
@@ -710,9 +711,9 @@ ls := labelsForJanusgraph(m.Name)
 ``` -->
 
 
-Next, we have the heart of the function. This is when we will use the `appsv1` package to create our StatefulSet:
+<!-- Next, we have the heart of the function. This is when we will use the `appsv1` package to create our StatefulSet:
 
-`dep := &appsv1.StatefulSet{`
+`dep := &appsv1.StatefulSet{` -->
 
 <!-- We will create the metadata for the object as we did for the service:
 
@@ -723,7 +724,7 @@ ObjectMeta: metav1.ObjectMeta{
 },
 ``` -->
 
-Next, in the `Spec` section of our StatefulSet, we use the `replicas` which
+<!-- Next, in the `Spec` section of our StatefulSet, we use the `replicas` which
 we set earlier. 
 
 The `Selector` field defines how the StatefulSet finds which Pods to manage:
@@ -733,21 +734,20 @@ Replicas: &replicas,
 Selector: &metav1.LabelSelector{
 	MatchLabels: ls,
 },
-```
+``` -->
 
-Next, we pass in the service which we created earlier and create use the `corev1.PodTemplateSpec` to create our 
+<!-- Next, we pass in the service which we created earlier and create use the `corev1.PodTemplateSpec` to create our 
 Pods:
 
 ```go
 ServiceName: m.Name + "-service",
 Template: corev1.PodTemplateSpec{
 ...
-```
+``` -->
 
-Then, we use the `corev1.PodSpec` and `corev1.Container`
+<!-- Then, we use the `corev1.PodSpec` and `corev1.Container`
 package to specify which image we want to use to 
-create our container. We will use our forked version of 
-the JanusGraph Docker image, called `horeaporutiu/jansugraph`:
+create our container.
 
 ```go
 Spec: corev1.PodSpec{
@@ -771,8 +771,8 @@ Ports: []corev1.ContainerPort{
 		Name:          "janusgraph",
 	},
 },
-```
-Once the configuration is done, we return the StatefulSet object.
+``` -->
+<!-- Once the configuration is done, we return the StatefulSet object. -->
 <!-- After we've specified all of the details of the 
 StatefulSet, we return the object:
 
@@ -829,7 +829,7 @@ oc new-project janusgraph-demo-project
 Now using project "janusgraph-demo-project" on server "https://c116-e.us-south.containers.cloud.ibm.com:31047".
 ```
 
-### Edit the user in the manager.yaml file
+<!-- ### Edit the user in the manager.yaml file
 
 The `manager.yaml` file defines a Deployment manifest used to deploy the operator. That manifest includes a security context that tells Kubernetes to run the pods as a specific user (uid=65532). OpenShift already manages the users employed to run pods which is behavior the manifest should not override, so we will remove that from the manifest.
 
@@ -839,7 +839,7 @@ To do this, we can modify the `config/manager/manager.yaml` file to remove the f
 runAsUser: 65532
 ```
 
-Once we've saved the changes to the `config/manager/manager.yaml` file, we are ready to use the build and deploy script.
+Once we've saved the changes to the `config/manager/manager.yaml` file, we are ready to use the build and deploy script. -->
 
 ### Edit the Custom Resource
 
