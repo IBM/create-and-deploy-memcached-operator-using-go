@@ -1,4 +1,4 @@
-Certifying a RedHat Openshift Operator image
+Certifying a RedHat Openshift Operators 
 
  At a high level the Operator certification steps include:
  1. Confirming that the application’s container images and Operator image is Red Hat certified. Certified images must be:
