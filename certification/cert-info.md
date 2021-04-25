@@ -13,25 +13,45 @@ Certifying a RedHat Openshift Operator image
 Check out the detailed guide to OpenShift Operator Certification
 - [Partner Guide for OpenShift Operator and Container Certification](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/)
 
-Focus areas:
-1. In general, to have a Certified Operator, you must first complete the Container Application Certification for all the applications you will be deploying with your operator. 
+In general, to have a Certified Operator, you must first complete the Container Application Certification for all the applications you will be deploying with your operator. 
 
     ![Certification workflow](https://github.ibm.com/TT-ISV-org/operator/blob/operator-certification/images/Certification-workflow.png)
 
-Once you have certified your container application(s); you can move onto Building your Operator. Once that is complete you can continue the Operator Certification. The first step for Operator Certification is Certifying your Operator Image: 
+The certification of an operator as shown in the above image is done 2 stages as follows:
 
+1. Operator image certification process:
 
+    . Create a Container Image project in https://connect.redhat.com/projects
 
-2. Technical Prerequisites include 
+    . Update operator files for certification
+    
+    . Build and test the operator image
+    
+    . Upload the operator image to scan.connect.redhat.com
 
+2. Operator bundle image certification process:
 
-1. Operator Image Certification
+    . Create an Operator Bundle Image project in https://connect.redhat.com/projects
 
+    . Bundle the operator
 
+    . Update operator bundle files for certification
+    
+    . Build and test the bundle image
 
-Certifying Operator bundle image
+    . Upload the operator bundle image to scan.connect.redhat.com
 
+How to create the Operator images:
+There are 3 kind of Operators available according to the Operator maturity model as follows:
 
+1. Building a Helm Operator: 
+https://redhat-connect.gitbook.io/certified-operator-guide/helm-operators/building-a-helm-operator
+
+2. Building an Ansible Operator: 
+https://redhat-connect.gitbook.io/certified-operator-guide/ansible-operators/building-an-ansible-operator
+
+3. Building a Golang Operator:
+https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#develop-and-deploy-a-memcached-operator-on-openshift-container-platform
 
 Red Hat awards OpenShift Certification Badges to Kubernetes Operators built and tested for specific-use, cloud-native cases—like networking and storage—and comply with industry-standard specifications or domain best practices. Current OpenShift Certification Badges are:
 
