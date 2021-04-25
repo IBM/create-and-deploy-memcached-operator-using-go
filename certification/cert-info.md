@@ -1,4 +1,4 @@
-Certifying a RedHat Openshift Operator
+Certifying a RedHat Openshift Operator image
 
  At a high level the Operator certification steps include:
  1. Confirming that the application’s container images and Operator image is Red Hat certified. Certified images must be:
@@ -28,6 +28,11 @@ Once you have certified your container application(s); you can move onto Buildin
 1. Operator Image Certification
 
 
+
+Certifying Operator bundle image
+
+
+
 Red Hat awards OpenShift Certification Badges to Kubernetes Operators built and tested for specific-use, cloud-native cases—like networking and storage—and comply with industry-standard specifications or domain best practices. Current OpenShift Certification Badges are:
 
 • Container Storage Interface (CSI)—for providing and supporting a block/file persistent storage backend for OpenShift.
@@ -44,3 +49,4 @@ Other references:
 - [Red Hat Ecosystem Catalog: Certified OpenShift Operators](https://catalog.redhat.com/software/operators/explore)
 - [OpenShift Certification Badges](https://www.openshift.com/blog/badge-announcement-blog) (blog)
 - [Certify your Operator Image](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/certify-your-operator/creating-an-operator-project)
+- [Certified oprator build guide](https://redhat-connect.gitbook.io/certified-operator-guide/)
