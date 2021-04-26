@@ -1,4 +1,4 @@
-Certifying a RedHat Openshift Operators 
+**Certifying a RedHat Openshift Operators**
 
  At a high level the Operator certification steps include:
  1. Confirming that the application’s container images and Operator image is Red Hat certified. Certified images must be:
@@ -54,7 +54,7 @@ https://redhat-connect.gitbook.io/certified-operator-guide/ansible-operators/bui
 https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#develop-and-deploy-a-memcached-operator-on-openshift-container-platform
 
 
-Red Hat OpenShift Certification Badges:
+**Red Hat OpenShift Certification Badges:**
 
 Red Hat awards OpenShift Certification Badges to Kubernetes Operators built and tested for specific-use, cloud-native cases—like networking and storage—and comply with industry-standard specifications or domain best practices. Current OpenShift Certification Badges are:
 
