@@ -254,12 +254,12 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	// fetch Service resource
-	serviceFound := &corev1.Service{}
-	log.Info("Checking for service")
-	//check for Service resources in our namespace, and with a "JanusGraph" name prefix
-	err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name + "-service", Namespace: janusgraph.Namespace}, serviceFound)
-	if err != nil && errors.IsNotFound(err) {
+	serviceExists, err := r.hasService(ctx, janusgraph)
+	if err != nil {
+		log.Error(err, "error checking for service")
+		return ctrl.Result{}, err
+	}
+	if !serviceExists {
 		srv := r.serviceForJanusgraph(janusgraph)
 		log.Info("Creating a new headless service", "Service.Namespace", srv.Namespace, "Service.Name", srv.Name)
 		err = r.Create(ctx, srv)
@@ -270,17 +270,14 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		// Service created successfully - return and requeue
 		log.Info("Janusgraph service created, requeuing")
 		return ctrl.Result{Requeue: true}, nil
-	} else if err != nil {
-		log.Error(err, "Failed to get service")
-		return ctrl.Result{}, err
 	}
 
-	// look for a resource of type StatefulSet
-	found := &appsv1.StatefulSet{}
-	// Check if the StatefulSet already exists in our namespace, if not create a new one
-	err = r.Get(ctx, types.NamespacedName{Name: janusgraph.Name, Namespace: janusgraph.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		// Define a new StatefulSet
+	statefulSetExists, err := r.hasStatefulSet(ctx, janusgraph)
+	if err != nil {
+		log.Error(err, "error checking for statefulSet")
+		return ctrl.Result{}, err
+	}
+	if !statefulSetExists {
 		statefulSet := r.statefulSetForJanusgraph(janusgraph)
 		log.Info("Creating a new Statefulset", "StatefulSet.Namespace", statefulSet.Namespace, "StatefulSet.Name", statefulSet.Name)
 		err = r.Create(ctx, statefulSet)
@@ -288,12 +285,9 @@ func (r *JanusgraphReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			log.Error(err, "Failed to create new StatefulSet", "StatefulSet.Namespace", statefulSet.Namespace, "StatefulSet.Name", statefulSet.Name)
 			return ctrl.Result{}, err
 		}
-		// StatefulSet created successfully - return and requeue
+		// Service created successfully - return and requeue
 		log.Info("StatefulSet created, requeuing")
-		return ctrl.Result{}, nil
-	} else if err != nil {
-		log.Error(err, "Failed to get StatefulSet")
-		return ctrl.Result{}, err
+		return ctrl.Result{Requeue: true}, nil
 	}
 
 	// look for resource of type PodList
@@ -421,11 +415,54 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgr
 	ctrl.SetControllerReference(m, statefulSet, r.Scheme)
 	return statefulSet
 }
+
+// hasService determines if the Kubernetes Service exists. Error is returned if there is some problem communicating with
+// Kubernetes.
+func (r *JanusgraphReconciler) hasService(ctx context.Context, m *graphv1alpha1.Janusgraph) (bool, error) {
+	service := &corev1.Service{}
+	err := r.Get(ctx, types.NamespacedName{Name: m.Name + "-service", Namespace: m.Namespace}, service)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// We got the expected error, which is that it's not found
+			return false, nil
+		}
+		// Unexpected error, some other problem?
+		return false, err
+	}
+	// We found it because we got no error
+	return true, nil
+}
+
+// hasService determines if the Kubernetes StatefulSet exists. Error is returned if there is some problem communicating with
+// Kubernetes.
+func (r *JanusgraphReconciler) hasStatefulSet(ctx context.Context, m *graphv1alpha1.Janusgraph) (bool, error) {
+	statefulSet := &appsv1.StatefulSet{}
+	err := r.Get(ctx, types.NamespacedName{Name: m.Name + "-service", Namespace: m.Namespace}, statefulSet)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// We got the expected error, which is that it's not found
+			return false, nil
+		}
+		// Unexpected error, some other problem?
+		return false, err
+	}
+	// We found it because we got no error
+	return true, nil
+}
 ```
 
 Now, let's take a closer look at the controller code from above and understand it. The first thing we must do at
 a high-level to create an operator for JanusGraph, is to create a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services). A headless service is a service in which 
 you do not specify the cluster IP. The service is used to control the network domain.
+
+First we check if there is a service:
+
+```go
+serviceExists, err := r.hasService(ctx, janusgraph)
+```
+
+If `hasService` returns false, then that means there is not currently a service in our project, so we should create one. We do so 
+by calling the `serviceForJanusgraph` function.
 <!-- 
 The first thing we will do 
 in the controller code is to fetch the `Janusgraph` resource from our cluster.
@@ -925,6 +962,8 @@ Now we can run the script. To make sure that the script has the correct access c
 run `chmod 777 scripts/build-and-deploy-janus.sh`.
 
 ## 6. Build, push, and deploy your operator
+**Note: Ensure you are logged into your Docker Hub account, otherwise the script may fail since you will need to push your image to a repository.**
+
 It's time to finally build and deploy our operator! Let's do so by running the following script:
 
 ```bash

@@ -29,8 +29,8 @@ Those are usually the main characteristics of an operator:
 When building an operator, the easiest way to get started is by using the [Operator SDK](https://sdk.operatorframework.io/). Once you've 
 finished the first steps such as using the [`operator sdk init`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#1-create-a-new-project-using-operator-sdk) and [`operator sdk create api`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#2-create-api-and-custom-controller) commands, you'll want to update the API.
 
-This is where we design the structure of our custom resource. For simple cases, you'll need a minimum of the `Size` and `Version` fields 
-in the `Spec` section of your custom resource. 
+This is where we design the structure of our custom resource. For simple cases, you'll likely use something like the `Size` and `Version` fields 
+in the `Spec` section of your custom resource.
 
 The Operator SDK generates the following code for your API:
 
@@ -130,6 +130,7 @@ Then you use the Get function to find resources of that type in your namespace.
 err = r.Get(ctx, req.NamespacedName, found)
 ```
 
+The main logic is shown below, and this is similar no matter what resource you want to ensure is running (Deployment, StatefulSet, Service, PVC).
 
 ```go
 
