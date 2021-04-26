@@ -15,7 +15,7 @@ Check out the detailed guide to OpenShift Operator Certification
 
 In general, to have a Certified Operator, you must first complete the Container Application Certification for all the applications you will be deploying with your operator. 
 
-    ![Certification workflow](https://github.ibm.com/TT-ISV-org/operator/blob/operator-certification/images/Certification-workflow.png)
+![Certification workflow](https://github.ibm.com/TT-ISV-org/operator/blob/operator-certification/images/Certification-workflow.png)
 
 The certification of an operator as shown in the above image is done 2 stages as follows:
 
