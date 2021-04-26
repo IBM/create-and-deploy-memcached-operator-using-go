@@ -53,6 +53,9 @@ https://redhat-connect.gitbook.io/certified-operator-guide/ansible-operators/bui
 3. Building a Golang Operator:
 https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#develop-and-deploy-a-memcached-operator-on-openshift-container-platform
 
+
+Red Hat OpenShift Certification Badges:
+
 Red Hat awards OpenShift Certification Badges to Kubernetes Operators built and tested for specific-use, cloud-native cases—like networking and storage—and comply with industry-standard specifications or domain best practices. Current OpenShift Certification Badges are:
 
 • Container Storage Interface (CSI)—for providing and supporting a block/file persistent storage backend for OpenShift.
