@@ -962,6 +962,8 @@ Now we can run the script. To make sure that the script has the correct access c
 run `chmod 777 scripts/build-and-deploy-janus.sh`.
 
 ## 6. Build, push, and deploy your operator
+**Note: Ensure you are logged into your Docker Hub account, otherwise the script may fail since you will need to push your image to a repository.**
+
 It's time to finally build and deploy our operator! Let's do so by running the following script:
 
 ```bash
