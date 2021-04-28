@@ -22,8 +22,9 @@ Those are usually the main characteristics of an operator:
 
 1. Create a Service if one does not exist
 2. Create a StatefulSet (Or Deployment) if one does not exist
-3. (optional) Create a PVC 
-4. Update the status
+3. (optional) Create a PVC
+4. Update replicas in your controller code 
+5. Update the status
 
 # The API
 When building an operator, the easiest way to get started is by using the [Operator SDK](https://sdk.operatorframework.io/). Once you've 
@@ -168,19 +169,20 @@ From our memcached example, we can can see that we set a variable to be what the
 we will check if the deployment's spec section has the same number of replicas as what is specified in the custom resource. 
 If the numbers don't match, then we will update the Replicas. 
 
+```go
 // Ensure the deployment size is the same as the spec
-	size := memcached.Spec.Size
-	if *found.Spec.Replicas != size {
-		found.Spec.Replicas = &size
-		err = r.Update(ctx, found)
-		if err != nil {
-			log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
-			return ctrl.Result{}, err
-		}
-		// Spec updated - return and requeue
-		return ctrl.Result{Requeue: true}, nil
+size := memcached.Spec.Size
+if *found.Spec.Replicas != size {
+	found.Spec.Replicas = &size
+	err = r.Update(ctx, found)
+	if err != nil {
+		log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+		return ctrl.Result{}, err
 	}
-
+	// Spec updated - return and requeue
+	return ctrl.Result{Requeue: true}, nil
+}
+```
 ## Update the status
 The last thing we need to do in any operator is to update the status. This can be done by using the
 reconciler [`Status().Update()`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.2/pkg/client#StatusWriter.Update) function. We 
