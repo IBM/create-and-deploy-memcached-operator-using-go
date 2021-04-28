@@ -18,14 +18,13 @@ In the Memcached example, we created a Deployment resource for the manager, whic
 applied our custom resource using `kubectl` we created a Memcached Deployment, which is the operand, or the application we 
 are deploying. Similarly, in the JanusGraph operator we create a StatefulSet, instead of a Deployment, and then create a service. 
 
-Those are usually the main characteristics of an operator:
+Below are the main main characteristics of a level 1 operator that we will cover:
 
-1. Create a Service if one does not exist
-2. Create a StatefulSet (Or Deployment) if one does not exist
-3. (optional) Create a PVC
-4. Update replicas in your controller code 
-5. Update the status
-
+1. [Define the API](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#the-api)
+2. [Create Kubernetes resources if they do not exist](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#the-main-logic-for-your-operator)
+3. [Update replicas in your controller code](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#replicas-should-be-set-in-the-cr-and-updated-in-the-controller-code)
+4. [Update the status](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#update-the-status)
+5. [Scale up and down via custom resource](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#ensure-operator-can-scale-up-and-down-via-the-custom-resource)
 # The API
 When building an operator, the easiest way to get started is by using the [Operator SDK](https://sdk.operatorframework.io/). Once you've 
 finished the first steps such as using the [`operator sdk init`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#1-create-a-new-project-using-operator-sdk) and [`operator sdk create api`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#2-create-api-and-custom-controller) commands, you'll want to update the API.
