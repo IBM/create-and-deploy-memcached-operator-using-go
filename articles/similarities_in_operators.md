@@ -25,6 +25,7 @@ Below are the main main characteristics of a level 1 operator that we will cover
 3. [Update replicas in your controller code](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#replicas-should-be-set-in-the-cr-and-updated-in-the-controller-code)
 4. [Update the status](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#update-the-status)
 5. [Scale up and down via custom resource](https://github.ibm.com/TT-ISV-org/operator/blob/main/articles/similarities_in_operators.md#ensure-operator-can-scale-up-and-down-via-the-custom-resource)
+
 # The API
 When building an operator, the easiest way to get started is by using the [Operator SDK](https://sdk.operatorframework.io/). Once you've 
 finished the first steps such as using the [`operator sdk init`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#1-create-a-new-project-using-operator-sdk) and [`operator sdk create api`](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#2-create-api-and-custom-controller) commands, you'll want to update the API.
@@ -134,6 +135,14 @@ The main logic is shown below, and this is similar no matter what resource you w
 
 ## Check if a resource exists, create one if it does not
 
+First, we check that the error is not nil. If there is no error, that implies that the resource we want to create is already created, so we do not 
+need to create another one. 
+
+Next, we check for a `IsNotFound` error. This means that this resource doesn't exist at all, so we should create one. 
+
+After we create, and the deployment or statefulset has been created successfully, then you can return and requeue. Otherwise, we 
+return an error.
+
 ```go
 
 	if err != nil && errors.IsNotFound(err) {
@@ -154,13 +163,7 @@ The main logic is shown below, and this is similar no matter what resource you w
 
 ```
 
-First, we check that the error is not nil. If there is no error, that implies that the resource we want to create is already created, so we do not 
-need to create another one. 
-
-Next, we check for a `IsNotFound` error. This means that this resource doesn't exist at all, so we should create one. 
-
-After we create, and the deployment or statefulset has been created successfully, then you can return and requeue. Otherwise, we 
-return an error. 
+ 
 
 ## Replicas should be set in the CR and updated in the controller code
 
