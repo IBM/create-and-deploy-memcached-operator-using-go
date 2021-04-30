@@ -108,6 +108,21 @@ Client Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCom
 Server Version: version.Info{Major:"1", Minor:"18+", GitVersion:"v1.18.3+e574db2", GitCommit:"e574db2", GitTreeState:"clean", BuildDate:"2021-01-30T06:33:00Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
 ```
 
+## 2. Provision OpenShift Cluster
+
+(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` tile. From there, you can select the flavor of your OpenShift cluster. 
+
+<b> It is highly recommended to use an OpenShift cluster of version 4.6 or higher.</b>
+
+![OpenShift](images/openshift-1.png)
+
+Once the cluster has finished provisioning, it should say that the Worker nodes are 100% normal, and the Master status is `ready`,
+as shown in the picture below.
+
+![OpenShift](images/openshift-ready.png)
+
+
+
 ## Make sure OpenShift Lifecycle Manager (OLM) is up to date
 
 As a note, if you still need to provision an OpenShift cluster, it takes some time
@@ -212,19 +227,6 @@ system:controller:operator-lifecycle-manager                 ClusterRole        
 ```
 
 Once everything says installed, <b>congratulations</b> you are ready to start developing!
-
-## 3. (Optional) Provision OpenShift Cluster
-
-(If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` tile. From there, you can select the flavor of your OpenShift cluster. 
-
-<b> It is highly recommended to use an OpenShift cluster of version 4.6 or higher.</b>
-
-![OpenShift](images/openshift-1.png)
-
-Once the cluster has finished provisioning, it should say that the Worker nodes are 100% normal, and the Master status is `ready`,
-as shown in the picture below.
-
-![OpenShift](images/openshift-ready.png)
 
 
 ## Conclusion
