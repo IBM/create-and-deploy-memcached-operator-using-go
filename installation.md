@@ -108,7 +108,7 @@ Client Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCom
 Server Version: version.Info{Major:"1", Minor:"18+", GitVersion:"v1.18.3+e574db2", GitCommit:"e574db2", GitTreeState:"clean", BuildDate:"2021-01-30T06:33:00Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
 ```
 
-## 2. Provision OpenShift Cluster
+## 3. Provision OpenShift Cluster
 
 (If you haven't already) provision an OpenShift cluster by going to `https://cloud.ibm.com/` and clicking `Red Hat OpenShift on IBM Cloud` tile. From there, you can select the flavor of your OpenShift cluster. 
 
