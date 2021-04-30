@@ -65,7 +65,11 @@ You should see output like this:
 operator-sdk version: "v1.5.0", commit: "1abf57985b43bf6a59dcd18147b3c574fa57d3f6", kubernetes version: "v1.19.4", go version: "go1.15.5", GOOS: "darwin", GOARCH: "amd64"
 ```
 
-Now, let's ensure kustomize is installed.
+Now, let's ensure kustomize is installed. Install it via brew:
+
+```bash
+$ brew install kustomize
+```
 
 ```bash 
 $ kustomize version
