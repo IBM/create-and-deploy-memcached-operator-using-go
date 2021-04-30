@@ -1,4 +1,4 @@
-# Develop and deploy a Memcached Operator on Red Hat OpenShift
+# Develop and deploy a basic Memcached Operator on Red Hat OpenShift
 
 <!--EM: metadata information
 Excerpt: Learn how to build and deploy your first Golang-based operator on Red Hat OpenShift."
@@ -518,7 +518,7 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 ```
 
-## 5. Compile, buil, and push
+## 5. Compile, build, and push
 
 Now you are ready to compile, build the image of our operator, and push the image to an image repository. You can use the image registry of your choice, but this tutorial uses Docker Hub. If you plan on deploying to an OpenShift cluster, log in to your cluster now.
 
