@@ -30,4 +30,4 @@ make docker-build IMG=$img
 make docker-push IMG=$img
 make deploy IMG=$img
 
-kubectl apply -f config/samples/graph_v1alpha1_memcached.yaml
+kubectl apply -f config/samples/cache_v1alpha1_memcached.yaml
