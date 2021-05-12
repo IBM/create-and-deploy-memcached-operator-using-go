@@ -11,12 +11,12 @@ make install
 # namespace is just your openshift project
 # for example...
 # export namespace=horea-demo-project
-export namespace=janusgraph-demo-project
+export namespace=<openshift-project-name>
 # img is where you plan to push your image 
 # for example...
-# export namespace=docker.io/horeaporutiu/memcached-operator:latest
+# export img=docker.io/horeaporutiu/memcached-operator:latest
 
-export img=docker.io/horeaporutiu/janusgraph-operator:latest
+export img=docker.io/<username>/memcached-operator:latest
 
 cd config/manager
 kustomize edit set namespace $namespace
