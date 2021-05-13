@@ -521,8 +521,7 @@ err = r.Get(ctx, req.NamespacedName, found)
 
 If a deployment is not found, use the `Deployment` definition within the the `apps` package to create a new one using the reconciler [`Create`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) method:
 
-```
-go
+```go
 if err != nil && errors.IsNotFound(err) {
   dep := r.deploymentForMemcached(memcached)
   log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
@@ -534,8 +533,7 @@ if err != nil && errors.IsNotFound(err) {
 
 For improved readability, the deployment definition is in a different function called [`deploymentForMemcached`](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_controller.go#L134). This function includes the pod runtime specs (ports, startup command, image name), and the `Memcached.Spec.Size` value to determine how many replicas should be deployed. This function returns the deployment resource -- a Kubernetes object.
 
-```
-go
+```go
 func (r *MemcachedReconciler) deploymentForMemcached(m *cachev1alpha1.Memcached) *appsv1.Deployment {
 	ls := labelsForMemcached(m.Name)
 	replicas := m.Spec.Size
