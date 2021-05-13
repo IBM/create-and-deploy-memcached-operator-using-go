@@ -17,10 +17,10 @@ As a reminder, a *controller* is the core part of Kubernetes that ensures that a
 
 ## Outline
 1. [Reconcile function overview](#1-reconcile-function-overview)
-1. [Understanding the Get function](#2-understanding-the-get-function)
-1. [Understanding the Reconcile function return types](#3-understanding-the-reconcile-function-return-types)
-1. [Create deployment](#4-create-deployment)
-1. [Understanding the Update function](#5-understanding-the-update-function)
+1. [Get function overview](#2-get-function-overview)
+1. [Reconcile function return types](#3-reconcile-function-return-types)
+1. [Create Deployment](#4-create-deployment)
+1. [Overview of the Update function](#5-overview-of-the-update-function)
 1. [Understanding KubeBuilder Markers](#6-understanding-kubebuilder-markers)
 
 ## Examine the code
@@ -369,6 +369,7 @@ err := r.Get(ctx, req.NamespacedName, memcached)
 ``` 
 
 <!--EM: is the "context" referenced here referring to the "context" line of code (line 8) in the big code listing?-->
+<!--HP: Yes it is-->
 The `Get` function expects the objects and the  [context](https://pkg.go.dev/context#Context) as arguments. *Context* refers to the object key that is the namespace and the name of the object. These context arguments are in many function calls in the controller code, so let's take a closer look.
 
 The context carries a deadline, a cancellation signal, and other values across API boundaries. The context takes into account the identity of the end user, auth tokens, and the request's deadline.
@@ -401,19 +402,34 @@ users:
   user:
     token: REDACTED
 ```
+
 <!--I think it might be helpful to wrap this part up by identifying what the output code above shows as it relates to the definition of the context that you had described above this code: "The context carries a deadline, a cancellation signal, and other values across API boundaries. The context takes into account the identity of the end user, auth tokens, and the request's deadline"-->
+
+<!--HP: I agree so I added the line below. Don't want to get too bogged down on context-->
+
+From the output above, you can see the token (redacted for privacy purposes), the user, the cluster, and the current context.
+
 Read more about context in Golang [here](https://blog.golang.org/context).
 
 ### Understanding objects in Go
 
 An object passed into the `Get` function must implement the [Object interface](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Object), which means that it needs to embed both [runtime.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#Object), and [metav1.Object](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Object). This object is written via YAML and then created via `Kubectl create`. As such, the object is treated like a Kubernetes-native object.
 
-In the later parts of the code listing above<!--EM: Should we show the snippet here in context?-->, we passed in a different type of resource (a Deployment) to the `Get` function. Because the `Get` function accepts any Kubernetes object that implements the object interface, it doesn't matter if our object is a custom resource (Memcached) or a native Kubernetes resource like a [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
 
-The Reconcile function produces two things:
+In the later parts of the code listing above<!--EM: Should we show the snippet here in context?-->, we passed in a different type of resource (a Deployment) to the `Get` function. One such example is shown below, where we use the function to look for the Deployment resource in our namespace:
+
+<!--HP: yes - i added this snippet below-->
+```go
+found := &appsv1.Deployment{}
+err = r.Get(ctx, req.NamespacedName, found)
+```
+
+Because the `Get` function accepts any Kubernetes object that implements the object interface, it doesn't matter if our object is a custom resource (Memcached) or a native Kubernetes resource like a [`Deployment`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
+
+The Reconcile function takes in two parameters:
 
 * the context (`ctx`)
-* the request (`req`).
+* [the request (`req`)](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/reconcile#Request).
 
 The `request` parameter includes the information needed to reconcile a Kubernetes object. In this code example, that is the `memcached` object. More specifically, the `req` struct contains the `NamespacedName` field which is the name and the namespace of the object to reconcile. This `NamespacedName` is what gets passed into the `Get` function.
 
@@ -437,7 +453,9 @@ The function definition is <b>Reconcile(ctx context.Context, req ctrl.Request) (
 
 The reconcile function returns a `(Result, err)`.
 
-The first field <!--EM first field in what? The reconcile function? or the return types??-->is the [`Result` struct](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Result) which has two fields, `Requeue` and `RequeueAfter`.
+<!--HP: i rewrote the part above again for clarity, and commented the old one out-->
+
+Let's first focus on the [`Result` struct](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Result) which has two fields, `Requeue` and `RequeueAfter`.
 
 * `Requeue` is a boolean data type that tells the reconcile function to requeue again. This data type defaults to "false".
 * `RequeueAfter` expects a `time.Duration` that tells the reconciler to requeue after a specific amount of time.
@@ -476,11 +494,14 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 ```
 
 ## 4. Create Deployment <!--EM: Should this be "Memcached Deployment" or "Observe your memcached deployment"-->
+<!--HP:I think it's fine to leave as just Create Deployment since we want people to understand this generally, not just in the case of memcached-->
 
 If the resource is defined, you can Observe the state of your Memcached Deployment. *Memcached Deployment*
 refers to the standard `Deployment` Kubernetes resource. In OpenShift, the custom resource creates these deployments, instead of a SRE or Kubernetes administrator.
 
 First, use the [k8s.io/api/apps/v1](https://godoc.org/k8s.io/api/apps/v1#Deployment) package, defined in your import statement, to confirm that a Memcached deployment exists within the namespace: <!--EM This is where it starts to feel like a tutorial more than a code deep dive. I tried ot rewrite it, but now I'm worried that the parts I changed were in fact meant to be something the reader typed/inputted-->
+
+<!--HP: I see what you are saying.-->
 
 ```go
 import (
@@ -547,7 +568,7 @@ Creating a deployment and, more specifically, creating a [`PodSpec`](https://pkg
 
 The code above uses the Docker Hub's Official [`Memcached Image`](https://hub.docker.com/_/memcached) and version 1.4.36-alpine and exposes container port 11211 in the PodSpec.
 
-### Use the Create function to save a new object to the cluster
+### Using the Create function to save a new object to the cluster
 
 After creating the deployment, using the [`r.Create(ctx context.Context, obj client.Object)`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Writer) function saves the object in the Kubernetes cluster. This function is only used if this object does not exist yet. If the object *does* exist, using the `Update()` function saves any changes.
 
@@ -591,7 +612,7 @@ if *found.Spec.Replicas != size {
 
 In this snippet of code, the CR effectively changes the desired state by setting the deployment's replicas value to match the value that the user sets in the CR. This changes the desired state of the cluster to match the desired state of the CR.
 
-If all goes well, the spec is updated, and the [] requeues<!--EM: What requees? We don't. But what does--the method? the code? the function? -->. Otherwise, an error is returned.
+If all goes well, the spec is updated, and <!--HP: the controller (added this for clarity) -->the controller will requeues<!--EM: What requees? We don't. But what does--the method? the code? the function? -->. Otherwise, an error is returned.
 You always want to requeue after you update the state of the cluster. If the actual state is equal to the desired state,
 then we do not have to requeue.
 
@@ -609,7 +630,64 @@ return ctrl.Result{Requeue: true}, nil
 To save the current state of the cluster, modify the `Status` subresource of
 our Memcached object using the [`StatusClient`](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#StatusClient.Status) interface.
 
-First let's review what type our status subresource is, according to the `api` which we created.<!--EM: Where was the API? -->
+First let's review what type our status subresource is, according to the [`API`](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/memcached_types.go) which we created.<!--EM: Where was the API? -->
+
+<!--HP: added it below -->
+
+
+For convenience, you can see the API which we created below:
+
+```go
+package v1alpha1
+
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// MemcachedSpec defines the desired state of Memcached
+type MemcachedSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	// Foo is an example field of Memcached. Edit Memcached_types.go to remove/update
+	Size int32 `json:"size"`
+}
+
+// MemcachedStatus defines the observed state of Memcached
+type MemcachedStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
+}
+
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
+// Memcached is the Schema for the memcacheds API
+type Memcached struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   MemcachedSpec   `json:"spec,omitempty"`
+	Status MemcachedStatus `json:"status,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+
+// MemcachedList contains a list of Memcached
+type MemcachedList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Memcached `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&Memcached{}, &MemcachedList{})
+}
+```
 
 The `Status` struct in our code looks like the following:
 
