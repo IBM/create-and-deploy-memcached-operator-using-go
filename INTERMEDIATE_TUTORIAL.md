@@ -234,7 +234,90 @@ func (r *MemcachedReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 ## 1. Reconcile function overview
 
+Below, you can find the controller's reconcile function:
+
+```go
+func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	log := r.Log.WithValues("memcached", req.NamespacedName)
+
+	// Fetch the Memcached instance
+	memcached := &cachev1alpha1.Memcached{}
+	err := r.Get(ctx, req.NamespacedName, memcached)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			log.Info("Memcached resource not found. Ignoring since object must be deleted")
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		log.Error(err, "Failed to get Memcached")
+		return ctrl.Result{}, err
+	}
+
+	// Check if the deployment already exists, if not create a new one
+	found := &appsv1.Deployment{}
+	err = r.Get(ctx, req.NamespacedName, found)
+	if err != nil && errors.IsNotFound(err) {
+		// Define a new deployment
+		dep := r.deploymentForMemcached(memcached)
+		log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+		err = r.Create(ctx, dep)
+		if err != nil {
+			log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+			return ctrl.Result{}, err
+		}
+		// Deployment created successfully - return and requeue
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		log.Error(err, "Failed to get Deployment")
+		return ctrl.Result{}, err
+	}
+
+	// Ensure the deployment size is the same as the spec
+	size := memcached.Spec.Size
+	if *found.Spec.Replicas != size {
+		found.Spec.Replicas = &size
+		err = r.Update(ctx, found)
+		if err != nil {
+			log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+			return ctrl.Result{}, err
+		}
+		// Spec updated - return and requeue
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	// Update the Memcached status with the pod names
+	// List the pods for this memcached's deployment
+	podList := &corev1.PodList{}
+	listOpts := []client.ListOption{
+		client.InNamespace(memcached.Namespace),
+		client.MatchingLabels(labelsForMemcached(memcached.Name)),
+	}
+	if err = r.List(ctx, podList, listOpts...); err != nil {
+		log.Error(err, "Failed to list pods", "Memcached.Namespace", memcached.Namespace, "Memcached.Name", memcached.Name)
+		return ctrl.Result{}, err
+	}
+	podNames := getPodNames(podList.Items)
+
+	// Update status.Nodes if needed
+	if !reflect.DeepEqual(podNames, memcached.Status.Nodes) {
+		memcached.Status.Nodes = podNames
+		err := r.Status().Update(ctx, memcached)
+		if err != nil {
+			log.Error(err, "Failed to update Memcached status")
+			return ctrl.Result{}, err
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+```
+
 <!--EM: One thing I'm wondering here & throughout is: Do we need to chunk up that code listing above and break it down here for the reader? So here should we start with , grab the specific block of related code from the above long one, and post it here. What do you think?-->
+
+<!--HP: Agreed - Updated with code above-->
 
 The controller's [Reconcile](https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/reconcile#Reconciler) method contains the logic responsible for monitoring and applying the requested state for specific deployments. The Reconciler sends client requests to Kubernetes APIs and runs every time a custom resource is modified by a user or changes state (for example, if a pod fails). If the Reconcile method fails, it can be re-queued to run again.
 
@@ -262,13 +345,28 @@ memcached := &cachev1alpha1.Memcached{}
 ```
 
 ## 2. Get function overview
+
+Below, you can see when we use the reconciler's `Get` function:
+
+```go
+memcached := &cachev1alpha1.Memcached{}
+err := r.Get(ctx, req.NamespacedName, memcached)
+```
+
 <!--EM: again, I wonder if it would help/hurt/make it too long to have the code listing part that you're talking about here referenced-->
+<!--HP: agreed - added code-->
 
 Use the [`Get` function](https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.0/pkg/client#Reader.Get) to confirm that the `Memcached` resource is defined within your namespace. This function retrieves an object from a Kubernetes cluster based on the arguments that are passed in.
 
 The function definition is the following: <b>Get(ctx context.Context, key types.NamespacedName, obj client.Object)</b>.
 
 ### Understanding the Get function's context in Go
+
+Below, you can see when we use the context, specifically the first argument in the `Get` function call:
+
+```go
+err := r.Get(ctx, req.NamespacedName, memcached)
+``` 
 
 <!--EM: is the "context" referenced here referring to the "context" line of code (line 8) in the big code listing?-->
 The `Get` function expects the objects and the  [context](https://pkg.go.dev/context#Context) as arguments. *Context* refers to the object key that is the namespace and the name of the object. These context arguments are in many function calls in the controller code, so let's take a closer look.
