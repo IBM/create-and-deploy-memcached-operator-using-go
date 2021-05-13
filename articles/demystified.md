@@ -36,7 +36,8 @@ A particular operator can be much more complex, but it will still contain this b
 
 Before going deeper with operators, let's review how Kubernetes works, so I can relate it to how operators work. A [Kubernetes cluster](https://kubernetes.io/docs/concepts/overview/components/) consists of the components shown in this diagram:
 
-![Kubernetes architecture](https://d33wubrfki0l68.cloudfront.net/2475489eaf20163ec0f54ddc1d92aa8d4c87c96b/e7c81/images/docs/components-of-kubernetes.svg)
+![k8s architecture](../images/components-of-kubernetes.jpg)
+
 
 These components form the main parts of a cluster:
 
@@ -108,7 +109,7 @@ Operators are said to extend Kubernetes, and the diagram illustrates this concep
 
 Thus far, we've talked about the relationship between a cluster's desired state and its current state, and how a controller reconciles between those two states for the resources it manages. The way Kube controllers and operators' custom controllers reconcile is analogous:
 
-![reconcile states](../images/operator-controller-reconciliation.png)
+![reconcile states](../images/operator-controller-reconciliation.jpg)
 
 Operator controllers work one level of abstraction higher than the Kube controllers. The Kube controllers reconcile built-in kinds like `Deployment` and `Job` into lower-level built-in kinds like `Pod`s. Custom controllers reconcile CRDs like `Memcached` and `Etcd` into workload kinds like `Deployment` and `Service`. So, a custom controller's current state becomes a Kube controller's desired state. 
 
