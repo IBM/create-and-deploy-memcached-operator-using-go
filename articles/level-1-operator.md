@@ -15,17 +15,17 @@ This will enable use to replicate our data across multiple Pods, and give us hig
 
 ## Expectations (What you have)
 * You have some experience developing operators
-* You've finished the beginner and intermediate tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md)
+* You've finished the beginner and intermediate tutorials in this learning path, including  [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/BEGINNER_TUTORIAL.md)
 * You've read articles and blogs on the basic idea of a Kubernetes Operators, and you know the basic Kubernetes resource types
 
 ## Expectations (What you want)
 * You want deep technical knowledge of how to implement a Level 1 operator
 
 ## Prerequisites
-* You've completed the [environment setup](https://github.ibm.com/TT-ISV-org/operator/blob/main/installation.md)
+* You've completed the [environment setup](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/installation.md)
 * You have some knowledge of Kubernetes Operators concepts
-* You've created [Memcached Operator](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md)
-* You've read [Deep Dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md)
+* You've created [Memcached Operator](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/BEGINNER_TUTORIAL.md)
+* You've read [Deep Dive into Memcached Operator Code](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/INTERMEDIATE_TUTORIAL.md)
 
 ## Steps
 0. [Overview](#0-overview)
@@ -180,15 +180,15 @@ func init() {
 ```
 
 As shown above, we've added the `Size` and `Version` fields to the `Spec`. We've also added the `Spec` and `Status` fields to the `Janusgraph` struct. This 
-should be familiar to you if you've completed the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md) tutorial. If you have not, that tutorial will offer more details about using the Operator SDK.
+should be familiar to you if you've completed the [Develop and Deploy a Memcached Operator on OpenShift Container Platform](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/BEGINNER_TUTORIAL.md) tutorial. If you have not, that tutorial will offer more details about using the Operator SDK.
 
 ## 3. Controller Logic: Creating a Service
 
 <b>Note: If you want to learn more in depth about the controller logic that is written here,
-please view our [Deep dive into Memcached Operator Code](https://github.ibm.com/TT-ISV-org/operator/blob/main/INTERMEDIATE_TUTORIAL.md) article.</b>
+please view our [Deep dive into Memcached Operator Code](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/INTERMEDIATE_TUTORIAL.md) article.</b>
 
 Now that we have our API updated, our next step is to implement our controller logic in `controllers/janusgraph_controller.go`. First, go ahead and copy the code from the 
-[artifacts/janusgraph_controller.go](https://github.ibm.com/TT-ISV-org/operator/blob/main/artifacts/janusgraph_controller.go) file, and replace your current controller code.
+[artifacts/janusgraph_controller.go](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/artifacts/janusgraph_controller.go) file, and replace your current controller code.
 
 Once this is complete, your controller should look like the following:
 
@@ -411,7 +411,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *v1alpha1.Janusgraph) 
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "horeaporutiu/janusgraph:" + version,
+							Image: "<modified JanusGraph docker image>" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
@@ -497,7 +497,7 @@ if result != nil {
 }
 ```
 
-If `ensureService` returns nil, then we will continue with the rest of the operator logic. Otherwise, if we create a new service (i.e. the service that is passed in as the third argument to ensureService - which we created by calling serviceForJanusgraph()) then we requeue.
+`serviceForJanusGraph()` returns the instance of the service and is passed to the `ensureService()` function. `ensureService()` checks to see if the service already exists, if not it creates the service and returns the result and requeue. If it already exist the function `returns nil` and continues with the rest of the operator logic.
 
 <!-- 
 The first thing we will do 
@@ -705,6 +705,8 @@ If there are no StatefulSet resources in the cluster, then we can go ahead and c
 
 Let's dive into the `statefulSetForJanusgraph(janusgraph)` function. It looks like the following:
 
+> Make sure to replace "<modified JanusGraph docker image>" with the modified docker image.
+
 ```go
 // statefulSetForJanusgraph returns a StatefulSet for our JanusGraph object
 func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgraph) *appsv1.StatefulSet {
@@ -736,7 +738,7 @@ func (r *JanusgraphReconciler) statefulSetForJanusgraph(m *graphv1alpha1.Janusgr
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image: "horeaporutiu/janusgraph:" + version,
+							Image: "<modified JanusGraph docker image>:" + version,
 							Name:  "janusgraph",
 							Ports: []corev1.ContainerPort{
 								{
@@ -762,15 +764,13 @@ replicas := m.Spec.Size
 version := m.Spec.Version
 ```
 
-Now, let's compare this Golang implementation of a Kubernetes StatefulSet with a similar yaml implementation. Take some time to 
-analyze the picture below, since a lot of Kubernetes resources are written in yaml, so it's useful to be familiar with yaml syntax as well.
+Now, let's compare this Golang implementation of a Kubernetes StatefulSet with a similar yaml implementation. Take some time to analyze the picture below, since a lot of Kubernetes resources are written in YAML, so it’s useful to be familiar with YAML syntax as well.
 
 ![operator structure](../images/statefulset-comparison.png)
 
 1. We set the metadata, very similarly how we did when we created the service.
 2. We set the number of replicas we want, by using the value that is entered in the custom resource. We use another selector, this time [`MatchLabels`](https://pkg.go.dev/k8s.io/apimachinery@v0.19.2/pkg/apis/meta/v1#LabelSelector.MatchLabels). This works in a very similar fashion to the selector we used for the service. 
-3. Next we specify the Docker image we want to use for our container, and the name of the container. In this case, we are using a modified version of 
-the JanusGraph Docker image, called `horeaporutiu/jansugraph`. It's specifically modified to enable it to run on OpenShift.
+3. Next we specify the Docker image we want to use for our container, and the name of the container. In this case, we are using a modified version of the JanusGraph Docker image. It's specifically modified to enable it to run on OpenShift. To modify the existing docker image for JanusGraph to work with OpenShift follow [here](https://github.com/IBM/janusgraph-docker-openshift/blob/main/README-openshift.md)
 4. We set the containerPort which is the port which is exposed on the pod's IP address.
 
 <!-- From the image above, you can see that the yaml implementation of a StatefulSet is very similar to the Golang implementation. This should give you 
@@ -826,7 +826,7 @@ create our container.
 Spec: corev1.PodSpec{
 	Containers: []corev1.Container{
 		{
-			Image: "horeaporutiu/janusgraph:" + version,
+			Image: "<modified JanusGraph docker image>:" + version,
 			Name:  "janusgraph",
 			...
 		}
@@ -894,7 +894,7 @@ return ctrl.Result{}, nil
 
 Now, we will go ahead and login to our OpenShift cluster. 
 You can follow the steps described in the [previous 
-tutorial](https://github.ibm.com/TT-ISV-org/operator/blob/main/BEGINNER_TUTORIAL.md#5-compile-build-and-push). After you've logged in, go ahead and 
+tutorial](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/BEGINNER_TUTORIAL.md#5-compile-build-and-push). After you've logged in, go ahead and 
 create a new project:
 
 ```bash
@@ -932,9 +932,9 @@ spec:
   version: latest 
 ``` 
 In the above code, we set the replicas to 1, and the 
-version to `latest`. We will use `kubectl` to create this custom resource as part of a the [`build-and-deploy-janus.sh`](https://github.ibm.com/TT-ISV-org/operator/blob/main/scripts/build-and-deploy-janus.sh) script.
+version to `latest`. We will use `kubectl` to create this custom resource as part of a the [`build-and-deploy-janus.sh`](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/scripts/build-and-deploy-janus.sh) script.
 
-Open up the editor of your choice and create a new file called `build-and-deploy-janus.sh` script with the following code (you can view a copy of the code [in GitHub](https://github.ibm.com/TT-ISV-org/operator/blob/main/scripts/build-and-deploy-janus.sh)):
+Open up the editor of your choice and create a new file called `build-and-deploy-janus.sh` script with the following code (you can view a copy of the code [in GitHub](https://github.com/IBM/create-and-deploy-memcached-operator-using-go/blob/main/scripts/build-and-deploy-janus.sh)):
 
 ```bash
 set -x
@@ -975,8 +975,10 @@ Once you save the file after editing the export statements, it should look somet
 set -x
 set -e
 
-img="horeaporutiu/janusgraph-operator:latest"
-namespace="janusgraph-demo-project"
+#replace <Openshift Project Name> with the project name that you created in OpenShift
+namespace="<Openshift Project Name>"
+#replace <username> with your dockerhub username
+img="<username>/janusgraph-operator:latest" 
 
 cd config/manager
 kustomize edit set namespace $namespace
@@ -1039,11 +1041,11 @@ You should see one `janusgraph-sample` pod running.
 ### Load and retrieve data from JanusGraph using gremlin console
 
 Now that we have our JanusGraph application running in a Pod, let's test it to make sure it works as expected. Please go to 
-[the next JanusGraph tutorial](https://github.ibm.com/TT-ISV-org/janusgraph-operator/blob/main/articles/level-1-janusgraph.md#4-load-and-test-retrieve-of-data-using-gremlin-console) to see the steps which need to be taken to test your JanusGraph application. 
+[the next JanusGraph tutorial](https://github.com/IBM/janusgraph-operator/blob/main/articles/level-1-janusgraph.md#4-load-and-test-retrieve-of-data-using-gremlin-console) to see the steps which need to be taken to test your JanusGraph application. 
 
 You'll use the data file in the `data` directory from this repo, so you may first need to clone the repo. 
 
-Once you reach the bottom of [step 4 of the next tutorial](https://github.ibm.com/TT-ISV-org/janusgraph-operator/blob/main/articles/level-1-janusgraph.md#4-load-and-test-retrieve-of-data-using-gremlin-console) you should be able to list all of your data, and should get a response like the following:
+Once you reach the bottom of [step 4 of the next tutorial](https://github.com/IBM/janusgraph-operator/blob/main/articles/level-1-janusgraph.md#4-load-and-test-retrieve-of-data-using-gremlin-console) you should be able to list all of your data, and should get a response like the following:
 
 ```groovy
 gremlin> g.V().has("object_type", "flight").limit(30000).values("airlines").dedup().toList()
@@ -1056,11 +1058,5 @@ If you've gotten the result from above, then great job! You're done testing your
 
 ### Part 1 Conclusion
 
-**Congratulations!!** You've just created a level 1 
-operator for JanusGraph, using the default 
-BerkeleyDB configuration. Great job! In the [next section](https://github.ibm.com/TT-ISV-org/janusgraph-operator/blob/main/articles/level-1-janusgraph.md) of the tutorial, we will show how to create a 
-more complex level 1 operator for JanusGraph, using 
-Cassandra as the backend storage. We will also show
-how to scale the JanusGraph application up and down, 
-using the custom resource. 
+**Congratulations!!** You've just created a level 1 operator for JanusGraph, using the default BerkeleyDB configuration. Great job! In the [next section](https://github.com/IBM/janusgraph-operator/blob/main/articles/level-1-janusgraph.md) of the tutorial, we will show how to create a more complex level 1 operator for JanusGraph, using Cassandra as the backend storage. We will also show how to scale the JanusGraph application up and down, using the custom resource. 
 

@@ -746,7 +746,7 @@ Next, let's create the custom resource.
     $ oc patch memcached memcached-sample -p '{"spec":{"size": 5}}' --type=merge
     ```
 
-1. You can also update the spec.size from your OpenShift web console by going to `Deployments` and selecting `memcached-sample`. Increase or decrease the spec.size using the up or down arrow:
+1. You can also update the spec.size from your OpenShift web console by going to `Deployments` and selecting `memcached-sample`. Increase or decrease the spec.size using the up or down arrow. But in this case the cluster will bring back the pods to its original size. This proves that the operator can modify only through Custom Resources (CR) instance.
 
     ![kubectl get all](images/inc-dec-size.png)
 
