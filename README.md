@@ -20,6 +20,6 @@ In this tutorial we will start by ensuring we have our [environment setup](https
 
 ## Advanced level
 
-For advanced level tutorials, go to the [janusgraph-operator repo](https://github.com/IBM/janusgraph-operator).
+For advanced level tutorials, go to the [janusgraph-operator repo](https://github.com/IBM/  janusgraph-operator).
 
 
