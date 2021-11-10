@@ -55,6 +55,8 @@ Additionally, you need:
 1. Install [Homebrew](https://docs.brew.sh/Installation) if you don't have it.
 1. Use the Homebrew command `brew install operator-sdk` to install Operator SDK for macOS. This guide is tested for operator-sdk version 1.5, since the commands have changed with the 1.0 release.
 
+>Note: `brew install operator-sdk` installs latest version of go which might not work with operator-sdk version. If you run this command make sure to install go v1.15.x and uninstall the latest version that got installed when running the `brew install operator-sdk` command.
+
 ### Install Operator SDK (version 1.5+) for Linux or Windows
 
 * For Linux or Windows, install the Operator SDK (version 1.5) from the [GitHub release](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that commands have changed with the 1.0 release.
