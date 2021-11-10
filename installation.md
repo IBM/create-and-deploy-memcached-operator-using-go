@@ -6,8 +6,10 @@ To follow the steps in this learning path for developing Golang-based operators,
 
 To develop Golang-based operators on macOS, you need to install the following:
 
+> Note: The tutorials in the series has been made to work with go 1.15 and operator sdk v1.5.0
+
 * [Homebrew](https://brew.sh/)
-* [Go](https://golang.org/dl/) 1.10+
+* [Go](https://golang.org/dl/) v1.15.5
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/homebrew/)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * [Docker](https://docs.docker.com/get-docker/) v17.03+
@@ -27,7 +29,7 @@ To develop Golang-based operators on Linux and Windows, you need to install the 
 
 * [dep](https://golang.github.io/dep/docs/installation.html) v0.5.0+
 * [Git](https://git-scm.com/downloads)
-* [Go](https://golang.org/dl/) v1.10+
+* [Go](https://golang.org/dl/) v1.15.5
 * [Docker](https://docs.docker.com/get-docker/) v17.03+
 * OpenShift CLI (oc) v4.1+ installed
 * [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
@@ -48,14 +50,14 @@ Additionally, you need:
 
 ## 1. Install Operator SDK
 
-### Install Operator SDK (version 1.5+) for macOS
+### Install Operator SDK (version 1.5) for macOS
 
 1. Install [Homebrew](https://docs.brew.sh/Installation) if you don't have it.
-1. Use the Homebrew command `brew install operator-sdk` to install Operator SDK for macOS. This guide is tested for operator-sdk version 1.5+, since the commands have changed with the 1.0 release.
+1. Use the Homebrew command `brew install operator-sdk` to install Operator SDK for macOS. This guide is tested for operator-sdk version 1.5, since the commands have changed with the 1.0 release.
 
 ### Install Operator SDK (version 1.5+) for Linux or Windows
 
-* For Linux or Windows, install the Operator SDK (version 1.0+) from the [GitHub release](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that commands have changed with the 1.0 release.
+* For Linux or Windows, install the Operator SDK (version 1.5) from the [GitHub release](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that commands have changed with the 1.0 release.
 
 ### Test your environment for Operator SDK
 
