@@ -6,7 +6,7 @@ To follow the steps in this learning path for developing Golang-based operators,
 
 To develop Golang-based operators on macOS, you need to install the following:
 
-> Note: The tutorials in the series has been made to work with go 1.15 and operator sdk v1.5.0
+> Note: The tutorials in the series has been made to work with Go v1.15 and Operator SDK v1.5.0.
 
 * [Homebrew](https://brew.sh/)
 * [Go](https://golang.org/dl/) v1.15.5
@@ -14,12 +14,12 @@ To develop Golang-based operators on macOS, you need to install the following:
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * [Docker](https://docs.docker.com/get-docker/) v17.03+
 * OpenShift CLI (**If you plan to deploy to OpenShift cluster**) [oc](https://docs.openshift.com/container-platform/4.5/cli_reference/openshift_cli/getting-started-cli.html)
-* To use an OpenShift cluster, we recommend using <b>version 4.6+</b> <!--EM Do you mean, you need to have OpenShift v 4.6++ if you plan to deploy to an OpenShift cluster?-->
+* To use an OpenShift cluster, we recommend using <b>version 4.6+</b> <!--EM Do you mean, you need to have OpenShift v4.6++ if you plan to deploy to an OpenShift cluster?-->
 
 Additionally, you need:
 
 * Access to a Kubernetes v1.11.3+ cluster (v1.16.0+ if using apiextensions.k8s.io/v1 CRDs). See [minikube](https://minikube.sigs.k8s.io/docs/start/) or [CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg) to access a free cluster.
-* Cluster admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin. <!--EM: Where do they see this? missing link?-->
+* Cluster admin permission. See how to grant yourself cluster-admin privileges or be logged in as admin.
 * Access to a container registry such as [Quay.io](https://quay.io) or [DockerHub](https://hub.docker.com/)
 
 
@@ -50,12 +50,17 @@ Additionally, you need:
 
 ## 1. Install Operator SDK
 
-### Install Operator SDK (version 1.5) for macOS
+### Install Operator SDK (version 1.5) with Go (version 1.15.5) for macOS
+
+Normally, to install the Operator SDK with Homebrew, we'd run `brew install operator-sdk`. This installs the latest version of the Operator SDK with the latest version of Go. However, the Operator SDK (as of v1.5) does not work with the latest version of Go (v1.16+), so we'll explicitedly install the versions that were used to write these tutorials: Go v1.15 and Operator SDK v1.5.0.
 
 1. Install [Homebrew](https://docs.brew.sh/Installation) if you don't have it.
-1. Use the Homebrew command `brew install operator-sdk` to install Operator SDK for macOS. This guide is tested for operator-sdk version 1.5, since the commands have changed with the 1.0 release.
+2. If you have a version of Go later than v1.15.5 installed, uninstall it. Then run `brew install go@1.15.5` to install the required version of Go.
+3. Run `brew install operator-sdk@1.5` to install the version of the Operator SDK used for these tutorials. It runs properly with Go v1.15.5.
 
 ### Install Operator SDK (version 1.5+) for Linux or Windows
+
+* Make sure to install Go v1.15.5
 
 * For Linux or Windows, install the Operator SDK (version 1.5) from the [GitHub release](https://sdk.operatorframework.io/docs/installation/#install-from-github-release). Note that commands have changed with the 1.0 release.
 
