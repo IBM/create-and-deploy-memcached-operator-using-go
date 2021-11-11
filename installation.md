@@ -6,7 +6,7 @@ To follow the steps in this learning path for developing Golang-based operators,
 
 To develop Golang-based operators on macOS, you need to install the following:
 
-> Note: The tutorials in the series has been made to work with Go v1.15 and Operator SDK v1.5.0
+> Note: The tutorials in the series has been made to work with Go v1.15 and Operator SDK v1.5.0.
 
 * [Homebrew](https://brew.sh/)
 * [Go](https://golang.org/dl/) v1.15.5
@@ -50,12 +50,13 @@ Additionally, you need:
 
 ## 1. Install Operator SDK
 
-### Install Operator SDK (version 1.5) for macOS
+### Install Operator SDK (version 1.5) with Go (version 1.15.5) for macOS
+
+Normally, to install the Operator SDK with Homebrew, we'd run `brew install operator-sdk`. This installs the latest version of the Operator SDK with the latest version of Go. However, the Operator SDK (as of v1.5) does not work with the latest version of Go (v1.16+), so we'll explicitedly install the versions that were used to write these tutorials: Go v1.15 and Operator SDK v1.5.0.
 
 1. Install [Homebrew](https://docs.brew.sh/Installation) if you don't have it.
-1. Run `brew install operator-sdk` to install latest version of go. If you haven't installed Go before this step the command runs and installs the latest version of Go which doesn't work with the SDK. Install Go v1.15.5 by running `brew install go@1.15.5` and then run `brew install operator-sdk`. It will find that Go is already installed and just proceeds with installing the SDK.
-
-> Note: if you want to install operator-sdk v1.5 then run `brew install operator-sdk@1.5`
+2. If you have a version of Go later than v1.15.5 installed, uninstall it. Then run `brew install go@1.15.5` to install the required version of Go.
+3. Run `brew install operator-sdk@1.5` to install the version of the Operator SDK used for these tutorials. It runs properly with Go v1.15.5.
 
 ### Install Operator SDK (version 1.5+) for Linux or Windows
 
